@@ -7,42 +7,47 @@ use CodeIgniter\Config\BaseConfig;
 /**
  * Class AuthConfig
  *
- * Konfigurasi default untuk modul Otentikasi pada Domain System.
+ * Konfigurasi teknis untuk Authentication Engine pada Domain System.
  */
 class AuthConfig extends BaseConfig
 {
     /**
-     * Waktu kadaluarsa sesi (dalam detik).
-     *
-     * @var int
+     * Algoritma hashing password bawaan.
      */
-    public int $session_timeout = 7200;
+    public string $password_algorithm = PASSWORD_BCRYPT;
 
     /**
-     * Mengaktifkan/mematikan fitur Remember Me.
-     *
-     * @var bool
+     * Cost factor untuk algoritma BCRYPT hashing.
      */
-    public bool $remember_me = true;
+    public int $password_cost = 10;
 
     /**
-     * Jumlah maksimum percobaan login sebelum diproteksi.
-     *
-     * @var int
+     * Durasi Remember Me (dalam detik) - Default 30 hari.
+     */
+    public int $remember_duration = 2592000;
+
+    /**
+     * Maksimum percobaan login gagal sebelum akun terkunci sementara.
      */
     public int $max_login_attempt = 5;
 
     /**
-     * Durasi kuncian account (dalam menit) setelah batas percobaan login terlampaui.
-     *
-     * @var int
+     * Durasi kuncian lockout (dalam detik) - Default 15 menit.
      */
-    public int $lockout_minutes = 15;
+    public int $lockout_duration = 900;
 
     /**
-     * Algoritma hashing password bawaan.
-     *
-     * @var string
+     * Waktu kadaluarsa sesi normal (dalam detik) - Default 2 jam.
      */
-    public string $password_algorithm = 'bcrypt';
+    public int $session_timeout = 7200;
+
+    /**
+     * Key prefix untuk menyimpan data user di CI4 Session.
+     */
+    public string $session_user_key = 'auth_user';
+
+    /**
+     * Key prefix untuk cookie Remember Me.
+     */
+    public string $remember_cookie_key = 'remember_token';
 }
