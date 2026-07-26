@@ -2,19 +2,27 @@
 
 namespace App\Domains\Masjid\Providers;
 
+use App\Domains\Masjid\Repositories\MasjidRepository;
+use App\Domains\Masjid\Services\MasjidService;
+
 /**
  * Class MasjidProvider
  *
- * Provider Lifecycle Manager (Placeholder untuk pendaftaran service & pemicu boot modul Domain Masjid).
+ * Provider Lifecycle Manager untuk pendaftaran service & pemicu boot modul Domain Masjid.
  */
 class MasjidProvider
 {
+    protected ?MasjidService $service = null;
+
     /**
      * Mendaftarkan dependency / service container domain.
      */
     public function register(): void
     {
-        // Placeholder Service Registration
+        if ($this->service === null) {
+            $repository = new MasjidRepository();
+            $this->service = new MasjidService($repository);
+        }
     }
 
     /**
@@ -22,6 +30,15 @@ class MasjidProvider
      */
     public function boot(): void
     {
-        // Placeholder Boot Listener
+        // Reserved for domain-specific event listener registrations if needed in future
+    }
+
+    public function getService(): MasjidService
+    {
+        if ($this->service === null) {
+            $this->register();
+        }
+
+        return $this->service;
     }
 }

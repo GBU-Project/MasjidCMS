@@ -3,115 +3,116 @@
 namespace App\Domains\Masjid\Controllers;
 
 use App\Core\Controllers\BaseController;
-use App\Core\Exceptions\DomainException;
 use App\Core\Exceptions\NotFoundException;
 use App\Core\Exceptions\ValidationException;
-use App\Domains\Masjid\DTO\CreateMasjidRequest;
-use App\Domains\Masjid\DTO\UpdateMasjidRequest;
+use App\Domains\Masjid\DTO\CreateMasjidDTO;
+use App\Domains\Masjid\DTO\UpdateMasjidDTO;
 use App\Domains\Masjid\Services\MasjidService;
 use CodeIgniter\HTTP\ResponseInterface;
 
 /**
  * Class MasjidController
  *
- * Orchestration HTTP Controller untuk Domain Masjid.
- * DILARANG memanggil Repository atau mengeksekusi logika bisnis secara langsung.
+ * REST Controller penangan endpoint Domain Masjid.
  */
 class MasjidController extends BaseController
 {
-    protected MasjidService $masjidService;
+    protected MasjidService $service;
 
-    public function __construct(?MasjidService $masjidService = null)
+    public function __construct(?MasjidService $service = null)
     {
-        $this->masjidService = $masjidService ?? new MasjidService();
+        $this->service = $service ?? new MasjidService();
     }
 
     /**
-     * Endpoint membaca daftar profil masjid (Paginated).
+     * GET /masjid
      */
     public function index(): ResponseInterface
     {
-        try {
-            $page = (int) ($this->request->getGet('page') ?? 1);
-            $perPage = (int) ($this->request->getGet('per_page') ?? 15);
+        $page = (int) ($this->request->getGet('page') ?? 1);
+        $perPage = (int) ($this->request->getGet('per_page') ?? 15);
 
-            $result = $this->masjidService->paginate($page, $perPage);
-            return $this->respondSuccess($result, 'Masjid list fetched successfully');
-        } catch (\Throwable $e) {
-            return $this->respondError('Failed to fetch masjid list.', null, 500);
-        }
+        $result = $this->service->paginate($page, $perPage);
+        return $this->respondSuccess($result, 'List of Masjids retrieved successfully');
     }
 
     /**
-     * Endpoint detail profil masjid.
+     * GET /masjid/{id}
      */
-    public function show(int|string $id): ResponseInterface
+    public function show(int|string|null $id = null): ResponseInterface
     {
-        try {
-            $masjid = $this->masjidService->find($id);
-
-            if (!$masjid) {
-                return $this->respondError(sprintf('Masjid with ID [%s] not found.', (string) $id), null, 404);
-            }
-
-            return $this->respondSuccess($masjid, 'Masjid detail fetched successfully');
-        } catch (\Throwable $e) {
-            return $this->respondError('Failed to fetch masjid detail.', null, 500);
+        if (empty($id)) {
+            return $this->respondError('Missing Masjid ID', null, 400);
         }
+
+        $masjid = $this->service->find($id);
+        if (!$masjid) {
+            return $this->respondError(sprintf('Masjid with ID [%s] not found.', (string) $id), null, 404);
+        }
+
+        return $this->respondSuccess($masjid, 'Masjid detail retrieved successfully');
     }
 
     /**
-     * Endpoint pembuatan profil masjid baru.
+     * POST /masjid
      */
     public function create(): ResponseInterface
     {
-        try {
-            $data = $this->request->getJSON(true) ?? $this->request->getPost();
-            $dto = CreateMasjidRequest::fromArray($data);
+        $payload = $this->request->getJSON(true) ?? $this->request->getPost();
 
-            $created = $this->masjidService->create($dto);
-            return $this->respondSuccess($created, 'Masjid profile created successfully', 201);
+        try {
+            $dto = CreateMasjidDTO::fromArray($payload ?? []);
+            $result = $this->service->create($dto->toArray());
+
+            return $this->respondSuccess($result, 'Masjid created successfully', 201);
         } catch (ValidationException $e) {
-            return $this->respondError($e->getMessage(), $e->getErrors(), $e->getCode());
-        } catch (DomainException $e) {
-            return $this->respondError($e->getMessage(), $e->getErrors(), $e->getCode());
+            return $this->respondError($e->getMessage(), $e->getErrors(), 422);
         } catch (\Throwable $e) {
-            return $this->respondError('Failed to create masjid profile.', null, 500);
+            return $this->respondError($e->getMessage(), null, 500);
         }
     }
 
     /**
-     * Endpoint pembaruan profil masjid.
+     * PUT /masjid/{id}
      */
-    public function update(int|string $id): ResponseInterface
+    public function update(int|string|null $id = null): ResponseInterface
     {
-        try {
-            $data = $this->request->getJSON(true) ?? $this->request->getRawInput();
-            $dto = UpdateMasjidRequest::fromArray($data);
+        if (empty($id)) {
+            return $this->respondError('Missing Masjid ID', null, 400);
+        }
 
-            $updated = $this->masjidService->update($id, $dto);
-            return $this->respondSuccess($updated, 'Masjid profile updated successfully');
+        $payload = $this->request->getJSON(true) ?? $this->request->getRawInput();
+
+        try {
+            $dto = UpdateMasjidDTO::fromArray($payload ?? []);
+            $result = $this->service->update($id, $dto->toArray());
+
+            return $this->respondSuccess($result, 'Masjid updated successfully');
         } catch (NotFoundException $e) {
             return $this->respondError($e->getMessage(), null, 404);
         } catch (ValidationException $e) {
-            return $this->respondError($e->getMessage(), $e->getErrors(), $e->getCode());
+            return $this->respondError($e->getMessage(), $e->getErrors(), 422);
         } catch (\Throwable $e) {
-            return $this->respondError('Failed to update masjid profile.', null, 500);
+            return $this->respondError($e->getMessage(), null, 500);
         }
     }
 
     /**
-     * Endpoint penghapusan profil masjid.
+     * DELETE /masjid/{id}
      */
-    public function delete(int|string $id): ResponseInterface
+    public function delete(int|string|null $id = null): ResponseInterface
     {
+        if (empty($id)) {
+            return $this->respondError('Missing Masjid ID', null, 400);
+        }
+
         try {
-            $this->masjidService->delete($id);
-            return $this->respondSuccess(null, 'Masjid profile deleted successfully');
+            $this->service->delete($id);
+            return $this->respondSuccess(null, 'Masjid deleted successfully');
         } catch (NotFoundException $e) {
             return $this->respondError($e->getMessage(), null, 404);
         } catch (\Throwable $e) {
-            return $this->respondError('Failed to delete masjid profile.', null, 500);
+            return $this->respondError($e->getMessage(), null, 500);
         }
     }
 }

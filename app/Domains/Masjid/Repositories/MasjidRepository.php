@@ -8,118 +8,50 @@ use App\Domains\Masjid\Entities\Masjid;
 /**
  * Class MasjidRepository
  *
- * Repository Layer untuk mengabstraksi query data profil Masjid dari database.
+ * Repository tunggal penangan data domain Masjid.
  */
 class MasjidRepository extends BaseRepository
 {
-    protected string $table = 'masjid_profiles';
+    protected string $table = 'masjids';
 
     /**
-     * Mencari profil masjid berdasarkan Primary ID.
+     * Cari masjid berdasarkan code.
      */
-    public function find(int|string $id): ?Masjid
+    public function findByCode(string $code): ?array
     {
-        if (empty($id)) {
-            return null;
-        }
-
-        $row = $this->builder()
-            ->where('id', $id)
-            ->get()
-            ->getRowArray();
-
-        return $this->mapToEntity($row);
+        $row = $this->builder()->where('code', $code)->where('deleted_at', null)->get()->getRowArray();
+        return $row ?: null;
     }
 
     /**
-     * Mencari profil masjid berdasarkan Slug URL.
+     * Cari masjid berdasarkan slug.
      */
-    public function findBySlug(string $slug): ?Masjid
+    public function findBySlug(string $slug): ?array
     {
-        if (empty($slug)) {
-            return null;
-        }
-
-        $row = $this->builder()
-            ->where('slug', $slug)
-            ->get()
-            ->getRowArray();
-
-        return $this->mapToEntity($row);
+        $row = $this->builder()->where('slug', $slug)->where('deleted_at', null)->get()->getRowArray();
+        return $row ?: null;
     }
 
     /**
-     * Mencari profil masjid berdasarkan Kode Unik.
+     * Cari masjid berdasarkan email.
      */
-    public function findByCode(string $code): ?Masjid
+    public function findByEmail(string $email): ?array
     {
-        if (empty($code)) {
-            return null;
-        }
-
-        $row = $this->builder()
-            ->where('code', $code)
-            ->get()
-            ->getRowArray();
-
-        return $this->mapToEntity($row);
+        $row = $this->builder()->where('email', $email)->where('deleted_at', null)->get()->getRowArray();
+        return $row ?: null;
     }
 
     /**
-     * Memeriksa keberadaan data masjid berdasarkan ID.
+     * Verifikasi keunikan field terpisah dari ID tertentu.
      */
-    public function exists(int|string $id): bool
+    public function isUniqueExcept(string $field, string $value, int|string|null $exceptId = null): bool
     {
-        if (empty($id)) {
-            return false;
+        $builder = $this->builder()->where($field, $value)->where('deleted_at', null);
+
+        if ($exceptId !== null) {
+            $builder->where('id !=', $exceptId);
         }
 
-        return $this->builder()
-            ->where('id', $id)
-            ->countAllResults() > 0;
-    }
-
-    /**
-     * Membaca daftar data profil masjid dengan pagination bawaan BaseRepository.
-     */
-    public function paginateMasjid(int $page = 1, int $perPage = 15): array
-    {
-        $builder = $this->builder();
-        $result = $this->paginate($builder, $page, $perPage);
-
-        $entities = [];
-        foreach ($result['data'] as $row) {
-            $mapped = $this->mapToEntity($row);
-            if ($mapped) {
-                $entities[] = $mapped;
-            }
-        }
-
-        $result['data'] = $entities;
-        return $result;
-    }
-
-    /**
-     * Data mapper merubah raw array ke Masjid Entity.
-     */
-    protected function mapToEntity(?array $data): ?Masjid
-    {
-        if (empty($data)) {
-            return null;
-        }
-
-        return new Masjid(
-            id: $data['id'] ?? null,
-            code: $data['code'] ?? '',
-            name: $data['name'] ?? '',
-            slug: $data['slug'] ?? '',
-            address: $data['address'] ?? '',
-            phone: $data['phone'] ?? '',
-            email: $data['email'] ?? '',
-            website: $data['website'] ?? '',
-            status: $data['status'] ?? 'active',
-            createdAt: $data['created_at'] ?? null,
-            updatedAt: $data['updated_at'] ?? null
-        );
+        return $builder->countAllResults() === 0;
     }
 }

@@ -2,122 +2,141 @@
 
 namespace App\Domains\Masjid\Services;
 
-use App\Core\Exceptions\NotFoundException;
-use App\Core\Services\BaseService;
-use App\Domains\Masjid\DTO\CreateMasjidRequest;
-use App\Domains\Masjid\DTO\UpdateMasjidRequest;
+use App\Core\CRUD\CrudService;
+use App\Core\Contracts\Events\EventDispatcherInterface;
+use App\Core\Contracts\Transactions\TransactionManagerInterface;
+use App\Core\Contracts\Transactions\UnitOfWorkInterface;
+use App\Core\Contracts\Validation\ValidatorInterface;
+use App\Core\Exceptions\ValidationException;
+use App\Core\Validation\Rules\EmailRule;
+use App\Core\Validation\Rules\LengthRule;
+use App\Core\Validation\Rules\RequiredRule;
+use App\Core\Validation\Rules\StringRule;
+use App\Core\Validation\Rules\UrlRule;
+use App\Core\Validation\Validator;
 use App\Domains\Masjid\Entities\Masjid;
 use App\Domains\Masjid\Repositories\MasjidRepository;
 
 /**
  * Class MasjidService
  *
- * Business Service Layer untuk orkestrasi dan logika bisnis domain Masjid.
+ * Service domain Masjid mengimplementasikan CrudService.
+ * Eksekusi: Validation -> UnitOfWork -> Repository -> Commit -> Domain Event -> Audit.
  */
-class MasjidService extends BaseService
+class MasjidService extends CrudService
 {
-    protected MasjidRepository $repository;
+    protected string $entityName = 'Masjid';
 
-    public function __construct(?MasjidRepository $repository = null)
-    {
-        parent::__construct();
-        $this->repository = $repository ?? new MasjidRepository();
-    }
-
-    /**
-     * Membuat profil masjid baru (Skeleton / Placeholder).
-     */
-    public function create(CreateMasjidRequest $dto): Masjid
-    {
-        $this->logInfo('Creating new Masjid profile: ' . $dto->name);
-
-        return new Masjid(
-            id: 1,
-            code: $dto->code,
-            name: $dto->name,
-            slug: $dto->slug,
-            address: $dto->address,
-            phone: $dto->phone,
-            email: $dto->email,
-            website: $dto->website,
-            status: $dto->status,
-            createdAt: date('Y-m-d H:i:s')
+    public function __construct(
+        ?MasjidRepository $repository = null,
+        ?EventDispatcherInterface $dispatcher = null,
+        ?TransactionManagerInterface $transactionManager = null,
+        ?UnitOfWorkInterface $unitOfWork = null,
+        ?ValidatorInterface $validator = null
+    ) {
+        $repo = $repository ?? new MasjidRepository();
+        parent::__construct(
+            repository: $repo,
+            dispatcher: $dispatcher,
+            transactionManager: $transactionManager,
+            unitOfWork: $unitOfWork,
+            validator: $validator
         );
     }
 
-    /**
-     * Memperbarui profil masjid berdasarkan ID (Skeleton / Placeholder).
-     */
-    public function update(int|string $id, UpdateMasjidRequest $dto): Masjid
+    protected function validateCreate(array $data): void
     {
-        $existing = $this->find($id);
+        $validator = new Validator();
+        $validator->addRule('code', new RequiredRule())
+                  ->addRule('code', new StringRule())
+                  ->addRule('code', new LengthRule(1, 20))
+                  ->addRule('name', new RequiredRule())
+                  ->addRule('name', new StringRule())
+                  ->addRule('name', new LengthRule(1, 200))
+                  ->addRule('slug', new RequiredRule())
+                  ->addRule('slug', new StringRule());
 
-        if (!$existing) {
-            throw new NotFoundException(sprintf('Masjid with ID [%s] not found.', (string) $id));
+        if (!empty($data['email'])) {
+            $validator->addRule('email', new EmailRule());
         }
 
-        $this->logInfo('Updating Masjid profile ID: ' . $id);
-
-        return new Masjid(
-            id: $existing->id,
-            code: $existing->code,
-            name: $dto->name ?? $existing->name,
-            slug: $dto->slug ?? $existing->slug,
-            address: $dto->address ?? $existing->address,
-            phone: $dto->phone ?? $existing->phone,
-            email: $dto->email ?? $existing->email,
-            website: $dto->website ?? $existing->website,
-            status: $dto->status ?? $existing->status,
-            createdAt: $existing->createdAt,
-            updatedAt: date('Y-m-d H:i:s')
-        );
-    }
-
-    /**
-     * Menghapus profil masjid berdasarkan ID (Skeleton / Placeholder).
-     */
-    public function delete(int|string $id): bool
-    {
-        $existing = $this->find($id);
-
-        if (!$existing) {
-            throw new NotFoundException(sprintf('Masjid with ID [%s] not found.', (string) $id));
+        if (!empty($data['website'])) {
+            $validator->addRule('website', new UrlRule());
         }
 
-        $this->logInfo('Deleting Masjid profile ID: ' . $id);
-        return true;
+        $this->validateWith($data, $validator);
+
+        // Unique validations via repository
+        /** @var MasjidRepository $repo */
+        $repo = $this->repository;
+        $errors = [];
+
+        if (!empty($data['code']) && !$repo->isUniqueExcept('code', $data['code'])) {
+            $errors['code'][] = sprintf('Masjid code [%s] already exists.', $data['code']);
+        }
+
+        if (!empty($data['slug']) && !$repo->isUniqueExcept('slug', $data['slug'])) {
+            $errors['slug'][] = sprintf('Masjid slug [%s] already exists.', $data['slug']);
+        }
+
+        if (!empty($data['email']) && !$repo->isUniqueExcept('email', $data['email'])) {
+            $errors['email'][] = sprintf('Masjid email [%s] already exists.', $data['email']);
+        }
+
+        if (!empty($errors)) {
+            throw new ValidationException('Validation failed', $errors);
+        }
     }
 
-    /**
-     * Mengembalikan data masjid yang dihapus (Restore - Placeholder).
-     */
-    public function restore(int|string $id): bool
+    protected function validateUpdate(int|string $id, array $data): void
     {
-        $this->logInfo('Restoring Masjid profile ID: ' . $id);
-        return true;
-    }
+        $validator = new Validator();
 
-    /**
-     * Mencari data masjid berdasarkan ID.
-     */
-    public function find(int|string $id): ?Masjid
-    {
-        return $this->repository->find($id);
-    }
+        if (array_key_exists('code', $data)) {
+            $validator->addRule('code', new RequiredRule())
+                      ->addRule('code', new StringRule())
+                      ->addRule('code', new LengthRule(1, 20));
+        }
 
-    /**
-     * Membaca data masjid terpaginasi.
-     */
-    public function paginate(int $page = 1, int $perPage = 15): array
-    {
-        return $this->repository->paginateMasjid($page, $perPage);
-    }
+        if (array_key_exists('name', $data)) {
+            $validator->addRule('name', new RequiredRule())
+                      ->addRule('name', new StringRule())
+                      ->addRule('name', new LengthRule(1, 200));
+        }
 
-    /**
-     * Public helper untuk eksekusi validasi aturan domain Masjid.
-     */
-    public function validateDomainRules(array $data, array $rules, array $messages = []): bool
-    {
-        return $this->validate($data, $rules, $messages);
+        if (array_key_exists('slug', $data)) {
+            $validator->addRule('slug', new RequiredRule())
+                      ->addRule('slug', new StringRule());
+        }
+
+        if (!empty($data['email'])) {
+            $validator->addRule('email', new EmailRule());
+        }
+
+        if (!empty($data['website'])) {
+            $validator->addRule('website', new UrlRule());
+        }
+
+        $this->validateWith($data, $validator);
+
+        /** @var MasjidRepository $repo */
+        $repo = $this->repository;
+        $errors = [];
+
+        if (!empty($data['code']) && !$repo->isUniqueExcept('code', $data['code'], $id)) {
+            $errors['code'][] = sprintf('Masjid code [%s] already exists.', $data['code']);
+        }
+
+        if (!empty($data['slug']) && !$repo->isUniqueExcept('slug', $data['slug'], $id)) {
+            $errors['slug'][] = sprintf('Masjid slug [%s] already exists.', $data['slug']);
+        }
+
+        if (!empty($data['email']) && !$repo->isUniqueExcept('email', $data['email'], $id)) {
+            $errors['email'][] = sprintf('Masjid email [%s] already exists.', $data['email']);
+        }
+
+        if (!empty($errors)) {
+            throw new ValidationException('Validation failed', $errors);
+        }
     }
 }
