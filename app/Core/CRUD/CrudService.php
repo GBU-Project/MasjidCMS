@@ -30,7 +30,7 @@ abstract class CrudService extends BaseService
     protected EventDispatcherInterface $dispatcher;
     protected TransactionManagerInterface $transactionManager;
     protected UnitOfWorkInterface $unitOfWork;
-    protected ?ValidatorInterface $validator = null;
+    protected ?ValidatorInterface $domainValidator = null;
     protected string $entityName = 'Entity';
 
     public function __construct(
@@ -45,7 +45,7 @@ abstract class CrudService extends BaseService
         $this->dispatcher = $dispatcher ?? new EventDispatcher();
         $this->transactionManager = $transactionManager ?? new DatabaseTransactionManager();
         $this->unitOfWork = $unitOfWork ?? new UnitOfWork($this->transactionManager);
-        $this->validator = $validator;
+        $this->domainValidator = $validator;
     }
 
     /**
@@ -208,7 +208,7 @@ abstract class CrudService extends BaseService
      */
     protected function validateWith(array $data, ?ValidatorInterface $validator = null): void
     {
-        $v = $validator ?? $this->validator;
+        $v = $validator ?? $this->domainValidator;
 
         if ($v !== null) {
             $result = $v->validate($data);
