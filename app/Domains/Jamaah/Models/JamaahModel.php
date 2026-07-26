@@ -13,15 +13,31 @@ class JamaahModel extends Model
 {
     protected $table            = 'jamaahs';
     protected $primaryKey       = 'id';
-    protected $useAutoIncrement = true;
+    protected $useAutoIncrement = false;
     protected $returnType       = 'array';
     protected $useSoftDeletes   = true;
 
     protected $allowedFields = [
-        'code',
-        'name',
-        'slug',
+        'id',
+        'member_no',
+        'nik',
+        'full_name',
+        'gender',
+        'birth_place',
+        'birth_date',
+        'address',
+        'district',
+        'city',
+        'province',
+        'postal_code',
+        'phone',
+        'email',
+        'occupation',
+        'education',
+        'marital_status',
+        'family_id',
         'status',
+        'notes',
         'created_at',
         'updated_at',
         'deleted_at',

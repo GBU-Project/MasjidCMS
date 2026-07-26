@@ -26,13 +26,27 @@ class JamaahController extends BaseController
 
     /**
      * GET /jamaah
+     * Supports search, filters (status, gender, city, district), sorting, and pagination.
      */
     public function index(): ResponseInterface
     {
-        $page = (int) ($this->request->getGet('page') ?? 1);
+        $search  = (string) ($this->request->getGet('search') ?? '');
+        $page    = (int) ($this->request->getGet('page') ?? 1);
         $perPage = (int) ($this->request->getGet('per_page') ?? 15);
 
-        $result = $this->service->paginate($page, $perPage);
+        $filters = [
+            'status'   => $this->request->getGet('status'),
+            'gender'   => $this->request->getGet('gender'),
+            'city'     => $this->request->getGet('city'),
+            'district' => $this->request->getGet('district'),
+        ];
+
+        $sort = [
+            'by'    => $this->request->getGet('sort_by') ?? 'created_at',
+            'order' => $this->request->getGet('sort_order') ?? 'DESC',
+        ];
+
+        $result = $this->service->searchAndPaginate($search, $filters, $sort, $page, $perPage);
         return $this->respondSuccess($result, 'List of Jamaah retrieved successfully');
     }
 
