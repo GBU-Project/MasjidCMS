@@ -1,0 +1,31 @@
+<?php
+
+namespace {{Namespace}}\Policies;
+
+/**
+ * Class {{Entity}}Policy
+ *
+ * Kebijakan otorisasi modul Domain {{Domain}}.
+ */
+class {{Entity}}Policy
+{
+    public function view(object $user, mixed ${{VariableSingular}}): bool
+    {
+        return true;
+    }
+
+    public function create(object $user): bool
+    {
+        return true;
+    }
+
+    public function update(object $user, mixed ${{VariableSingular}}): bool
+    {
+        return true;
+    }
+
+    public function delete(object $user, mixed ${{VariableSingular}}): bool
+    {
+        return true;
+    }
+}

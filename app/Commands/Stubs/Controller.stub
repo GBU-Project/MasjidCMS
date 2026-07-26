@@ -1,0 +1,118 @@
+<?php
+
+namespace {{Namespace}}\Controllers;
+
+use App\Core\Controllers\BaseController;
+use App\Core\Exceptions\NotFoundException;
+use App\Core\Exceptions\ValidationException;
+use {{Namespace}}\DTO\Create{{Entity}}DTO;
+use {{Namespace}}\DTO\Update{{Entity}}DTO;
+use {{Namespace}}\Services\{{Domain}}Service;
+use CodeIgniter\HTTP\ResponseInterface;
+
+/**
+ * Class {{Entity}}Controller
+ *
+ * REST Controller penangan endpoint Domain {{Domain}}.
+ */
+class {{Entity}}Controller extends BaseController
+{
+    protected {{Domain}}Service $service;
+
+    public function __construct(?{{Domain}}Service $service = null)
+    {
+        $this->service = $service ?? new {{Domain}}Service();
+    }
+
+    /**
+     * GET /{{RouteSlug}}
+     */
+    public function index(): ResponseInterface
+    {
+        $page = (int) ($this->request->getGet('page') ?? 1);
+        $perPage = (int) ($this->request->getGet('per_page') ?? 15);
+
+        $result = $this->service->paginate($page, $perPage);
+        return $this->respondSuccess($result, 'List of {{Domain}} retrieved successfully');
+    }
+
+    /**
+     * GET /{{RouteSlug}}/{id}
+     */
+    public function show(int|string|null $id = null): ResponseInterface
+    {
+        if (empty($id)) {
+            return $this->respondError('Missing {{Entity}} ID', null, 400);
+        }
+
+        $record = $this->service->find($id);
+        if (!$record) {
+            return $this->respondError(sprintf('{{Entity}} with ID [%s] not found.', (string) $id), null, 404);
+        }
+
+        return $this->respondSuccess($record, '{{Entity}} detail retrieved successfully');
+    }
+
+    /**
+     * POST /{{RouteSlug}}
+     */
+    public function create(): ResponseInterface
+    {
+        $payload = $this->request->getJSON(true) ?? $this->request->getPost();
+
+        try {
+            $dto = Create{{Entity}}DTO::fromArray($payload ?? []);
+            $result = $this->service->create($dto->toArray());
+
+            return $this->respondSuccess($result, '{{Entity}} created successfully', 201);
+        } catch (ValidationException $e) {
+            return $this->respondError($e->getMessage(), $e->getErrors(), 422);
+        } catch (\Throwable $e) {
+            return $this->respondError($e->getMessage(), null, 500);
+        }
+    }
+
+    /**
+     * PUT /{{RouteSlug}}/{id}
+     */
+    public function update(int|string|null $id = null): ResponseInterface
+    {
+        if (empty($id)) {
+            return $this->respondError('Missing {{Entity}} ID', null, 400);
+        }
+
+        $payload = $this->request->getJSON(true) ?? $this->request->getRawInput();
+
+        try {
+            $dto = Update{{Entity}}DTO::fromArray($payload ?? []);
+            $result = $this->service->update($id, $dto->toArray());
+
+            return $this->respondSuccess($result, '{{Entity}} updated successfully');
+        } catch (NotFoundException $e) {
+            return $this->respondError($e->getMessage(), null, 404);
+        } catch (ValidationException $e) {
+            return $this->respondError($e->getMessage(), $e->getErrors(), 422);
+        } catch (\Throwable $e) {
+            return $this->respondError($e->getMessage(), null, 500);
+        }
+    }
+
+    /**
+     * DELETE /{{RouteSlug}}/{id}
+     */
+    public function delete(int|string|null $id = null): ResponseInterface
+    {
+        if (empty($id)) {
+            return $this->respondError('Missing {{Entity}} ID', null, 400);
+        }
+
+        try {
+            $this->service->delete($id);
+            return $this->respondSuccess(null, '{{Entity}} deleted successfully');
+        } catch (NotFoundException $e) {
+            return $this->respondError($e->getMessage(), null, 404);
+        } catch (\Throwable $e) {
+            return $this->respondError($e->getMessage(), null, 500);
+        }
+    }
+}

@@ -1,0 +1,28 @@
+<?php
+
+namespace App\Database\Seeds;
+
+use CodeIgniter\Database\Seeder;
+
+class {{Entity}}Seeder extends Seeder
+{
+    public function run(): void
+    {
+        $data = [
+            'code'       => '{{Domain}}-001',
+            'name'       => 'Default Sample {{Entity}}',
+            'slug'       => 'default-sample-{{RouteSlug}}',
+            'status'     => 'active',
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s'),
+            'created_by' => 1,
+        ];
+
+        $builder = $this->db->table('{{Table}}');
+        $existing = $builder->where('code', $data['code'])->get()->getRow();
+
+        if (!$existing) {
+            $builder->insert($data);
+        }
+    }
+}

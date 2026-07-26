@@ -1,0 +1,42 @@
+<?php
+
+namespace {{Namespace}}\Models;
+
+use CodeIgniter\Model;
+
+/**
+ * Class {{Entity}}Model
+ *
+ * CI4 Model adapter untuk tabel {{Table}}.
+ */
+class {{Entity}}Model extends Model
+{
+    protected $table            = '{{Table}}';
+    protected $primaryKey       = 'id';
+    protected $useAutoIncrement = true;
+    protected $returnType       = 'array';
+    protected $useSoftDeletes   = true;
+
+    protected $allowedFields = [
+        'code',
+        'name',
+        'slug',
+        'status',
+        'created_at',
+        'updated_at',
+        'deleted_at',
+        'created_by',
+        'updated_by',
+        'deleted_by',
+    ];
+
+    protected $useTimestamps = true;
+    protected $createdField  = 'created_at';
+    protected $updatedField  = 'updated_at';
+    protected $deletedField  = 'deleted_at';
+
+    protected $validationRules      = [];
+    protected $validationMessages   = [];
+    protected $skipValidation       = true;
+    protected $cleanValidationRules = true;
+}

@@ -1,0 +1,150 @@
+<?php
+
+namespace Tests\Unit\Domains;
+
+use App\Core\Audit\AuditEntry;
+use App\Core\Audit\Listeners\AuditEventListener;
+use App\Core\Audit\Services\AuditService;
+use App\Core\Contracts\Audit\AuditRepositoryInterface;
+use App\Core\Contracts\Events\EventDispatcherInterface;
+use App\Core\Contracts\Transactions\TransactionManagerInterface;
+use App\Core\Events\EntityCreatedEvent;
+use App\Core\Events\EntityDeletedEvent;
+use App\Core\Events\EntityUpdatedEvent;
+use App\Core\Events\EventDispatcher;
+use App\Core\Exceptions\ValidationException;
+
+use {{Namespace}}\Controllers\{{Entity}}Controller;
+use {{Namespace}}\DTO\Create{{Entity}}DTO;
+use {{Namespace}}\DTO\Update{{Entity}}DTO;
+use {{Namespace}}\Entities\{{Entity}};
+use {{Namespace}}\Repositories\{{Domain}}Repository;
+use {{Namespace}}\Services\{{Domain}}Service;
+
+use CodeIgniter\HTTP\IncomingRequest;
+use CodeIgniter\HTTP\Response;
+use CodeIgniter\HTTP\SiteURI;
+use CodeIgniter\HTTP\UserAgent;
+use CodeIgniter\Test\CIUnitTestCase;
+
+class {{Domain}}DomainTest extends CIUnitTestCase
+{
+    public function testEntityInstantiation(): void
+    {
+        $data = [
+            'id'     => 1,
+            'code'   => '{{Domain}}-TEST-01',
+            'name'   => 'Test {{Entity}}',
+            'slug'   => 'test-{{RouteSlug}}',
+            'status' => 'active',
+        ];
+
+        $entity = {{Entity}}::fromArray($data);
+        $this->assertSame(1, $entity->id);
+        $this->assertSame('{{Domain}}-TEST-01', $entity->code);
+        $this->assertTrue($entity->isActive());
+    }
+
+    public function testCreateAndUpdateDTO(): void
+    {
+        $createInput = [
+            'code' => '  {{Domain}}-DTO-01  ',
+            'name' => '  Sample {{Entity}}  ',
+            'slug' => '  sample-{{RouteSlug}}  ',
+        ];
+
+        $createDTO = Create{{Entity}}DTO::fromArray($createInput);
+        $this->assertSame('{{Domain}}-DTO-01', $createDTO->code);
+        $this->assertSame('Sample {{Entity}}', $createDTO->name);
+    }
+
+    public function testServiceCrudLifecycle(): void
+    {
+        $store = [];
+
+        $mockRepo = $this->createMock({{Domain}}Repository::class);
+        $mockRepo->method('isUniqueExcept')->willReturn(true);
+
+        $mockRepo->method('create')->willReturnCallback(function ($data) use (&$store) {
+            $id = count($store) + 1;
+            $data['id'] = $id;
+            $store[$id] = $data;
+            return $id;
+        });
+
+        $mockRepo->method('find')->willReturnCallback(function ($id) use (&$store) {
+            return $store[$id] ?? null;
+        });
+
+        $mockRepo->method('update')->willReturnCallback(function ($id, $data) use (&$store) {
+            if (!isset($store[$id])) return false;
+            $store[$id] = array_merge($store[$id], $data);
+            return true;
+        });
+
+        $mockRepo->method('delete')->willReturnCallback(function ($id) use (&$store) {
+            if (!isset($store[$id])) return false;
+            $store[$id]['deleted_at'] = date('Y-m-d H:i:s');
+            return true;
+        });
+
+        $mockRepo->method('exists')->willReturnCallback(function ($id) use (&$store) {
+            return isset($store[$id]);
+        });
+
+        $mockTxManager = $this->createMock(TransactionManagerInterface::class);
+        $mockDispatcher = $this->createMock(EventDispatcherInterface::class);
+
+        $service = new {{Domain}}Service($mockRepo, $mockDispatcher, $mockTxManager);
+
+        $newId = $service->create([
+            'code' => '{{Domain}}-CRUD-01',
+            'name' => '{{Entity}} CRUD Test',
+            'slug' => '{{RouteSlug}}-crud-test',
+        ]);
+        $this->assertSame(1, $newId);
+
+        $found = $service->find($newId);
+        $this->assertNotNull($found);
+
+        $updated = $service->update($newId, ['name' => 'Updated {{Entity}}']);
+        $this->assertSame('Updated {{Entity}}', $updated['name']);
+
+        $deleted = $service->delete($newId);
+        $this->assertTrue($deleted);
+    }
+
+    public function testTransactionBoundaryAndRollback(): void
+    {
+        $mockRepo = $this->createMock({{Domain}}Repository::class);
+        $mockRepo->method('isUniqueExcept')->willReturn(true);
+        $mockRepo->method('create')->willThrowException(new \RuntimeException('DB Error'));
+
+        $txBegan = false;
+        $txRolledBack = false;
+
+        $mockTxManager = $this->createMock(TransactionManagerInterface::class);
+        $mockTxManager->method('begin')->willReturnCallback(function() use (&$txBegan) {
+            $txBegan = true;
+        });
+        $mockTxManager->method('rollback')->willReturnCallback(function() use (&$txRolledBack) {
+            $txRolledBack = true;
+        });
+
+        $mockDispatcher = $this->createMock(EventDispatcherInterface::class);
+
+        $service = new {{Domain}}Service($mockRepo, $mockDispatcher, $mockTxManager);
+
+        try {
+            $service->create([
+                'code' => 'FAIL',
+                'name' => 'Fail',
+                'slug' => 'fail',
+            ]);
+            $this->fail('Expected Exception was not thrown.');
+        } catch (\RuntimeException $e) {
+            $this->assertTrue($txBegan);
+            $this->assertTrue($txRolledBack);
+        }
+    }
+}

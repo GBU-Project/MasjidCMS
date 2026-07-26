@@ -1,0 +1,38 @@
+<?php
+
+namespace {{Namespace}}\Repositories;
+
+use App\Core\Repositories\BaseRepository;
+
+/**
+ * Class {{Domain}}Repository
+ *
+ * Repository tunggal penangan data domain {{Domain}}.
+ */
+class {{Domain}}Repository extends BaseRepository
+{
+    protected string $table = '{{Table}}';
+
+    public function findByCode(string $code): ?array
+    {
+        $row = $this->builder()->where('code', $code)->where('deleted_at', null)->get()->getRowArray();
+        return $row ?: null;
+    }
+
+    public function findBySlug(string $slug): ?array
+    {
+        $row = $this->builder()->where('slug', $slug)->where('deleted_at', null)->get()->getRowArray();
+        return $row ?: null;
+    }
+
+    public function isUniqueExcept(string $field, string $value, int|string|null $exceptId = null): bool
+    {
+        $builder = $this->builder()->where($field, $value)->where('deleted_at', null);
+
+        if ($exceptId !== null) {
+            $builder->where('id !=', $exceptId);
+        }
+
+        return $builder->countAllResults() === 0;
+    }
+}

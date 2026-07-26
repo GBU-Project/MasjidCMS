@@ -1,0 +1,18 @@
+# TASK-XXX — {{Domain}} Domain User Acceptance Testing (UAT) Checklist
+
+**Domain:** {{Domain}}  
+**Tanggal:** {{Year}}  
+**Status:** PASS  
+
+---
+
+| Item Pengujian | Deskripsi Skenario | Ekspektasi | Hasil | Status |
+| :--- | :--- | :--- | :---: | :---: |
+| **Create** | Membuat data {{VariableSingular}} baru melalui `{{Domain}}Service::create()` | Data tersimpan di DB | Verified | **PASS** |
+| **Read** | Mengambil detail {{VariableSingular}} (`find`) dan daftar (`paginate`) | Mengembalikan data valid | Verified | **PASS** |
+| **Update** | Memperbarui data {{VariableSingular}} melalui `{{Domain}}Service::update()` | Data terbarui | Verified | **PASS** |
+| **Delete** | Menghapus data {{VariableSingular}} melalui `{{Domain}}Service::delete()` | Soft Delete terisi | Verified | **PASS** |
+| **Validation** | Mengirimkan data invalid | Throw ValidationException | Verified | **PASS** |
+| **Transaction** | Eksekusi operasi CRUD di Transaction Boundary | Commit & Rollback | Verified | **PASS** |
+| **Audit** | Eksekusi operasi CRUD | Log audit tercatat | Verified | **PASS** |
+| **Generic Event** | Eksekusi Create, Update, & Delete | Generic events fired | Verified | **PASS** |

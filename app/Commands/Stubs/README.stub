@@ -1,0 +1,89 @@
+# Domain {{Domain}} — Business Domain Foundation
+
+Dokumen ini menjelaskan arsitektur, struktur internal, dan spesifikasi implementasi **Domain {{Domain}}** di MasjidCMS sesuai **Golden Domain Template (docs/DOMAIN_TEMPLATE.md)**.
+
+---
+
+## 1. Domain Architecture
+
+Domain {{Domain}} dibangun secara independen di bawah namespace `{{Namespace}}`. Seluruh akses data dan logika bisnis menggunakan abstraksi **Core Platform v1.0**.
+
+```
+app/Domains/{{Domain}}/
+├── Config/             # Konfigurasi domain ({{Domain}}Config)
+├── Controllers/        # REST Controller ({{Entity}}Controller)
+├── DTO/                # Data Transfer Objects (Create{{Entity}}DTO, Update{{Entity}}DTO)
+├── Entities/           # Domain Entities ({{Entity}})
+├── Models/             # CI4 Model Adapter ({{Entity}}Model)
+├── Policies/           # Authorization Policies ({{Entity}}Policy)
+├── Providers/          # Domain Lifecycle Provider ({{Domain}}Provider)
+├── Repositories/       # Data Access Layer ({{Domain}}Repository)
+├── Routes/             # Modular Routes ({{RouteSlug}}.php)
+├── Services/           # Business Logic Layer ({{Domain}}Service)
+└── README.md           # Domain Documentation
+```
+
+---
+
+## 2. Dependency Diagram
+
+```
+ [ HTTP Request ]
+        │
+        ▼
+[ {{Entity}}Controller ] ──(DTO)──► [ Create{{Entity}}DTO / Update{{Entity}}DTO ]
+        │
+        ▼
+ [ {{Domain}}Service ] ◄──(Extends)── [ CrudService (Core) ]
+    │    │    │
+    │    │    ├──────► [ Validator (Core Validation Engine) ]
+    │    │    ├──────► [ UnitOfWork & TransactionManager (Core) ]
+    │    │    └──────► [ EventDispatcher (Generic Events) ]
+    │    │
+    │    ▼
+[ {{Domain}}Repository ] ◄──(Extends)── [ BaseRepository (Core) ]
+    │
+    ▼
+[ {{Entity}}Model ] ──► [ DB Table: {{Table}} ]
+```
+
+---
+
+## 3. CRUD Flow & Request Lifecycle
+
+```
+Client Payload ──► {{Entity}}Controller ──► DTO Parsing
+                                               │
+                                               ▼
+                                   {{Domain}}Service::create(data)
+                                               │
+                                               ▼
+                                    validateCreate() [BEFORE Tx]
+                                               │
+                                               ▼
+                                     TransactionManager::begin()
+                                               │
+                                               ▼
+                                     {{Domain}}Repository::create()
+                                               │
+                                               ▼
+                                     TransactionManager::commit()
+                                               │
+                                               ▼
+                                     EntityCreatedEvent dispatched
+                                               │
+                                               ▼
+                                     ResponseFormatter (HTTP 201)
+```
+
+---
+
+## 4. Endpoints
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/{{RouteSlug}}` | Mengambil daftar {{Domain}} (terpaginasi) |
+| `GET` | `/{{RouteSlug}}/{id}` | Mengambil detail {{Entity}} |
+| `POST` | `/{{RouteSlug}}` | Membuat {{Entity}} baru |
+| `PUT` | `/{{RouteSlug}}/{id}` | Memperbarui {{Entity}} |
+| `DELETE` | `/{{RouteSlug}}/{id}` | Menghapus {{Entity}} (Soft Delete) |

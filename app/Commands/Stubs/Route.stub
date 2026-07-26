@@ -1,0 +1,13 @@
+<?php
+
+use {{Namespace}}\Controllers\{{Entity}}Controller;
+
+/** @var \CodeIgniter\Router\RouteCollection $routes */
+
+$routes->group('{{RouteSlug}}', function ($routes) {
+    $routes->get('/', [{{Entity}}Controller::class, 'index']);
+    $routes->get('(:segment)', [{{Entity}}Controller::class, 'show']);
+    $routes->post('/', [{{Entity}}Controller::class, 'create']);
+    $routes->put('(:segment)', [{{Entity}}Controller::class, 'update']);
+    $routes->delete('(:segment)', [{{Entity}}Controller::class, 'delete']);
+});

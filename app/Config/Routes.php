@@ -9,3 +9,8 @@ $routes->get('/', 'Home::index');
 if (file_exists(APPPATH . 'Domains/Masjid/Routes/masjid.php')) {
     require APPPATH . 'Domains/Masjid/Routes/masjid.php';
 }
+
+// Load Domain Jamaah Routes
+if (file_exists(APPPATH . 'Domains/Jamaah/Routes/jamaah.php')) {
+    require APPPATH . 'Domains/Jamaah/Routes/jamaah.php';
+}

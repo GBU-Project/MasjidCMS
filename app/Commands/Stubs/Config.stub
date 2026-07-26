@@ -1,0 +1,16 @@
+<?php
+
+namespace {{Namespace}}\Config;
+
+use CodeIgniter\Config\BaseConfig;
+
+/**
+ * Class {{Domain}}Config
+ *
+ * Konfigurasi khusus modul Domain {{Domain}}.
+ */
+class {{Domain}}Config extends BaseConfig
+{
+    public bool $enabled = true;
+    public string $domainName = '{{Domain}}';
+}

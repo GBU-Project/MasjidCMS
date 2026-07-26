@@ -1,0 +1,44 @@
+<?php
+
+namespace {{Namespace}}\Providers;
+
+use {{Namespace}}\Repositories\{{Domain}}Repository;
+use {{Namespace}}\Services\{{Domain}}Service;
+
+/**
+ * Class {{Domain}}Provider
+ *
+ * Provider Lifecycle Manager untuk pendaftaran service & pemicu boot modul Domain {{Domain}}.
+ */
+class {{Domain}}Provider
+{
+    protected ?{{Domain}}Service $service = null;
+
+    /**
+     * Mendaftarkan dependency / service container domain.
+     */
+    public function register(): void
+    {
+        if ($this->service === null) {
+            $repository = new {{Domain}}Repository();
+            $this->service = new {{Domain}}Service($repository);
+        }
+    }
+
+    /**
+     * Memulai pemuatan konfigurasi / event listener domain.
+     */
+    public function boot(): void
+    {
+        // Reserved for domain-specific event listener registrations if needed
+    }
+
+    public function getService(): {{Domain}}Service
+    {
+        if ($this->service === null) {
+            $this->register();
+        }
+
+        return $this->service;
+    }
+}
