@@ -6,11 +6,13 @@ use App\Core\Contracts\CrudRepositoryInterface;
 use App\Core\Contracts\Events\EventDispatcherInterface;
 use App\Core\Contracts\Transactions\TransactionManagerInterface;
 use App\Core\Contracts\Transactions\UnitOfWorkInterface;
+use App\Core\Contracts\Validation\ValidatorInterface;
 use App\Core\Events\EntityCreatedEvent;
 use App\Core\Events\EntityDeletedEvent;
 use App\Core\Events\EntityUpdatedEvent;
 use App\Core\Events\EventDispatcher;
 use App\Core\Exceptions\NotFoundException;
+use App\Core\Exceptions\ValidationException;
 use App\Core\Services\BaseService;
 use App\Core\Transactions\DatabaseTransactionManager;
 use App\Core\Transactions\UnitOfWork;
@@ -20,7 +22,7 @@ use Throwable;
  * Class CrudService
  *
  * Abstract Generic Service Engine penyedia siklus hidup CRUD standar untuk seluruh Domain.
- * Dilengkapi dengan Validation Hooks, Lifecycle Hooks, Transaction Boundary, Unit of Work, dan Event Dispatcher pasca-commit.
+ * Terintegrasi dengan Validation Engine (ValidatorInterface), Lifecycle Hooks, Transaction Boundary, & Event Engine.
  */
 abstract class CrudService extends BaseService
 {
@@ -28,29 +30,32 @@ abstract class CrudService extends BaseService
     protected EventDispatcherInterface $dispatcher;
     protected TransactionManagerInterface $transactionManager;
     protected UnitOfWorkInterface $unitOfWork;
+    protected ?ValidatorInterface $validator = null;
     protected string $entityName = 'Entity';
 
     public function __construct(
         CrudRepositoryInterface $repository,
         ?EventDispatcherInterface $dispatcher = null,
         ?TransactionManagerInterface $transactionManager = null,
-        ?UnitOfWorkInterface $unitOfWork = null
+        ?UnitOfWorkInterface $unitOfWork = null,
+        ?ValidatorInterface $validator = null
     ) {
         parent::__construct();
         $this->repository = $repository;
         $this->dispatcher = $dispatcher ?? new EventDispatcher();
         $this->transactionManager = $transactionManager ?? new DatabaseTransactionManager();
         $this->unitOfWork = $unitOfWork ?? new UnitOfWork($this->transactionManager);
+        $this->validator = $validator;
     }
 
     /**
-     * Memproses operasi pembuatan data baru (Create) dalam batas transaksi.
+     * Memproses operasi pembuatan data baru (Create).
      */
     public function create(array|object $dto): mixed
     {
         $data = is_object($dto) ? (array) $dto : $dto;
 
-        // 1. Validation Hook (Pre-transaction)
+        // 1. Validation Hook
         $this->validateCreate($data);
 
         // 2. Begin Transaction
@@ -60,7 +65,7 @@ abstract class CrudService extends BaseService
             // 3. Lifecycle Hook Before Create
             $this->beforeCreate($data);
 
-            // 4. Database Execution via Repository Interface
+            // 4. Database Execution
             $result = $this->repository->create($data);
 
             // 5. Register to Unit of Work
@@ -71,12 +76,11 @@ abstract class CrudService extends BaseService
             // 6. Commit Transaction
             $this->transactionManager->commit();
 
-            // 7. Lifecycle Hook After Create & Event Dispatch (ONLY AFTER COMMIT)
+            // 7. Lifecycle Hook After Create & Event Dispatch
             $this->afterCreate($result);
 
             return $result;
         } catch (Throwable $e) {
-            // Rollback jika terjadi exception (Event DILARANG ditayangkan)
             $this->transactionManager->rollback();
             $this->unitOfWork->rollback();
             $this->logError('Create operation failed, transaction rolled back: ' . $e->getMessage());
@@ -85,7 +89,7 @@ abstract class CrudService extends BaseService
     }
 
     /**
-     * Memproses operasi pembaruan data (Update) dalam batas transaksi.
+     * Memproses operasi pembaruan data (Update).
      */
     public function update(int|string $id, array|object $dto): mixed
     {
@@ -117,7 +121,7 @@ abstract class CrudService extends BaseService
             // 6. Commit Transaction
             $this->transactionManager->commit();
 
-            // 7. Lifecycle Hook After Update & Event Dispatch (ONLY AFTER COMMIT)
+            // 7. Lifecycle Hook After Update & Event Dispatch
             $this->afterUpdate($updatedEntity);
 
             return $updatedEntity;
@@ -130,7 +134,7 @@ abstract class CrudService extends BaseService
     }
 
     /**
-     * Memproses operasi penghapusan data (Delete) dalam batas transaksi.
+     * Memproses operasi penghapusan data (Delete).
      */
     public function delete(int|string $id): bool
     {
@@ -154,7 +158,7 @@ abstract class CrudService extends BaseService
             // 5. Commit Transaction
             $this->transactionManager->commit();
 
-            // 6. Lifecycle Hook After Delete & Event Dispatch (ONLY AFTER COMMIT)
+            // 6. Lifecycle Hook After Delete & Event Dispatch
             $this->afterDelete($id);
 
             return $result;
@@ -167,7 +171,7 @@ abstract class CrudService extends BaseService
     }
 
     /**
-     * Memproses operasi pemulihan data terhapus (Restore) dalam batas transaksi.
+     * Memproses operasi pemulihan data terhapus (Restore).
      */
     public function restore(int|string $id): bool
     {
@@ -195,55 +199,69 @@ abstract class CrudService extends BaseService
     }
 
     /**
-     * Mencari data tunggal berdasarkan ID.
+     * Helper eksekusi ValidatorEngine untuk memverifikasi data input.
+     *
+     * @param array $data
+     * @param ValidatorInterface|null $validator
+     * @return void
+     * @throws ValidationException
      */
+    protected function validateWith(array $data, ?ValidatorInterface $validator = null): void
+    {
+        $v = $validator ?? $this->validator;
+
+        if ($v !== null) {
+            $result = $v->validate($data);
+
+            if (!$result->isValid()) {
+                throw new ValidationException('Validation failed', $result->errors);
+            }
+        }
+    }
+
     public function find(int|string $id): mixed
     {
         return $this->repository->find($id);
     }
 
-    /**
-     * Membaca seluruh data.
-     */
     public function findAll(array $filters = [], array $sort = []): array
     {
         return $this->repository->findAll($filters, $sort);
     }
 
-    /**
-     * Membaca data terpaginasi.
-     */
     public function paginate(int $page = 1, int $perPage = 15): array
     {
         return $this->repository->paginate($page, $perPage);
     }
 
-    /**
-     * Memeriksa keberadaan data.
-     */
     public function exists(int|string $id): bool
     {
         return $this->repository->exists($id);
     }
 
-    /**
-     * Menghitung total data.
-     */
     public function count(array $filters = []): int
     {
         return $this->repository->count($filters);
     }
 
     // =========================================================================
-    // VALIDATION HOOKS
+    // VALIDATION HOOKS (Child Services override if needed)
     // =========================================================================
 
-    protected function validateCreate(array $data): void {}
-    protected function validateUpdate(int|string $id, array $data): void {}
+    protected function validateCreate(array $data): void
+    {
+        $this->validateWith($data);
+    }
+
+    protected function validateUpdate(int|string $id, array $data): void
+    {
+        $this->validateWith($data);
+    }
+
     protected function validateDelete(int|string $id): void {}
 
     // =========================================================================
-    // LIFECYCLE HOOKS (Child Service can override, default dispatches Event)
+    // LIFECYCLE HOOKS
     // =========================================================================
 
     protected function beforeCreate(array &$data): void {}
