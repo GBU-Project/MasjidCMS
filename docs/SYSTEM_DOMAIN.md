@@ -1,15 +1,15 @@
-# MasjidCMS — Domain System (Authentication & Identity Provider)
+# MasjidCMS — Domain System (Authentication, Identity & RBAC Provider)
 
-Dokumen ini menjelaskan struktur, siklus kerja, dan rancangan fondasi **Domain System** spesifik modul **Authentication Engine & Identity Provider Pattern** sesuai dengan **SOFTWARE_ARCHITECTURE.md (v1.1)**, **CORE_FRAMEWORK.md**, dan **TASK-006**.
+Dokumen ini menjelaskan struktur, siklus kerja, dan rancangan fondasi **Domain System** mencakup **Authentication Engine**, **Identity Provider Pattern**, dan **RBAC Provider Foundation** sesuai dengan **SOFTWARE_ARCHITECTURE.md (v1.1)**, **CORE_FRAMEWORK.md**, dan **TASK-007**.
 
 ---
 
 ## 1. Domain Overview
 
-Domain `System` merupakan domain fondasi teknis dan identitas di MasjidCMS. Tanggung jawabnya meliputi:
+Domain `System` merupakan domain fondasi teknis, identitas, dan otorisasi di MasjidCMS. Tanggung jawabnya meliputi:
 - **Authentication**: Pengelolaan login, logout, sesi, dan verifikasi pengguna.
-- **Identity Provider Decoupling**: Pemisahan otentikasi dari sumber identitas data (DB, LDAP, OAuth, SAML).
-- **RBAC (Future)**: Pengelolaan Role, Permission, dan Hak Akses.
+- **Identity Provider Decoupling**: Pemisahan otentikasi dari sumber data identitas (`IdentityProviderInterface`).
+- **RBAC Architecture Decoupling**: Pemisahan otorisasi dari sumber data hak akses (`PermissionProviderInterface`).
 - **User Management (Future)**: Pengelolaan profil pengguna dan status akun.
 - **Settings (Future)**: Pengelolaan konfigurasi global aplikasi.
 - **Activity Log (Future)**: Audit trail perubahan data.
@@ -34,37 +34,36 @@ Domain `System` merupakan domain fondasi teknis dan identitas di MasjidCMS. Tang
            └───────────────► SAML / OIDC / Azure / Google (Future)
 ```
 
-### Keuntungan Pola Identity Provider:
-1. **Zero Coupling**: `AuthenticationService` tidak perlu diubah apabila di masa mendatang sistem diintegrasikan dengan LDAP sekolah/yayasan, Single Sign-On (SSO) Google Workspace, atau Microsoft Azure AD.
-2. **Pluggable Architecture**: Cukup menambahkan Provider baru yang mengimplementasikan `IdentityProviderInterface` dan mengatur `AuthConfig::$default_provider`.
-
 ---
 
-## 3. Authentication & Provider Lifecycle Flow
+## 3. RBAC Architecture Flow
 
 ```
-[ HTTP Request ] ──► AuthenticationController::login()
-                           │
-                           ▼
-                 AuthenticationService::login()
-                           │
-                           ▼ (findByIdentifier & validateCredential)
-                 IdentityProviderInterface
-                           │
-                           ▼
-                 DatabaseIdentityProvider
-                  /                 \
-                 v                   v
-      AuthenticationRepository   PasswordService
-                 │                   │
-                 ▼                   ▼
-      [ Database Query ]     [ bcrypt verify ]
+[ AuthenticatedUser Entity ]
+             │
+             ▼
+[ RBACService ] (App\Domains\System\Services\RBACService)
+             │
+             ▼ (Depends ONLY on Contract)
+[ PermissionProviderInterface ] (App\Core\Contracts\Auth\PermissionProviderInterface)
+             │
+             ├───────────────► DatabasePermissionProvider (Active)
+             │                        │
+             │                        ├─► RoleRepository
+             │                        └─► PermissionRepository
+             │
+             ├───────────────► ConfigPermissionProvider (Future)
+             └───────────────► ExternalPolicyProvider (Future)
 ```
+
+### Keunggulan RBAC Provider Pattern:
+1. **Decoupled Authorization**: `RBACService` tidak peduli apakah role/permission berasal dari relasi tabel SQL, file konfigurasi, atau policy external microservice.
+2. **Standard Exception Handling**: Pengecekan otorisasi via `RBACService::authorize()` secara standar melempar `App\Core\Exceptions\AuthorizationException`.
 
 ---
 
 ## 4. Dependency Rules
 
 - **Independensi Absolute**: Domain `System` tidak memiliki dependency ke domain bisnis manapun.
-- **Core Contract Dependency**: `AuthenticationService` hanya mengenal `IdentityProviderInterface` dari `App\Core\Contracts\Auth`.
-- **Session Isolation**: Sesi pengaktifan login hanya ditangani oleh `SessionService`. Identity Provider dilarang berinteraksi langsung dengan HTTP Session.
+- **Core Contract Dependency**: `RBACService` hanya mengenal `PermissionProviderInterface` dari `App\Core\Contracts\Auth`.
+- **Zero Direct Provider Coupling**: `RBACService` dan `AuthenticationService` tidak boleh mengimpor kelas provider konkrit secara langsung (wajib melalui Interface/Factory).

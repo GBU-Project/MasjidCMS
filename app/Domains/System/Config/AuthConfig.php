@@ -7,7 +7,7 @@ use CodeIgniter\Config\BaseConfig;
 /**
  * Class AuthConfig
  *
- * Konfigurasi teknis untuk Authentication Engine dan Identity Provider pada Domain System.
+ * Konfigurasi teknis untuk Authentication Engine, Identity Provider, dan RBAC Permission Provider.
  */
 class AuthConfig extends BaseConfig
 {
@@ -15,6 +15,11 @@ class AuthConfig extends BaseConfig
      * Identity Provider default yang aktif ('database', 'ldap', 'oauth', dll).
      */
     public string $default_provider = 'database';
+
+    /**
+     * Permission Provider default yang aktif ('database', 'config', 'external', dll).
+     */
+    public string $default_permission_provider = 'database';
 
     /**
      * Algoritma hashing password bawaan.
