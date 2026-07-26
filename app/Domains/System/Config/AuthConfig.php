@@ -7,10 +7,15 @@ use CodeIgniter\Config\BaseConfig;
 /**
  * Class AuthConfig
  *
- * Konfigurasi teknis untuk Authentication Engine, Identity Provider, dan RBAC Permission Provider.
+ * Konfigurasi teknis untuk Authentication Engine, Identity Provider, RBAC, dan Security Pipeline.
  */
 class AuthConfig extends BaseConfig
 {
+    /**
+     * Mengaktifkan/mematikan Security Pipeline secara global.
+     */
+    public bool $enable_security_pipeline = true;
+
     /**
      * Identity Provider default yang aktif ('database', 'ldap', 'oauth', dll).
      */
