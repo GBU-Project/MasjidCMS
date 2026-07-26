@@ -2,42 +2,44 @@
 
 namespace App\Domains\System\Services;
 
+use App\Core\Contracts\Auth\IdentityProviderInterface;
 use App\Core\Exceptions\AuthorizationException;
 use App\Core\Exceptions\ValidationException;
 use App\Core\Services\BaseService;
+use App\Domains\System\Config\AuthConfig;
 use App\Domains\System\DTO\LoginRequest;
 use App\Domains\System\Entities\AuthenticatedUser;
 use App\Domains\System\Events\AuthenticationEvent;
-use App\Domains\System\Repositories\AuthenticationRepository;
+use App\Domains\System\Providers\IdentityProviderFactory;
 
 /**
  * Class AuthenticationService
  *
  * Business Orchestration layer untuk proses otentikasi pengguna di MasjidCMS.
- * Menggunakan Dependency Injection dan terpisah dari Session/Database/HTTP direct access.
+ * Hanya bergantung pada IdentityProviderInterface (Decoupled Identity Provider Pattern).
  */
 class AuthenticationService extends BaseService
 {
-    protected AuthenticationRepository $repository;
-    protected PasswordService $passwordService;
+    protected IdentityProviderInterface $identityProvider;
     protected SessionService $sessionService;
     protected AuthenticationEvent $event;
+    protected AuthConfig $config;
 
     public function __construct(
-        ?AuthenticationRepository $repository = null,
-        ?PasswordService $passwordService = null,
+        ?IdentityProviderInterface $identityProvider = null,
         ?SessionService $sessionService = null,
-        ?AuthenticationEvent $event = null
+        ?AuthenticationEvent $event = null,
+        ?AuthConfig $config = null
     ) {
         parent::__construct();
-        $this->repository = $repository ?? new AuthenticationRepository();
-        $this->passwordService = $passwordService ?? new PasswordService();
-        $this->sessionService = $sessionService ?? new SessionService();
+        $this->config = $config ?? new AuthConfig();
+        $this->identityProvider = $identityProvider ?? IdentityProviderFactory::create($this->config->default_provider, $this->config);
+        $this->sessionService = $sessionService ?? new SessionService(null, $this->config);
         $this->event = $event ?? new AuthenticationEvent();
     }
 
     /**
-     * Memproses alur login pengguna.
+     * Memproses alur login pengguna via IdentityProviderInterface.
      *
      * @param LoginRequest $request
      * @return AuthenticatedUser
@@ -54,24 +56,27 @@ class AuthenticationService extends BaseService
             ]);
         }
 
-        // 2. Cari pengguna via Repository (Tanpa SQL di Service)
-        $user = $this->repository->findByCredential(trim($request->username));
+        // 2. Cari pengguna via IdentityProviderInterface
+        $user = $this->identityProvider->findByIdentifier(trim($request->username));
 
-        if (!$user || empty($user->passwordHash)) {
-            $this->logError(sprintf('Failed login attempt for username: %s', $request->username));
+        if (!$user) {
+            $this->logError(sprintf('Failed login attempt (user not found) for: %s', $request->username));
             throw new AuthorizationException('Invalid username or password.');
         }
 
-        // 3. Verifikasi Password via PasswordService
-        if (!$this->passwordService->verify($request->password, $user->passwordHash)) {
-            $this->logError(sprintf('Invalid password attempt for username: %s', $request->username));
+        // 3. Memverifikasi kredensial via IdentityProviderInterface
+        if (!$this->identityProvider->validateCredential($user, $request->password)) {
+            $this->logError(sprintf('Invalid credential attempt for: %s', $request->username));
             throw new AuthorizationException('Invalid username or password.');
         }
 
-        // 4. Lakukan Session Login via SessionService (Tanpa Session direct di Service)
-        $this->sessionService->login($user, $request->remember);
+        // 4. Memeriksa dukungan remember me pada provider
+        $shouldRemember = $request->remember && $this->identityProvider->supportsRememberMe();
 
-        // 5. Trigger Event Audit Log Hook
+        // 5. Simpan ke sesi via SessionService
+        $this->sessionService->login($user, $shouldRemember);
+
+        // 6. Trigger Event Audit Log Hook
         $this->event->onLogin($user);
 
         return $user;
@@ -92,7 +97,7 @@ class AuthenticationService extends BaseService
     }
 
     /**
-     * Memeriksa kredensial tanpa membuat sesi.
+     * Memeriksa kredensial tanpa membuat sesi via IdentityProviderInterface.
      *
      * @param string $username
      * @param string $password
@@ -104,13 +109,13 @@ class AuthenticationService extends BaseService
             return false;
         }
 
-        $user = $this->repository->findByCredential($username);
+        $user = $this->identityProvider->findByIdentifier($username);
 
-        if (!$user || empty($user->passwordHash)) {
+        if (!$user) {
             return false;
         }
 
-        return $this->passwordService->verify($password, $user->passwordHash);
+        return $this->identityProvider->validateCredential($user, $password);
     }
 
     /**
@@ -151,6 +156,6 @@ class AuthenticationService extends BaseService
      */
     public function guest(): bool
     {
-        return $this->sessionService->guest();
+        return !$this->check();
     }
 }

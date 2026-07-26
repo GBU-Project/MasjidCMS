@@ -8,68 +8,28 @@ use App\Domains\System\Entities\AuthenticatedUser;
 /**
  * Class AuthenticationRepository
  *
- * Repository layer untuk pencarian data user/kredensial dari database.
+ * Database Access Layer khusus penyedia identitas berbasis database local.
  */
 class AuthenticationRepository extends BaseRepository
 {
     protected string $table = 'users';
 
     /**
-     * Mencari pengguna berdasarkan username.
+     * Mencari data pengguna untuk otentikasi berdasarkan username atau email.
      *
-     * @param string $username
+     * @param string $identifier
      * @return AuthenticatedUser|null
      */
-    public function findByUsername(string $username): ?AuthenticatedUser
+    public function findForAuthentication(string $identifier): ?AuthenticatedUser
     {
-        if (empty($username)) {
-            return null;
-        }
-
-        $row = $this->builder()
-            ->where('username', $username)
-            ->get()
-            ->getRowArray();
-
-        return $this->mapToEntity($row);
-    }
-
-    /**
-     * Mencari pengguna berdasarkan email.
-     *
-     * @param string $email
-     * @return AuthenticatedUser|null
-     */
-    public function findByEmail(string $email): ?AuthenticatedUser
-    {
-        if (empty($email)) {
-            return null;
-        }
-
-        $row = $this->builder()
-            ->where('email', $email)
-            ->get()
-            ->getRowArray();
-
-        return $this->mapToEntity($row);
-    }
-
-    /**
-     * Mencari pengguna berdasarkan identitas (bisa username atau email).
-     *
-     * @param string $identity
-     * @return AuthenticatedUser|null
-     */
-    public function findByCredential(string $identity): ?AuthenticatedUser
-    {
-        if (empty($identity)) {
+        if (empty(trim($identifier))) {
             return null;
         }
 
         $row = $this->builder()
             ->groupStart()
-                ->where('username', $identity)
-                ->orWhere('email', $identity)
+                ->where('username', $identifier)
+                ->orWhere('email', $identifier)
             ->groupEnd()
             ->get()
             ->getRowArray();
@@ -78,7 +38,27 @@ class AuthenticationRepository extends BaseRepository
     }
 
     /**
-     * Data mapper merubah raw database array ke AuthenticatedUser Entity.
+     * Mencari pengguna berdasarkan Primary ID.
+     *
+     * @param int|string $id
+     * @return AuthenticatedUser|null
+     */
+    public function findById(int|string $id): ?AuthenticatedUser
+    {
+        if (empty($id)) {
+            return null;
+        }
+
+        $row = $this->builder()
+            ->where('id', $id)
+            ->get()
+            ->getRowArray();
+
+        return $this->mapToEntity($row);
+    }
+
+    /**
+     * Data mapper dari raw database row ke AuthenticatedUser Entity.
      *
      * @param array|null $data
      * @return AuthenticatedUser|null
@@ -90,13 +70,13 @@ class AuthenticationRepository extends BaseRepository
         }
 
         return new AuthenticatedUser(
-            $data['id'] ?? null,
-            $data['username'] ?? '',
-            $data['display_name'] ?? $data['username'] ?? '',
-            $data['email'] ?? '',
-            $data['password_hash'] ?? $data['password'] ?? null,
-            is_string($data['roles'] ?? null) ? json_decode($data['roles'], true) : ($data['roles'] ?? []),
-            is_string($data['permissions'] ?? null) ? json_decode($data['permissions'], true) : ($data['permissions'] ?? [])
+            id: $data['id'] ?? null,
+            username: $data['username'] ?? '',
+            displayName: $data['display_name'] ?? $data['username'] ?? '',
+            email: $data['email'] ?? '',
+            passwordHash: $data['password_hash'] ?? $data['password'] ?? null,
+            roles: is_string($data['roles'] ?? null) ? json_decode($data['roles'], true) : ($data['roles'] ?? []),
+            permissions: is_string($data['permissions'] ?? null) ? json_decode($data['permissions'], true) : ($data['permissions'] ?? [])
         );
     }
 }
