@@ -2,6 +2,7 @@
 
 namespace App\Core\Events;
 
+use App\Core\Audit\Listeners\AuditEventListener;
 use App\Core\Contracts\Events\DomainEventInterface;
 use App\Core\Contracts\Events\EventDispatcherInterface;
 use App\Core\Contracts\Events\EventListenerInterface;
@@ -19,6 +20,14 @@ class EventDispatcher implements EventDispatcherInterface
      * @var array<string, array<EventListenerInterface|callable>>
      */
     protected array $listeners = [];
+
+    public function __construct(bool $registerDefaultListeners = true)
+    {
+        if ($registerDefaultListeners) {
+            // Mendaftarkan AuditEventListener sebagai listener wildcard default
+            $this->listen('*', new AuditEventListener());
+        }
+    }
 
     /**
      * Mempublikasikan event ke seluruh listener terdaftar.
