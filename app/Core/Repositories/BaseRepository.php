@@ -2,6 +2,7 @@
 
 namespace App\Core\Repositories;
 
+use App\Core\Contracts\CrudRepositoryInterface;
 use CodeIgniter\Database\BaseBuilder;
 use CodeIgniter\Database\BaseConnection;
 use Config\Database;
@@ -10,9 +11,9 @@ use Config\Database;
  * Class BaseRepository
  *
  * Parent class untuk seluruh Repository layer di MasjidCMS.
- * Menyediakan utilitas pembentuk query (query builder), pagination, filtering, dan sorting.
+ * Mengimplementasikan CrudRepositoryInterface untuk dukungan Generic CRUD Engine.
  */
-abstract class BaseRepository
+abstract class BaseRepository implements CrudRepositoryInterface
 {
     /**
      * @var BaseConnection
@@ -33,9 +34,6 @@ abstract class BaseRepository
 
     /**
      * Mendapatkan Query Builder untuk tabel utama.
-     *
-     * @param string|null $table
-     * @return BaseBuilder
      */
     protected function builder(?string $table = null): BaseBuilder
     {
@@ -49,19 +47,78 @@ abstract class BaseRepository
     }
 
     /**
-     * Helper pagination sederhana.
-     *
-     * @param BaseBuilder $builder
-     * @param int $page
-     * @param int $perPage
-     * @return array{data: array, total: int, page: int, per_page: int, last_page: int}
+     * Menyimpan data baru.
      */
-    protected function paginate(BaseBuilder $builder, int $page = 1, int $perPage = 15): array
+    public function create(array $data): mixed
+    {
+        $this->builder()->insert($data);
+        return $this->db->insertID();
+    }
+
+    /**
+     * Memperbarui data berdasarkan ID.
+     */
+    public function update(int|string $id, array $data): bool
+    {
+        return $this->builder()->where('id', $id)->update($data);
+    }
+
+    /**
+     * Menghapus data berdasarkan ID.
+     */
+    public function delete(int|string $id): bool
+    {
+        return $this->builder()->where('id', $id)->delete();
+    }
+
+    /**
+     * Restorasi data terhapus (Soft delete placeholder).
+     */
+    public function restore(int|string $id): bool
+    {
+        return $this->builder()->where('id', $id)->update(['deleted_at' => null]);
+    }
+
+    /**
+     * Mencari satu baris data berdasarkan ID.
+     */
+    public function find(int|string $id): mixed
+    {
+        return $this->builder()->where('id', $id)->get()->getRowArray();
+    }
+
+    /**
+     * Mendapatkan seluruh data dengan filter opsional.
+     */
+    public function findAll(array $filters = [], array $sort = []): array
+    {
+        $builder = $this->builder();
+        $builder = $this->applyFilters($builder, $filters);
+
+        if (!empty($sort['by'])) {
+            $builder = $this->applySorting($builder, $sort['by'], $sort['order'] ?? 'DESC');
+        }
+
+        return $builder->get()->getResultArray();
+    }
+
+    /**
+     * Helper pagination standar.
+     */
+    public function paginate(int $page = 1, int $perPage = 15): array
+    {
+        $builder = $this->builder();
+        return $this->paginateBuilder($builder, $page, $perPage);
+    }
+
+    /**
+     * Pagination khusus builder.
+     */
+    protected function paginateBuilder(BaseBuilder $builder, int $page = 1, int $perPage = 15): array
     {
         $page = max(1, $page);
         $perPage = max(1, $perPage);
 
-        // Count total rows using cloned builder to avoid modifying the original query state
         $countBuilder = clone $builder;
         $total = $countBuilder->countAllResults(false);
 
@@ -80,12 +137,25 @@ abstract class BaseRepository
     }
 
     /**
-     * Helper penyaringan (filtering) query berdasarkan kriteria.
-     *
-     * @param BaseBuilder $builder
-     * @param array $filters Key-value pasangan kolom dan nilai filter
-     * @param array $allowedColumns Kolom yang diizinkan untuk difilter
-     * @return BaseBuilder
+     * Memeriksa keberadaan data berdasarkan ID.
+     */
+    public function exists(int|string $id): bool
+    {
+        return $this->builder()->where('id', $id)->countAllResults() > 0;
+    }
+
+    /**
+     * Menghitung total baris data.
+     */
+    public function count(array $filters = []): int
+    {
+        $builder = $this->builder();
+        $builder = $this->applyFilters($builder, $filters);
+        return $builder->countAllResults();
+    }
+
+    /**
+     * Helper penyaringan query.
      */
     protected function applyFilters(BaseBuilder $builder, array $filters, array $allowedColumns = []): BaseBuilder
     {
@@ -109,14 +179,7 @@ abstract class BaseRepository
     }
 
     /**
-     * Helper pengurutan (sorting) query.
-     *
-     * @param BaseBuilder $builder
-     * @param string $sortBy
-     * @param string $sortOrder ('ASC' atau 'DESC')
-     * @param array $allowedSortColumns
-     * @param string $defaultSort
-     * @return BaseBuilder
+     * Helper pengurutan query.
      */
     protected function applySorting(
         BaseBuilder $builder,
@@ -130,7 +193,6 @@ abstract class BaseRepository
         }
 
         $order = strtoupper($sortOrder) === 'ASC' ? 'ASC' : 'DESC';
-
         return $builder->orderBy($sortBy, $order);
     }
 }
