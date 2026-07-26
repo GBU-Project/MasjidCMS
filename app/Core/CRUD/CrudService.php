@@ -3,6 +3,11 @@
 namespace App\Core\CRUD;
 
 use App\Core\Contracts\CrudRepositoryInterface;
+use App\Core\Contracts\Events\EventDispatcherInterface;
+use App\Core\Events\EntityCreatedEvent;
+use App\Core\Events\EntityDeletedEvent;
+use App\Core\Events\EntityUpdatedEvent;
+use App\Core\Events\EventDispatcher;
 use App\Core\Exceptions\NotFoundException;
 use App\Core\Services\BaseService;
 
@@ -10,16 +15,21 @@ use App\Core\Services\BaseService;
  * Class CrudService
  *
  * Abstract Generic Service Engine penyedia siklus hidup CRUD standar untuk seluruh Domain.
- * Dilengkapi dengan Validation Hooks & Lifecycle Hooks.
+ * Dilengkapi dengan Validation Hooks, Lifecycle Hooks, dan Integration Point Domain Event Engine.
  */
 abstract class CrudService extends BaseService
 {
     protected CrudRepositoryInterface $repository;
+    protected EventDispatcherInterface $dispatcher;
+    protected string $entityName = 'Entity';
 
-    public function __construct(CrudRepositoryInterface $repository)
-    {
+    public function __construct(
+        CrudRepositoryInterface $repository,
+        ?EventDispatcherInterface $dispatcher = null
+    ) {
         parent::__construct();
         $this->repository = $repository;
+        $this->dispatcher = $dispatcher ?? new EventDispatcher();
     }
 
     /**
@@ -38,7 +48,7 @@ abstract class CrudService extends BaseService
         // 3. Database Execution via Repository Interface
         $result = $this->repository->create($data);
 
-        // 4. Lifecycle Hook After Create
+        // 4. Lifecycle Hook After Create & Domain Event Dispatch
         $this->afterCreate($result);
 
         return $result;
@@ -65,7 +75,7 @@ abstract class CrudService extends BaseService
         $this->repository->update($id, $data);
         $updatedEntity = $this->find($id);
 
-        // 4. Lifecycle Hook After Update
+        // 4. Lifecycle Hook After Update & Domain Event Dispatch
         $this->afterUpdate($updatedEntity);
 
         return $updatedEntity;
@@ -89,7 +99,7 @@ abstract class CrudService extends BaseService
         // 3. Database Execution
         $result = $this->repository->delete($id);
 
-        // 4. Lifecycle Hook After Delete
+        // 4. Lifecycle Hook After Delete & Domain Event Dispatch
         $this->afterDelete($id);
 
         return $result;
@@ -153,7 +163,7 @@ abstract class CrudService extends BaseService
     }
 
     // =========================================================================
-    // VALIDATION HOOKS (Child Service override if needed)
+    // VALIDATION HOOKS
     // =========================================================================
 
     protected function validateCreate(array $data): void {}
@@ -161,15 +171,30 @@ abstract class CrudService extends BaseService
     protected function validateDelete(int|string $id): void {}
 
     // =========================================================================
-    // LIFECYCLE HOOKS (Child Service override if needed - Default No-op)
+    // LIFECYCLE HOOKS (Child Service can override, default dispatches Event)
     // =========================================================================
 
     protected function beforeCreate(array &$data): void {}
-    protected function afterCreate(mixed $entity): void {}
+
+    protected function afterCreate(mixed $entity): void
+    {
+        $this->dispatcher->dispatch(new EntityCreatedEvent($this->entityName, $entity));
+    }
+
     protected function beforeUpdate(int|string $id, array &$data): void {}
-    protected function afterUpdate(mixed $entity): void {}
+
+    protected function afterUpdate(mixed $entity): void
+    {
+        $this->dispatcher->dispatch(new EntityUpdatedEvent($this->entityName, $entity));
+    }
+
     protected function beforeDelete(int|string $id): void {}
-    protected function afterDelete(int|string $id): void {}
+
+    protected function afterDelete(int|string $id): void
+    {
+        $this->dispatcher->dispatch(new EntityDeletedEvent($this->entityName, $id));
+    }
+
     protected function beforeRestore(int|string $id): void {}
     protected function afterRestore(int|string $id): void {}
 }
