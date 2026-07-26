@@ -3,16 +3,18 @@
 namespace App\Core\Storage\Services;
 
 use App\Core\Contracts\Storage\StorageProviderInterface;
+use App\Core\Contracts\Upload\UploadPipelineInterface;
 use App\Core\Services\BaseService;
 use App\Core\Storage\Config\StorageConfig;
 use App\Core\Storage\Media;
 use App\Core\Storage\Providers\StorageFactory;
+use App\Core\Upload\UploadContext;
 
 /**
  * Class StorageService
  *
  * Core Service penyedia manajemen berkas media storage di MasjidCMS.
- * Hanya bergantung pada StorageProviderInterface.
+ * Hanya bergantung pada StorageProviderInterface & UploadPipelineInterface.
  */
 class StorageService extends BaseService
 {
@@ -26,6 +28,15 @@ class StorageService extends BaseService
         parent::__construct();
         $this->config = $config ?? new StorageConfig();
         $this->provider = $provider ?? StorageFactory::create($this->config->default_provider, $this->config);
+    }
+
+    /**
+     * Memproses upload file melalui Upload Pipeline resmi.
+     */
+    public function upload(UploadContext $context, ?UploadPipelineInterface $pipeline = null): Media
+    {
+        $uploadPipeline = $pipeline ?? new \App\Core\Upload\UploadPipeline($this);
+        return $uploadPipeline->process($context);
     }
 
     /**
