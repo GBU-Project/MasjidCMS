@@ -20,6 +20,7 @@ class InstallerController extends BaseController
 
     public function __construct()
     {
+        EnvironmentWriter::sanitizeExistingEnv();
         $this->lock = new InstallerLock();
         $this->reqChecker = new RequirementChecker();
         $this->dbInstaller = new DatabaseInstaller();
