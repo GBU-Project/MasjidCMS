@@ -35,6 +35,11 @@ class InstallerController extends BaseController
         return null;
     }
 
+    private function isPostRequest(): bool
+    {
+        return strtolower($this->request->getMethod()) === 'post';
+    }
+
     public function welcome(): string|ResponseInterface
     {
         if ($redirect = $this->checkInstalled()) return $redirect;
@@ -65,7 +70,7 @@ class InstallerController extends BaseController
         $action = (string) ($this->request->getPost('action') ?? '');
 
         $result = null;
-        if ($this->request->getMethod() === 'post') {
+        if ($this->isPostRequest()) {
             $result = $this->dbInstaller->testConnection($host, $user, $pass, $name, $port);
             if ($result['success']) {
                 $importResult = $this->dbInstaller->importSchema($host, $user, $pass, $name, $port);
@@ -81,7 +86,7 @@ class InstallerController extends BaseController
                         'db_pass' => $pass,
                     ]);
 
-                    if ($action === 'save') {
+                    if ($action === 'save' || $action === 'test') {
                         return redirect()->to('install/application');
                     }
                 }
@@ -103,7 +108,7 @@ class InstallerController extends BaseController
     {
         if ($redirect = $this->checkInstalled()) return $redirect;
 
-        if ($this->request->getMethod() === 'post') {
+        if ($this->isPostRequest()) {
             $config = [
                 'app_name' => $this->request->getPost('app_name'),
                 'app_url'  => $this->request->getPost('app_url'),
@@ -125,7 +130,7 @@ class InstallerController extends BaseController
         if ($redirect = $this->checkInstalled()) return $redirect;
 
         $message = '';
-        if ($this->request->getMethod() === 'post') {
+        if ($this->isPostRequest()) {
             $result = $this->adminSeeder->createAdmin($this->request->getPost());
             if ($result['success']) {
                 $this->lock->createLock();
