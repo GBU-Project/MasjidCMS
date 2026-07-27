@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Domains\Financial\Entities;
 
 use App\Domains\Financial\Entities\ValueObjects\FundCode;
+use App\Domains\Financial\Events\HasDomainEventsTrait;
 use App\Domains\Financial\Exceptions\BusinessRuleException;
 
 class Fund
 {
+    use HasDomainEventsTrait;
     private ?int $id;
     private string $uuid;
     private string $masjidId;

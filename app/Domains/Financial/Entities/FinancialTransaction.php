@@ -6,10 +6,20 @@ namespace App\Domains\Financial\Entities;
 
 use App\Domains\Financial\Entities\ValueObjects\Money;
 use App\Domains\Financial\Entities\ValueObjects\TransactionNumber;
+use App\Domains\Financial\Events\ApprovalGrantedEvent;
+use App\Domains\Financial\Events\ApprovalRejectedEvent;
+use App\Domains\Financial\Events\FinancialTransactionApprovedEvent;
+use App\Domains\Financial\Events\FinancialTransactionPostedEvent;
+use App\Domains\Financial\Events\FinancialTransactionRejectedEvent;
+use App\Domains\Financial\Events\FinancialTransactionSubmittedEvent;
+use App\Domains\Financial\Events\FinancialTransactionVoidedEvent;
+use App\Domains\Financial\Events\HasDomainEventsTrait;
 use App\Domains\Financial\Exceptions\BusinessRuleException;
 
 class FinancialTransaction
 {
+    use HasDomainEventsTrait;
+
     private ?int $id;
     private string $uuid;
     private string $masjidId;
@@ -112,6 +122,10 @@ class FinancialTransaction
     {
         $this->assertMutable();
         $this->status = 'PENDING_APPROVAL';
+        $this->recordEvent(new FinancialTransactionSubmittedEvent('evt-' . bin2hex(random_bytes(4)), $this->uuid, [
+            'transaction_no' => $this->transactionNo->getValue(),
+            'amount'         => $this->amount->getAmount(),
+        ]));
     }
 
     public function approve(string $approverUserId): void
@@ -121,6 +135,10 @@ class FinancialTransaction
         }
         $this->status = 'APPROVED';
         $this->approvedBy = $approverUserId;
+
+        $evtId = 'evt-' . bin2hex(random_bytes(4));
+        $this->recordEvent(new FinancialTransactionApprovedEvent($evtId, $this->uuid, ['approver_user_id' => $approverUserId]));
+        $this->recordEvent(new ApprovalGrantedEvent($evtId, $this->uuid, ['approver_user_id' => $approverUserId]));
     }
 
     public function reject(string $approverUserId, ?string $notes = null): void
@@ -130,6 +148,10 @@ class FinancialTransaction
         }
         $this->status = 'REJECTED';
         $this->approvedBy = $approverUserId;
+
+        $evtId = 'evt-' . bin2hex(random_bytes(4));
+        $this->recordEvent(new FinancialTransactionRejectedEvent($evtId, $this->uuid, ['approver_user_id' => $approverUserId, 'notes' => $notes]));
+        $this->recordEvent(new ApprovalRejectedEvent($evtId, $this->uuid, ['approver_user_id' => $approverUserId, 'notes' => $notes]));
     }
 
     public function post(string $postedAtTimestamp): void
@@ -139,6 +161,11 @@ class FinancialTransaction
         }
         $this->status = 'POSTED';
         $this->postedAt = $postedAtTimestamp;
+
+        $this->recordEvent(new FinancialTransactionPostedEvent('evt-' . bin2hex(random_bytes(4)), $this->uuid, [
+            'posted_at' => $postedAtTimestamp,
+            'amount'    => $this->amount->getAmount(),
+        ]));
     }
 
     public function cancel(): void
@@ -153,6 +180,10 @@ class FinancialTransaction
             throw new BusinessRuleException("Hanya transaksi POSTED yang dapat di-VOID via reversal.");
         }
         $this->status = 'VOID';
+
+        $this->recordEvent(new FinancialTransactionVoidedEvent('evt-' . bin2hex(random_bytes(4)), $this->uuid, [
+            'transaction_no' => $this->transactionNo->getValue(),
+        ]));
     }
 
     private function assertMutable(): void

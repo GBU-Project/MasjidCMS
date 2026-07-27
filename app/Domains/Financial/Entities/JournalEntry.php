@@ -6,10 +6,15 @@ namespace App\Domains\Financial\Entities;
 
 use App\Domains\Financial\Entities\ValueObjects\JournalNumber;
 use App\Domains\Financial\Entities\ValueObjects\Money;
+use App\Domains\Financial\Events\HasDomainEventsTrait;
+use App\Domains\Financial\Events\JournalEntryCreatedEvent;
+use App\Domains\Financial\Events\JournalPostedEvent;
 use App\Domains\Financial\Exceptions\BusinessRuleException;
 
 class JournalEntry
 {
+    use HasDomainEventsTrait;
+
     private ?int $id;
     private string $uuid;
     private int $transactionId;
@@ -37,6 +42,11 @@ class JournalEntry
         foreach ($details as $detail) {
             $this->addDetail($detail);
         }
+
+        $this->recordEvent(new JournalEntryCreatedEvent('evt-' . bin2hex(random_bytes(4)), $this->uuid, [
+            'journal_no'     => $this->journalNo->getValue(),
+            'transaction_id' => $this->transactionId,
+        ]));
     }
 
     public function getId(): ?int { return $this->id; }
