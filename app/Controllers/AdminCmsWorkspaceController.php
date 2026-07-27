@@ -28,6 +28,20 @@ class AdminCmsWorkspaceController extends BaseController
                     ]
                 ];
             }
+        } elseif ($tab === 'kajian' && $db->tableExists('kajian')) {
+            $headers = ['Penceramah / Ustadz', 'Tema Kajian', 'Jadwal & Jam', 'Lokasi Ruang', 'Status'];
+            $data = $db->table('kajian')->orderBy('schedule_date', 'ASC')->get()->getResultArray();
+            foreach ($data as $k) {
+                $rows[] = [
+                    'columns' => [
+                        '<strong>' . esc($k['speaker_name']) . '</strong>',
+                        esc($k['topic']),
+                        '<span class="stat-mono">' . esc($k['schedule_date']) . ' (' . esc(substr($k['schedule_time'], 0, 5)) . ' WIB)</span>',
+                        esc($k['location']),
+                        '<span class="badge badge-green">' . esc($k['status']) . '</span>',
+                    ]
+                ];
+            }
         } elseif ($tab === 'pages' && $db->tableExists('pages')) {
             $headers = ['Judul Halaman Statis', 'Slug', 'Status', 'Tanggal Dibuat'];
             $data = $db->table('pages')->get()->getResultArray();
@@ -56,14 +70,15 @@ class AdminCmsWorkspaceController extends BaseController
         }
 
         $moduleLabels = [
-            'posts'   => 'Berita & Artikel Kajian',
-            'pages'   => 'Halaman Statis CMS',
-            'gallery' => 'Galeri Foto & Media',
+            'posts'   => 'Berita & Artikel Warta Masjid',
+            'kajian'  => 'Jadwal Kajian Rutin & Tematik',
+            'pages'   => 'Halaman Statis CMS Portal',
+            'gallery' => 'Galeri Foto & Media Kegiatan',
         ];
 
         return view('admin/cms/index', [
             'activeTab'         => $tab,
-            'activeModuleLabel' => $moduleLabels[$tab] ?? 'Berita & Artikel Kajian',
+            'activeModuleLabel' => $moduleLabels[$tab] ?? 'Berita & Artikel Warta Masjid',
             'headers'           => $headers,
             'rows'              => $rows,
         ]);

@@ -358,6 +358,19 @@ CREATE TABLE IF NOT EXISTS `gallery` (
   FOREIGN KEY (`media_id`) REFERENCES `media`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS `kajian` (
+  `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
+  `uuid` CHAR(36) NOT NULL UNIQUE,
+  `masjid_id` VARCHAR(64) NOT NULL,
+  `speaker_name` VARCHAR(128) NOT NULL,
+  `topic` VARCHAR(255) NOT NULL,
+  `schedule_date` DATE NOT NULL,
+  `schedule_time` TIME NOT NULL,
+  `location` VARCHAR(128) NOT NULL,
+  `status` ENUM('UPCOMING', 'COMPLETED', 'CANCELLED') NOT NULL DEFAULT 'UPCOMING',
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- ------------------------------------------------------------------------------
 -- 8. SYSTEM & AUDIT LOG DOMAIN
 -- ------------------------------------------------------------------------------

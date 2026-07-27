@@ -9,16 +9,18 @@
             <a href="<?= site_url('admin/dashboard') ?>" style="color: var(--primary-600); text-decoration: none;">Dashboard</a> / CMS & Content Portal
         </div>
         <h1 class="page-title">CMS & Portal Management</h1>
-        <p class="page-subtitle">Kelola konten berita, artikel kajian, halaman statis, dan galeri foto portal publik masjid.</p>
+        <p class="page-subtitle">Kelola konten berita, jadwal kajian rutin, halaman statis, dan galeri foto portal publik masjid.</p>
     </div>
     <div style="display: flex; gap: 8px;">
         <a href="<?= site_url('admin/cms?tab=posts') ?>" class="btn btn-secondary">📝 Tulis Berita Baru</a>
+        <a href="<?= site_url('admin/cms?tab=kajian') ?>" class="btn btn-primary">📅 Tambah Jadwal Kajian</a>
     </div>
 </div>
 
 <!-- Tab Navigation Bar -->
 <div style="display: flex; border-bottom: 1px solid var(--border-light); margin-bottom: 20px; gap: 24px;">
     <a href="<?= site_url('admin/cms?tab=posts') ?>" style="padding: 12px 0; text-decoration: none; font-size: 14px; font-weight: 600; color: <?= ($activeTab === 'posts') ? 'var(--primary-600)' : 'var(--text-secondary)' ?>; border-bottom: 2px solid <?= ($activeTab === 'posts') ? 'var(--primary-600)' : 'transparent' ?>;">📰 Berita & Artikel</a>
+    <a href="<?= site_url('admin/cms?tab=kajian') ?>" style="padding: 12px 0; text-decoration: none; font-size: 14px; font-weight: 600; color: <?= ($activeTab === 'kajian') ? 'var(--primary-600)' : 'var(--text-secondary)' ?>; border-bottom: 2px solid <?= ($activeTab === 'kajian') ? 'var(--primary-600)' : 'transparent' ?>;">🕌 Jadwal Kajian</a>
     <a href="<?= site_url('admin/cms?tab=pages') ?>" style="padding: 12px 0; text-decoration: none; font-size: 14px; font-weight: 600; color: <?= ($activeTab === 'pages') ? 'var(--primary-600)' : 'var(--text-secondary)' ?>; border-bottom: 2px solid <?= ($activeTab === 'pages') ? 'var(--primary-600)' : 'transparent' ?>;">📄 Halaman Statis</a>
     <a href="<?= site_url('admin/cms?tab=gallery') ?>" style="padding: 12px 0; text-decoration: none; font-size: 14px; font-weight: 600; color: <?= ($activeTab === 'gallery') ? 'var(--primary-600)' : 'var(--text-secondary)' ?>; border-bottom: 2px solid <?= ($activeTab === 'gallery') ? 'var(--primary-600)' : 'transparent' ?>;">🖼️ Galeri Foto</a>
 </div>
@@ -42,7 +44,7 @@
             <?php if (empty($rows)): ?>
                 <tr>
                     <td colspan="<?= count($headers) ?>" style="text-align: center; padding: 24px; color: var(--text-tertiary);">
-                        Belum ada data konten CMS di database.
+                        Belum ada data konten CMS / Kajian di database.
                     </td>
                 </tr>
             <?php else: ?>

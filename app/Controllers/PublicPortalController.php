@@ -43,17 +43,52 @@ class PublicPortalController extends BaseController
 
     public function news(): string
     {
-        return view('public/news', ['activePage' => 'news']);
+        $db = Database::connect();
+        $posts = [];
+        $kajianList = [];
+
+        if ($db->tableExists('posts')) {
+            $posts = $db->table('posts')->where('is_published', 1)->orderBy('created_at', 'DESC')->get()->getResultArray();
+        }
+        if ($db->tableExists('kajian')) {
+            $kajianList = $db->table('kajian')->where('status', 'UPCOMING')->orderBy('schedule_date', 'ASC')->get()->getResultArray();
+        }
+
+        return view('public/news', [
+            'activePage' => 'news',
+            'posts'      => $posts,
+            'kajianList' => $kajianList,
+        ]);
     }
 
     public function programs(): string
     {
-        return view('public/programs', ['activePage' => 'programs']);
+        $db = Database::connect();
+        $programs = [];
+
+        if ($db->tableExists('programs')) {
+            $programs = $db->table('programs')->where('is_active', 1)->get()->getResultArray();
+        }
+
+        return view('public/programs', [
+            'activePage' => 'programs',
+            'programs'   => $programs,
+        ]);
     }
 
     public function donation(): string
     {
-        return view('public/donation', ['activePage' => 'donation']);
+        $db = Database::connect();
+        $accounts = [];
+
+        if ($db->tableExists('financial_accounts')) {
+            $accounts = $db->table('financial_accounts')->get()->getResultArray();
+        }
+
+        return view('public/donation', [
+            'activePage' => 'donation',
+            'accounts'   => $accounts,
+        ]);
     }
 
     public function contact(): string

@@ -66,7 +66,17 @@ INSERT INTO `program_categories` (`id`, `name`, `description`) VALUES
 INSERT INTO `programs` (`id`, `uuid`, `masjid_id`, `category_id`, `name`, `target_amount`, `is_active`) VALUES
 (1, 'p8c05763-7186-4f4c-bc67-000000000001', 'm-1', 1, 'Renovasi Menara Masjid', 100000000.00, 1);
 
--- 11. Seed System Settings
+-- 11. Seed Kajian Schedule
+INSERT INTO `kajian` (`id`, `uuid`, `masjid_id`, `speaker_name`, `topic`, `schedule_date`, `schedule_time`, `location`, `status`) VALUES
+(1, 'k8c05763-7186-4f4c-bc67-000000000001', 'm-1', 'Ustadz Dr. H. Abdullah Gymnastiar', 'Tazkiyatun Nufs & Fiqih Muamalah Syariah', '2026-08-01', '18:30:00', 'Ruang Utama Masjid', 'UPCOMING'),
+(2, 'k8c05763-7186-4f4c-bc67-000000000002', 'm-1', 'Ustadz Adi Hidayat, Lc., M.A.', 'Pendalaman Kitab Syamail Muhammadiyah', '2026-08-05', '19:45:00', 'Aula Serbaguna Masjid', 'UPCOMING');
+
+-- 12. Seed Posts & Articles
+INSERT INTO `posts` (`id`, `author_id`, `title`, `slug`, `content`, `is_published`) VALUES
+(1, 1, 'Pengumuman Pelaksanaan Shalat Jumat & Protokol Kebersihan', 'pengumuman-shalat-jumat-protokol-kebersihan', 'Pelaksanaan shalat Jumat pekan ini akan dipimpin oleh Khathib Dr. H. Muhammad Zulkarnain dengan tema Ketakwaan dan Ukhuwah Islamiyah.', 1),
+(2, 1, 'Laporan Penyaluran Santunan Anak Yatim & Dhuafa Pekan Ini', 'laporan-penyaluran-santunan-anak-yatim-dhuafa', 'Alhamdulillah telah disalurkan dana bantuan sebesar Rp 15.000.000 kepada 50 anak yatim terdaftar di lingkungan masjid.', 1);
+
+-- 13. Seed System Settings
 INSERT INTO `settings` (`setting_key`, `setting_value`, `setting_group`) VALUES
 ('site_name', 'MasjidCMS Platform', 'general'),
 ('site_timezone', 'Asia/Jakarta', 'general'),
