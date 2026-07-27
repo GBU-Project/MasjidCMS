@@ -174,4 +174,108 @@ class FamilyController extends BaseController
             return $this->respondError($e->getMessage(), null, 500);
         }
     }
+
+    /**
+     * POST /family/{id}/members
+     */
+    public function addMember(int|string|null $id = null): ResponseInterface
+    {
+        if (empty($id)) {
+            return $this->respondError('Missing Family ID', null, 400);
+        }
+
+        $payload = $this->request->getJSON(true) ?? $this->request->getPost();
+        $jamaahId = $payload['jamaah_id'] ?? null;
+        $relationType = $payload['family_relation_type'] ?? $payload['relation_type'] ?? 'OTHER';
+
+        if (empty($jamaahId)) {
+            return $this->respondError('Missing jamaah_id parameter', null, 400);
+        }
+
+        try {
+            $this->service->addMember((string) $id, (string) $jamaahId, (string) $relationType);
+            return $this->respondSuccess(null, 'Member added to family successfully', 201);
+        } catch (NotFoundException $e) {
+            return $this->respondError($e->getMessage(), null, 404);
+        } catch (ValidationException $e) {
+            return $this->respondError($e->getMessage(), $e->getErrors(), 422);
+        } catch (\Throwable $e) {
+            return $this->respondError($e->getMessage(), null, 500);
+        }
+    }
+
+    /**
+     * DELETE /family/{id}/members/{jamaahId}
+     */
+    public function removeMember(int|string|null $id = null, int|string|null $jamaahId = null): ResponseInterface
+    {
+        if (empty($id) || empty($jamaahId)) {
+            return $this->respondError('Missing Family ID or Jamaah ID', null, 400);
+        }
+
+        try {
+            $this->service->removeMember((string) $id, (string) $jamaahId);
+            return $this->respondSuccess(null, 'Member removed from family successfully');
+        } catch (NotFoundException $e) {
+            return $this->respondError($e->getMessage(), null, 404);
+        } catch (ValidationException $e) {
+            return $this->respondError($e->getMessage(), $e->getErrors(), 422);
+        } catch (\Throwable $e) {
+            return $this->respondError($e->getMessage(), null, 500);
+        }
+    }
+
+    /**
+     * PUT /family/{id}/members/{jamaahId}/relation
+     */
+    public function changeRelation(int|string|null $id = null, int|string|null $jamaahId = null): ResponseInterface
+    {
+        if (empty($id) || empty($jamaahId)) {
+            return $this->respondError('Missing Family ID or Jamaah ID', null, 400);
+        }
+
+        $payload = $this->request->getJSON(true) ?? $this->request->getRawInput();
+        $relationType = $payload['family_relation_type'] ?? $payload['relation_type'] ?? null;
+
+        if (empty($relationType)) {
+            return $this->respondError('Missing relation_type parameter', null, 400);
+        }
+
+        try {
+            $this->service->changeRelation((string) $id, (string) $jamaahId, (string) $relationType);
+            return $this->respondSuccess(null, 'Family relation updated successfully');
+        } catch (NotFoundException $e) {
+            return $this->respondError($e->getMessage(), null, 404);
+        } catch (ValidationException $e) {
+            return $this->respondError($e->getMessage(), $e->getErrors(), 422);
+        } catch (\Throwable $e) {
+            return $this->respondError($e->getMessage(), null, 500);
+        }
+    }
+
+    /**
+     * POST /family/{id}/move-member
+     */
+    public function moveMember(int|string|null $id = null): ResponseInterface
+    {
+        $payload = $this->request->getJSON(true) ?? $this->request->getPost();
+        $jamaahId = $payload['jamaah_id'] ?? null;
+        $targetFamilyId = $payload['target_family_id'] ?? $id;
+        $relationType = $payload['family_relation_type'] ?? $payload['relation_type'] ?? 'OTHER';
+
+        if (empty($jamaahId) || empty($targetFamilyId)) {
+            return $this->respondError('Missing jamaah_id or target_family_id', null, 400);
+        }
+
+        try {
+            $this->service->moveMember((string) $jamaahId, (string) $targetFamilyId, (string) $relationType);
+            return $this->respondSuccess(null, 'Member moved to target family successfully');
+        } catch (NotFoundException $e) {
+            return $this->respondError($e->getMessage(), null, 404);
+        } catch (ValidationException $e) {
+            return $this->respondError($e->getMessage(), $e->getErrors(), 422);
+        } catch (\Throwable $e) {
+            return $this->respondError($e->getMessage(), null, 500);
+        }
+    }
 }

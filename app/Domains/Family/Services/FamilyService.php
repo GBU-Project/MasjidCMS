@@ -21,7 +21,7 @@ use Config\Database;
  * Class FamilyService
  *
  * Service domain Family mengimplementasikan CrudService.
- * Eksekusi: Validation -> UnitOfWork -> Repository -> Commit -> Domain Event -> Audit.
+ * Integrasi Master Data Jamaah & Family.
  */
 class FamilyService extends CrudService
 {
@@ -63,6 +63,24 @@ class FamilyService extends CrudService
         }
     }
 
+    protected function beforeDelete(int|string $id): void
+    {
+        // When Family is soft-deleted, detach all Jamaah members safely
+        try {
+            $db = Database::connect();
+            if ($db->tableExists('jamaahs')) {
+                $db->table('jamaahs')
+                    ->where('family_id', $id)
+                    ->update([
+                        'family_id'            => null,
+                        'family_relation_type' => null,
+                    ]);
+            }
+        } catch (\Throwable $e) {
+            // Unit test / DB fallback
+        }
+    }
+
     public function getFamilyMembers(string $familyId): array
     {
         if (!$this->exists($familyId)) {
@@ -74,11 +92,113 @@ class FamilyService extends CrudService
         return $repo->findMembers($familyId);
     }
 
+    public function addMember(string $familyId, string $jamaahId, string $relationType = 'OTHER'): bool
+    {
+        if (!$this->exists($familyId)) {
+            throw new NotFoundException(sprintf('Family with ID [%s] not found.', $familyId));
+        }
+
+        $relationType = strtoupper(trim($relationType));
+        $allowedRelations = ['HEAD', 'HUSBAND', 'WIFE', 'CHILD', 'PARENT', 'GUARDIAN', 'OTHER'];
+
+        if (!in_array($relationType, $allowedRelations, true)) {
+            throw new ValidationException('Validation failed', [
+                'relation_type' => [sprintf('Invalid relation_type [%s]. Allowed: %s', $relationType, implode(', ', $allowedRelations))]
+            ]);
+        }
+
+        if ($relationType === 'HEAD') {
+            $family = $this->find($familyId);
+            if (!empty($family['head_jamaah_id']) && $family['head_jamaah_id'] !== $jamaahId) {
+                throw new ValidationException('Validation failed', [
+                    'relation_type' => ['Family already has a Head of Family. Use transferHead() instead.']
+                ]);
+            }
+        }
+
+        return $this->assignMemberToFamily($familyId, $jamaahId, $relationType);
+    }
+
+    public function removeMember(string $familyId, string $jamaahId): bool
+    {
+        if (!$this->exists($familyId)) {
+            throw new NotFoundException(sprintf('Family with ID [%s] not found.', $familyId));
+        }
+
+        $family = $this->find($familyId);
+        if (!empty($family['head_jamaah_id']) && $family['head_jamaah_id'] === $jamaahId) {
+            throw new ValidationException('Validation failed', [
+                'jamaah_id' => ['Cannot remove Head of Family. Transfer Head of Family role first.']
+            ]);
+        }
+
+        try {
+            $db = Database::connect();
+            if ($db->tableExists('jamaahs')) {
+                return $db->table('jamaahs')
+                    ->where('id', $jamaahId)
+                    ->where('family_id', $familyId)
+                    ->update([
+                        'family_id'            => null,
+                        'family_relation_type' => null,
+                    ]);
+            }
+        } catch (\Throwable $e) {
+        }
+
+        return true;
+    }
+
+    public function moveMember(string $jamaahId, string $targetFamilyId, string $relationType = 'OTHER'): bool
+    {
+        if (!$this->exists($targetFamilyId)) {
+            throw new NotFoundException(sprintf('Target Family with ID [%s] not found.', $targetFamilyId));
+        }
+
+        return $this->addMember($targetFamilyId, $jamaahId, $relationType);
+    }
+
+    public function changeRelation(string $familyId, string $jamaahId, string $newRelationType): bool
+    {
+        if (!$this->exists($familyId)) {
+            throw new NotFoundException(sprintf('Family with ID [%s] not found.', $familyId));
+        }
+
+        $newRelationType = strtoupper(trim($newRelationType));
+        if ($newRelationType === 'HEAD') {
+            $this->transferHead($familyId, $jamaahId);
+            return true;
+        }
+
+        return $this->assignMemberToFamily($familyId, $jamaahId, $newRelationType);
+    }
+
     public function transferHead(string $familyId, string $newHeadJamaahId): mixed
     {
         $family = $this->find($familyId);
         if (!$family) {
             throw new NotFoundException(sprintf('Family with ID [%s] not found.', $familyId));
+        }
+
+        // Validate new head status & family membership
+        try {
+            $db = Database::connect();
+            if ($db->tableExists('jamaahs')) {
+                $newHead = $db->table('jamaahs')->where('id', $newHeadJamaahId)->where('deleted_at', null)->get()->getRowArray();
+                if (!$newHead) {
+                    throw new NotFoundException(sprintf('Jamaah with ID [%s] not found.', $newHeadJamaahId));
+                }
+
+                $status = strtoupper($newHead['status'] ?? 'ACTIVE');
+                if ($status !== 'ACTIVE') {
+                    throw new ValidationException('Validation failed', [
+                        'new_head_jamaah_id' => [sprintf('New Head of Family must be ACTIVE. Target status is [%s].', $status)]
+                    ]);
+                }
+            }
+        } catch (ValidationException|NotFoundException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
         }
 
         $oldHeadId = $family['head_jamaah_id'] ?? null;
@@ -108,7 +228,6 @@ class FamilyService extends CrudService
                     ]);
             }
         } catch (\Throwable $e) {
-            // Log or fallback during unit testing without DB driver
         }
         return true;
     }

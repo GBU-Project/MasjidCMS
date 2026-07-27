@@ -52,6 +52,19 @@ class JamaahService extends CrudService
         }
     }
 
+    protected function beforeDelete(int|string $id): void
+    {
+        $jamaah = $this->find($id);
+        if ($jamaah) {
+            $relationType = strtoupper($jamaah['family_relation_type'] ?? '');
+            if ($relationType === 'HEAD') {
+                throw new ValidationException('Validation failed', [
+                    'jamaah' => [sprintf('Cannot delete Jamaah [%s] who is Head of Family. Please transfer Head of Family role first.', (string)$id)]
+                ]);
+            }
+        }
+    }
+
     public function searchAndPaginate(
         string $search = '',
         array $filters = [],
