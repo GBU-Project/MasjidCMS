@@ -68,19 +68,22 @@ class InstallerController extends BaseController
         if ($this->request->getMethod() === 'post') {
             $result = $this->dbInstaller->testConnection($host, $user, $pass, $name, $port);
             if ($result['success']) {
-                $this->dbInstaller->importSchema($host, $user, $pass, $name, $port);
-                
-                // Store DB credentials in session for EnvironmentWriter
-                session()->set([
-                    'db_host' => $host,
-                    'db_port' => $port,
-                    'db_name' => $name,
-                    'db_user' => $user,
-                    'db_pass' => $pass,
-                ]);
+                $importResult = $this->dbInstaller->importSchema($host, $user, $pass, $name, $port);
+                if (!$importResult['success']) {
+                    $result = $importResult;
+                } else {
+                    // Store DB credentials in session for EnvironmentWriter
+                    session()->set([
+                        'db_host' => $host,
+                        'db_port' => $port,
+                        'db_name' => $name,
+                        'db_user' => $user,
+                        'db_pass' => $pass,
+                    ]);
 
-                if ($action === 'save') {
-                    return redirect()->to('install/application');
+                    if ($action === 'save') {
+                        return redirect()->to('install/application');
+                    }
                 }
             }
         }
