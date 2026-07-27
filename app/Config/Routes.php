@@ -19,3 +19,9 @@ if (file_exists(APPPATH . 'Domains/Jamaah/Routes/jamaah.php')) {
 if (file_exists(APPPATH . 'Domains/Family/Routes/family.php')) {
     require APPPATH . 'Domains/Family/Routes/family.php';
 }
+
+// Load Domain Financial Routes
+if (file_exists(APPPATH . 'Domains/Financial/Routes/financial.php')) {
+    require APPPATH . 'Domains/Financial/Routes/financial.php';
+}
+
