@@ -12,7 +12,3 @@ $routes->group('api/financial', ['namespace' => 'App\Controllers\Api'], static f
     $routes->post('transactions/(:segment)/post', 'FinancialApiController::post/$1');
     $routes->post('transactions/(:segment)/void', 'FinancialApiController::void/$1');
 });
-
-$routes->group('admin/financial', ['namespace' => 'App\Controllers\Admin'], static function ($routes) {
-    $routes->get('/', 'FinancialController::index');
-});

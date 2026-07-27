@@ -28,12 +28,15 @@
     <!-- Collapsible Sidebar Nav Bar -->
     <aside class="app-sidebar">
         <ul class="nav-menu-list">
+            <li style="padding: 8px 16px; font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase;">DASHBOARD</li>
             <li>
-                <a href="<?= site_url('admin/dashboard') ?>" class="nav-item-link active">
+                <a href="<?= site_url('admin/dashboard') ?>" class="nav-item-link">
                     <span>📊</span>
-                    <span class="nav-text">Dashboard</span>
+                    <span class="nav-text">Dashboard Utama</span>
                 </a>
             </li>
+
+            <li style="padding: 12px 16px 4px; font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase;">MASTER DATA</li>
             <li>
                 <a href="<?= site_url('admin/masjid') ?>" class="nav-item-link">
                     <span>🕌</span>
@@ -52,6 +55,8 @@
                     <span class="nav-text">Data Keluarga</span>
                 </a>
             </li>
+
+            <li style="padding: 12px 16px 4px; font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase;">KEUANGAN</li>
             <li>
                 <a href="<?= site_url('admin/financial') ?>" class="nav-item-link">
                     <span>💰</span>
@@ -59,9 +64,37 @@
                 </a>
             </li>
             <li>
+                <a href="<?= site_url('admin/financial/create') ?>" class="nav-item-link">
+                    <span>➕</span>
+                    <span class="nav-text">Input Transaksi</span>
+                </a>
+            </li>
+
+            <li style="padding: 12px 16px 4px; font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase;">LAPORAN</li>
+            <li>
                 <a href="<?= site_url('admin/reporting') ?>" class="nav-item-link">
                     <span>📈</span>
                     <span class="nav-text">Laporan Keuangan</span>
+                </a>
+            </li>
+
+            <li style="padding: 12px 16px 4px; font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase;">CMS & SYSTEM</li>
+            <li>
+                <a href="<?= site_url('admin/cms') ?>" class="nav-item-link">
+                    <span>📰</span>
+                    <span class="nav-text">CMS & Portal Berita</span>
+                </a>
+            </li>
+            <li>
+                <a href="<?= site_url('admin/users') ?>" class="nav-item-link">
+                    <span>👤</span>
+                    <span class="nav-text">Pengguna (Users)</span>
+                </a>
+            </li>
+            <li>
+                <a href="<?= site_url('admin/rbac') ?>" class="nav-item-link">
+                    <span>🛡️</span>
+                    <span class="nav-text">Role & Permission</span>
                 </a>
             </li>
             <li>

@@ -10,7 +10,20 @@ class AdminMasterDataController extends BaseController
     public function index(): string
     {
         $db = Database::connect();
-        $tab = (string) ($this->request->getGet('tab') ?? 'profil');
+        
+        $path = $this->request->getUri()->getPath();
+        $defaultTab = 'profil';
+        if (str_contains($path, 'jamaah')) {
+            $defaultTab = 'jamaah';
+        } elseif (str_contains($path, 'family')) {
+            $defaultTab = 'family';
+        } elseif (str_contains($path, 'users')) {
+            $defaultTab = 'user';
+        } elseif (str_contains($path, 'rbac')) {
+            $defaultTab = 'role';
+        }
+
+        $tab = (string) ($this->request->getGet('tab') ?? $defaultTab);
 
         $headers = [];
         $rows = [];
