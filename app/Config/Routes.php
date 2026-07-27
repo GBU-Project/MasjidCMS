@@ -31,4 +31,6 @@ $routes->get('admin/master', '\App\Controllers\AdminMasterDataController::index'
 $routes->get('admin/financial', '\App\Controllers\AdminFinancialWorkspaceController::index');
 $routes->get('admin/financial/create', '\App\Controllers\AdminFinancialWorkspaceController::create');
 $routes->get('admin/financial/detail/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::detail/$1');
+$routes->get('admin/reporting', '\App\Controllers\AdminReportingWorkspaceController::index');
+$routes->get('admin/reporting/preview', '\App\Controllers\AdminReportingWorkspaceController::preview');
 
