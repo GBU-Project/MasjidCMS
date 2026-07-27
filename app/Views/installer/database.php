@@ -47,9 +47,7 @@
                 <a href="<?= site_url('install/requirements') ?>" class="btn btn-secondary">‹ Kembali</a>
                 <div style="display: flex; gap: 8px;">
                     <button type="submit" name="action" value="test" class="btn btn-secondary">Test Connection</button>
-                    <?php if (!empty($success) && $success): ?>
-                        <a href="<?= site_url('install/application') ?>" class="btn btn-primary">Lanjut ke Step 4 (App Config) ›</a>
-                    <?php endif; ?>
+                    <button type="submit" name="action" value="save" class="btn btn-primary">Simpan & Lanjut ke Step 4 ›</button>
                 </div>
             </div>
         </form>
