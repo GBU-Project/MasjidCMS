@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Step 3: Database Setup — MasjidCMS</title>
-    <link rel="stylesheet" href="/assets/css/admin-dashboard.css">
+    <link rel="stylesheet" href="../assets/css/admin-dashboard.css">
 </head>
 <body style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--bg-app); padding: 24px;">
     <div class="panel-card" style="max-width: 600px; width: 100%; padding: 32px;">
@@ -16,7 +16,7 @@
             </div>
         <?php endif; ?>
 
-        <form action="/install/database" method="POST" style="display: flex; flex-direction: column; gap: 14px;">
+        <form action="database" method="POST" style="display: flex; flex-direction: column; gap: 14px;">
             <div style="display: grid; grid-template-columns: 3fr 1fr; gap: 12px;">
                 <div>
                     <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 4px;">Database Host</label>
@@ -44,11 +44,11 @@
             </div>
 
             <div style="display: flex; justify-content: space-between; margin-top: 12px;">
-                <a href="/install/requirements" class="btn btn-secondary">‹ Kembali</a>
+                <a href="requirements" class="btn btn-secondary">‹ Kembali</a>
                 <div style="display: flex; gap: 8px;">
                     <button type="submit" name="action" value="test" class="btn btn-secondary">Test Connection</button>
                     <?php if (!empty($success) && $success): ?>
-                        <a href="/install/application" class="btn btn-primary">Lanjut ke Step 4 (App Config) ›</a>
+                        <a href="application" class="btn btn-primary">Lanjut ke Step 4 (App Config) ›</a>
                     <?php endif; ?>
                 </div>
             </div>

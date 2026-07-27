@@ -30,7 +30,7 @@ class InstallerController extends BaseController
     private function checkInstalled(): ?ResponseInterface
     {
         if ($this->lock->isInstalled()) {
-            return redirect()->to('/admin/dashboard');
+            return redirect()->to('admin/dashboard');
         }
         return null;
     }
@@ -97,7 +97,7 @@ class InstallerController extends BaseController
                 'db_port'  => session()->get('db_port') ?? '3306',
             ];
             $this->envWriter->writeEnvironment($config);
-            return redirect()->to('/install/admin');
+            return redirect()->to('install/admin');
         }
 
         return view('installer/application');
@@ -112,7 +112,7 @@ class InstallerController extends BaseController
             $result = $this->adminSeeder->createAdmin($this->request->getPost());
             if ($result['success']) {
                 $this->lock->createLock();
-                return redirect()->to('/install/finish');
+                return redirect()->to('install/finish');
             }
             $message = $result['message'];
         }
