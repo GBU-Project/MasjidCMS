@@ -173,7 +173,7 @@ Mencatat seluruh transaksi keuangan.
 | `transaction_type`| `VARCHAR(20)`| No | None | Yes | No | `INCOME`, `EXPENSE`, `TRANSFER`, `ADJUSTMENT` |
 | `amount` | `DECIMAL(15,2)`| No | None | Yes | No | Nominal Transaksi (Rp) |
 | `payment_method`| `VARCHAR(20)`| No | `'CASH'` | No | No | `CASH`, `BANK_TRANSFER`, `QRIS` |
-| `status` | `VARCHAR(20)` | No | `'POSTED'` | Yes | No | `DRAFT`, `PENDING_APPROVAL`, `POSTED`, `REJECTED` |
+| `status` | `VARCHAR(20)` | No | `'DRAFT'` | Yes | No | `DRAFT`, `PENDING_APPROVAL`, `APPROVED`, `POSTED`, `REJECTED`, `CANCELLED`, `VOID` |
 | `transaction_date`| `DATETIME`| No | None | Yes | No | Tanggal Transaksi |
 | `description` | `TEXT` | Yes | NULL | No | No | Catatan / Uraian |
 | `created_by` | `VARCHAR(36)` | Yes | NULL | No | No | Userstamp Buat |
