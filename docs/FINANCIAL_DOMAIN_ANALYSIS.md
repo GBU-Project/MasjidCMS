@@ -1,7 +1,7 @@
 # MasjidCMS — Financial Domain Business Analysis & Architecture Specification
 
-**Versi:** 1.0 (Financial Domain Architectural Analysis & Specification)  
-**Status:** APPROVED ARCHITECTURE SPECIFICATION  
+**Versi:** 1.1 (SAD v1.1 Architecture Alignment & Compliance Specification)  
+**Status:** PROPOSED ARCHITECTURE SPECIFICATION  
 **Fase:** Product Development RC1  
 **Tanggal:** 27 Juli 2026  
 **Penulis:** Lead Software Architect & Financial Systems Analyst  
@@ -12,7 +12,7 @@
 
 Dokumen ini mendokumentasikan analisis bisnis, aturan syariah/akuntansi, struktur basis data, serta spesifikasi arsitektur untuk **Domain Keuangan (Financial Domain)** pada **MasjidCMS Product RC1**.
 
-Domain Keuangan MasjidCMS mengadopsi prinsip **Fund Accounting (Akuntansi Nirlaba Nirlaba/Entitas Nirlaba Keagamaan)** yang memisahkan pembukuan dana secara ketat sesuai peruntukan (*restricted funds* vs *unrestricted funds*). Pendekatan ini memastikan akuntabilitas, transparansi publik, serta pencegahan pelanggaran syariat (seperti penggunaan dana Zakat untuk operasional fisik masjid).
+Dokumen ini telah diselaraskan dengan **Software Architecture Document (SAD v1.1)** untuk memastikan konsistensi strategi Primary Key, isolasi domain (*Domain Ownership*), pemisahan mesin persetujuan (*Approval Engine*), serta spesifikasi aturan bisnis dana terikat (*Enforceable Fund Rules*).
 
 ---
 
@@ -41,15 +41,47 @@ Pengelolaan keuangan masjid di Indonesia memiliki karakteristik unik yang memerl
 
 ### 2.1 Evaluasi Model Akuntansi
 - **Model Akuntansi Komersial (Perusahaan):** Berfokus pada profitabilitas, laba/rugi (*Profit & Loss*), dan ekuitas pemegang saham. **Tidak cocok** untuk entitas masjid karena mengaburkan batasan peruntukan dana.
-- **Model Fund Accounting (Akuntansi Dana Masjid/Nirlaba):** Setiap *Fund* bertindak sebagai entitas pembukuan independen dengan saldo dan laporan neraca/arus kas tersendiri.
+- **Model Fund Accounting (Akuntansi Dana Nirlaba Keagamaan):** Setiap *Fund* bertindak sebagai entitas pembukuan independen dengan saldo dan laporan terpisah.
 
 ### 💡 Rekomendasi Arsitektur: **FUND ACCOUNTING MODEL**
-MasjidCMS menerapkan **Fund Accounting** dengan struktur relasi:
+MasjidCMS menerapkan **Fund Accounting** (referensi: `docs/adr/ADR-0005-FUND-ACCOUNTING-MODEL.md`) dengan struktur relasi:
 `Fund -> Account (COA) -> Transaction -> Journal Entry -> Reports`
 
 ---
 
-## 3. Chart of Accounts (COA) Architecture
+## 3. Primary Key & Indexing Strategy (SAD v1.1 Alignment)
+
+### 3.1 Evaluasi Kinerja Primary Key
+Tabel transaksi keuangan (seperti `financial_transactions` dan `journal_details`) diperkirakan mengalami tingkat penyisipan data (*insert throughput*) yang tinggi.
+
+- **Ditolak:** Penggunaan acak `UUID v4` sebagai Primary Key bertipe Clustered Index memicu fragmentasi indeks B-Tree (*B-Tree Page Splitting*) dan penurunan performa penyisipan secara drastis pada tabel besar.
+- **Diadopsi (OPTION A - Recommended):** Menggunakan `BIGINT AUTO_INCREMENT` sebagai Primary Key fisik internal (Clustered Index), dikombinasikan dengan `uuid CHAR(36) UNIQUE` sebagai identifier publik eksternal.
+
+---
+
+## 4. Multi-Tenant Scope Strategy
+
+- **Catatan Operasional Runtime:** `Single Masjid Runtime` (Fitur Multi-Masjid belum diaktifkan pada RC1).
+- **Kesiapan Skema Basis Data (`Schema Ready, Feature Disabled`):** Seluruh tabel Keuangan (`funds`, `accounts`, `financial_transactions`, `journal_entries`) **tetap mempertahankan kolom `masjid_id`** untuk memastikan kesiapan skema jika fitur multi-masjid diaktifkan di masa mendatang.
+
+---
+
+## 5. Domain Ownership & Cross-Domain References
+
+Domain Keuangan **tidak memiliki (not owner of)** entitas Jamaah, Keluarga, Vendor, atau Asset. 
+
+Seluruh relasi ke domain luar diklasifikasikan sebagai **Cross-Domain References**:
+- `jamaah_id` -> Foreign reference ke Domain Jamaah.
+- `family_id` -> Foreign reference ke Domain Family.
+- `vendor_id` -> Foreign reference ke Domain Vendor (System).
+- `asset_id`  -> Foreign reference ke Domain Asset (sebelumnya istilah *Inventaris* disesuaikan menjadi *Asset* sesuai SAD v1.1).
+
+> [!NOTE]
+> Kepemilikan (*Ownership*) dan siklus hidup entitas tersebut berada sepenuhnya pada domain asalnya masing-masing.
+
+---
+
+## 6. Chart of Accounts (COA) Architecture
 
 Klasifikasi akun pembukuan menggunakan standar penomoran 5 digit:
 
@@ -63,7 +95,7 @@ Klasifikasi akun pembukuan menggunakan standar penomoran 5 digit:
 
 ---
 
-## 4. Financial Structure Chain
+## 7. Financial Structure Chain
 
 ```
 ┌──────────────┐      ┌──────────────┐      ┌─────────────────────────┐
@@ -80,7 +112,7 @@ Klasifikasi akun pembukuan menggunakan standar penomoran 5 digit:
 
 ---
 
-## 5. Transaction Types Specification
+## 8. Transaction Types Specification
 
 1. **Penerimaan (`INCOME`):** Transaksi masuk (Infaq Jumat, Transfer Donasi, Zakat, SPP TPQ).
 2. **Pengeluaran (`EXPENSE`):** Transaksi keluar (Pembayaran Listrik, Biaya Pemeliharaan, Honor).
@@ -91,59 +123,22 @@ Klasifikasi akun pembukuan menggunakan standar penomoran 5 digit:
 
 ---
 
-## 6. Relationship & Domain Links
+## 9. Business Rule Specification (Enforceable Fund Rules)
 
-```mermaid
-classDiagram
-    class Masjid {
-        +string id
-        +string name
-    }
+Aturan pembukuan dana terikat diwujudkan sebagai **Spesifikasi Aturan Bisnis yang Enforceable**:
 
-    class Fund {
-        +string id
-        +string masjid_id
-        +string fund_code
-        +string name
-        +string fund_type
-    }
+### 9.1 Rules Matrix
 
-    class Account {
-        +string id
-        +string account_code
-        +string name
-        +string account_type
-    }
-
-    class Transaction {
-        +string id
-        +string transaction_no
-        +string fund_id
-        +string jamaah_id
-        +string vendor_id
-        +decimal amount
-        +string status
-    }
-
-    Masjid "1" -- "0..*" Fund : Owns Funds
-    Fund "1" -- "0..*" Transaction : Records Transactions
-    Account "1" -- "0..*" Transaction : Maps COA
-```
-
-- **Domain Jamaah & Family:** Transaksi penerimaan dapat dikaitkan dengan `jamaah_id` / `family_id` untuk penerbitan Bukti Kuitansi Zakat/Donasi.
-- **Domain ZISWAF & Qurban:** Transaksi penerimaan Zakat/Qurban otomatis mencatat entri transaksi keuangan di Fund terkait.
-- **Domain Inventaris:** Pembelian Aset tercatat sebagai Pengeluaran Modal pada Fund Pembangunan / Operasional.
+| Rule ID | Name | Rule Owner | Validation Layer | Service Enforcement | Failure Behavior |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `BR-FIN-01` | **Zakat Restriction** | Syariah / ZIS Domain | `FundTransferValidator` | `FundTransferService::transfer()` | Throw `BusinessRuleException("Dana Zakat dilarang ditransfer untuk Operasional/Fisik.")` |
+| `BR-FIN-02` | **Wakaf Preservation** | Asset / Wakaf Domain | `FundExpenseValidator` | `FinancialExpenseService::spend()` | Throw `BusinessRuleException("Pokok Dana Wakaf dilarang dibelanjakan untuk operasional rutin.")` |
+| `BR-FIN-03` | **Qurban Isolation** | Qurban Domain | `FundTransferValidator` | `FundTransferService::transfer()` | Throw `BusinessRuleException("Dana Qurban terisolasi dan dilarang dicampur dengan Kas Umum.")` |
+| `BR-FIN-04` | **Restricted Deficit Rejection** | Financial Domain | `FundBalanceValidator` | `JournalPostingService::post()` | Throw `BusinessRuleException("Saldo Kantong Dana Terikat tidak boleh bernilai minus (Defisit).")` |
 
 ---
 
-## 7. Multi-Tenant Data Isolation
-
-Seluruh tabel Keuangan (`funds`, `accounts`, `financial_transactions`, `journal_entries`) wajib memuat kolom `masjid_id`. 
-- **Isolasi Mutlak:** Query transaksi otomatis menyertakan filter `WHERE masjid_id = <active_masjid_id>`. Pengurus Masjid A **dilarang keras** mengakses atau mentransfer dana milik Masjid B.
-
----
-
-## 8. Financial Reports (Matriks Laporan Keuangan)
+## 10. Financial Reports (Matriks Laporan Keuangan)
 
 | Nama Laporan | Jenis Laporan | Pengguna Utama | Deskripsi & Fungsi |
 | :--- | :--- | :--- | :--- |
@@ -156,55 +151,29 @@ Seluruh tabel Keuangan (`funds`, `accounts`, `financial_transactions`, `journal_
 
 ---
 
-## 9. Fund Rules & Strict Restrictions (Aturan Syariah & Pembukuan)
+## 11. Approval Workflow vs Reusable Approval Engine
 
-```text
-┌────────────────────────────────────────────────────────────────────────┐
-│                        CRITICAL FUND RULES                             │
-├────────────────────────────────────────────────────────────────────────┤
-│ 1. RULE ZAKAT STRICT: Dana Zakat (Fitrah/Mal) HARUS disalurkan murni   │
-│    kepada 8 Asnaf (Mustahik) & DILARANG DIPA KAI untuk operasional     │
-│    fisik masjid (listrik, renovasi, dll).                              │
-│                                                                        │
-│ 2. RULE WAKAF STRICT: Pokok Dana Wakaf DILARANG dikurangi/dibelanjakan │
-│    untuk operasional rutin; hanya hasil kelola wakaf yang dapat diwujud│
-│    kan sebagai manfaat.                                                │
-│                                                                        │
-│ 3. RULE QURBAN STRICT: Dana Qurban dilarang dicampur dengan Kas Um-   │
-│    um Masjid dan wajib dipertanggungjawabkan selesai per musim qurban. │
-└────────────────────────────────────────────────────────────────────────┘
-```
+### 11.1 Financial Approval Business Workflow
+1. **Pengajuan Transaction:** Operator/Bendahara menginput transaksi pengeluaran.
+2. **Kriteria Approval:** Transaksi dengan nominal melebihi ambang batas (*threshold*) memerlukan persetujuan Ketua DKM.
+3. **Posting Jurnal:** Transaksi yang disetujui diubah statusnya menjadi `POSTED` dan entri jurnal dibentuk.
+
+> [!IMPORTANT]
+> **Catatan Arsitektur Reusable Approval Engine:**  
+> Mesin Persetujuan (*Approval Engine*) berpotensi menjadi komponen umum (*reusable component*) yang dapat dimanfaatkan oleh domain lain (seperti Pengajuan Anggaran Qurban atau Peminjaman Asset). Pemisahan Approval Engine menjadi modul umum memerlukan **keputusan arsitektur tersendiri (Requires separate ADR)**.
 
 ---
 
-## 10. Financial Workflow & Approval Chain
+## 12. Future Architecture Consideration
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Admin as Bendahara / Operator
-    actor DKM as Ketua DKM (Approver)
-    participant Service as FinancialService
-    participant DB as Database Layer
-    participant Event as EventDispatcher
-    participant Audit as Audit Engine
+Penggunaan **EventDispatcher** untuk memicu integrasi asynchronous dan **Audit Engine** otomatis dipisahkan dari arsitektur inti finansial versi ini dan dimasukkan ke dalam **Future Architecture Consideration**:
 
-    Admin->>Service: Submit Transaction (Pengeluaran > Limit Approval)
-    Service->>DB: Save Transaction (status = 'PENDING_APPROVAL')
-    Service-->>Admin: Transaction Saved (Pending Approval)
-    
-    DKM->>Service: Approve Transaction (transaction_id)
-    Service->>Service: Validate Fund Balance >= Amount
-    Service->>DB: Update Transaction (status = 'POSTED')
-    Service->>DB: Insert Double-Entry Journal Entry
-    Service->>Event: Dispatch EntityCreatedEvent('FinancialTransaction')
-    Event->>Audit: Log Audit Entry
-    Service-->>DKM: Transaction Approved & Posted Successfully
-```
+- Transaksi keuangan versi awal berjalan secara sinkronis di dalam batas transaksi database (`UnitOfWork`).
+- Integrasi Event-Driven Keuangan & Audit Trail Lanjutan **memerlukan ADR tersendiri (Requires separate ADR)**.
 
 ---
 
-## 11. Entity Relationship Diagram (ERD Finance)
+## 13. Entity Relationship Diagram (ERD Finance - SAD v1.1 Compliant)
 
 ```mermaid
 erDiagram
@@ -216,8 +185,9 @@ erDiagram
     JOURNAL_ENTRIES ||--o{ JOURNAL_DETAILS : "contains lines"
 
     FUNDS {
-        string id PK "UUID v4"
-        string masjid_id FK "Tenant Scope"
+        bigint id PK "AUTO_INCREMENT"
+        string uuid UK "CHAR(36) UNIQUE"
+        string masjid_id FK "Tenant Scope (Schema Ready)"
         string fund_code UK "GENERAL | BUILDING | ZAKAT | QURBAN | TPQ"
         string name "Nama Kantong Dana"
         string fund_type "UNRESTRICTED | RESTRICTED | ENDOWMENT"
@@ -226,22 +196,27 @@ erDiagram
     }
 
     ACCOUNTS {
-        string id PK "UUID v4"
-        string fund_id FK
+        bigint id PK "AUTO_INCREMENT"
+        string uuid UK "CHAR(36) UNIQUE"
+        bigint fund_id FK
         string account_code UK "10100 | 40100 | 50100"
         string name "Nama Akun COA"
         string account_type "ASSET | LIABILITY | FUND_BALANCE | INCOME | EXPENSE"
     }
 
     FINANCIAL_TRANSACTIONS {
-        string id PK "UUID v4"
+        bigint id PK "AUTO_INCREMENT"
+        string uuid UK "CHAR(36) UNIQUE"
         string masjid_id FK
-        string fund_id FK
-        string account_id FK
-        string jamaah_id FK "Nullable"
+        bigint fund_id FK
+        bigint account_id FK
+        string jamaah_id FK "Cross Domain Reference (Nullable)"
+        string family_id FK "Cross Domain Reference (Nullable)"
+        string vendor_id FK "Cross Domain Reference (Nullable)"
+        string asset_id FK "Cross Domain Reference (Nullable)"
         string transaction_no UK "TRX-2026-0001"
         string transaction_type "INCOME | EXPENSE | TRANSFER | ADJUSTMENT"
-        decimal amount "Jumlah Nominal (Rp)"
+        decimal amount "Nominal (Rp)"
         string payment_method "CASH | BANK_TRANSFER | QRIS"
         string status "DRAFT | PENDING_APPROVAL | POSTED | REJECTED"
         datetime transaction_date
@@ -251,17 +226,18 @@ erDiagram
     }
 
     JOURNAL_ENTRIES {
-        string id PK "UUID v4"
-        string transaction_id FK
+        bigint id PK "AUTO_INCREMENT"
+        string uuid UK "CHAR(36) UNIQUE"
+        bigint transaction_id FK
         string journal_no UK "JRN-2026-0001"
         datetime entry_date
         text description
     }
 
     JOURNAL_DETAILS {
-        string id PK "UUID v4"
-        string journal_id FK
-        string account_id FK
+        bigint id PK "AUTO_INCREMENT"
+        bigint journal_id FK
+        bigint account_id FK
         decimal debit_amount "Nominal Debit"
         decimal credit_amount "Nominal Kredit"
     }
@@ -269,20 +245,15 @@ erDiagram
 
 ---
 
-## 12. Architectural Recommendation & Go / No Go Decision
+## 14. Architecture Alignment Notes
 
-```text
-====================================================================
-           FINANCIAL DOMAIN ANALYSIS REVIEW BOARD                   
-====================================================================
-
-Architecture Review Status : APPROVED
-Fund Accounting Strategy   : Restricted & Unrestricted Fund Separation
-Core Platform Impact       : Zero Core Modification
-Go / No Go Decision        : GO TO IMPLEMENTATION (TASK-029)
-
-====================================================================
-```
-
-### Pernyataan Rekomendasi:
-Analisis bisnis dan spesifikasi arsitektur **Domain Keuangan (Financial Domain)** dinyatakan **SANGAT MATANG, SYARIAT-COMPLIANT, DAN DIREKOMENDASIKAN (GO)** untuk diimplementasikan pada tugas berikutnya.
+| Kategori Keputusan | Status Keputusan | Detail & Catatan Arsitektur |
+| :--- | :--- | :--- |
+| **Fund Accounting Model** | **FINAL** | Diadopsi via `docs/adr/ADR-0005-FUND-ACCOUNTING-MODEL.md`. |
+| **Primary Key Indexing** | **FINAL** | Option A (`BIGINT AUTO_INCREMENT` PK + `uuid CHAR(36)` UNIQUE). |
+| **Domain References** | **FINAL** | References ke Jamaah, Family, Vendor, Asset bersifat *Cross Domain Reference*. |
+| **Terminology Standard** | **FINAL** | Menggunakan istilah *Asset* (bukan *Inventaris*). |
+| **Multi-Masjid Scope** | **PROPOSED** | Schema Ready (`masjid_id`), Feature Disabled, Single Masjid Runtime. |
+| **Enforceable Fund Rules**| **PROPOSED** | Di-enforce pada Service Layer (`BusinessRuleException`). |
+| **Reusable Approval Engine**| **NEEDS ADR** | Memerlukan ADR tersendiri jika dipisahkan dari Domain Finance. |
+| **Event-Driven Finance Audit**| **NEEDS ADR** | Memerlukan ADR tersendiri untuk asynchrony & event architecture. |
