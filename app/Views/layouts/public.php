@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $this->renderSection('title') ?> — Portal MasjidCMS</title>
-    <link rel="stylesheet" href="/assets/css/public-portal.css">
+    <link rel="stylesheet" href="<?= base_url('assets/css/public-portal.css') ?>">
 </head>
 <body>
     <!-- Top Public Header Nav -->
@@ -15,16 +15,16 @@
         </div>
 
         <ul class="public-nav-links">
-            <li><a href="/" class="<?= ($activePage === 'home') ? 'active' : '' ?>">Beranda</a></li>
-            <li><a href="/profil" class="<?= ($activePage === 'profile') ? 'active' : '' ?>">Profil Masjid</a></li>
-            <li><a href="/berita" class="<?= ($activePage === 'news') ? 'active' : '' ?>">Berita & Kajian</a></li>
-            <li><a href="/program" class="<?= ($activePage === 'programs') ? 'active' : '' ?>">Program</a></li>
-            <li><a href="/donasi" class="<?= ($activePage === 'donation') ? 'active' : '' ?>">Donasi Online</a></li>
-            <li><a href="/kontak" class="<?= ($activePage === 'contact') ? 'active' : '' ?>">Kontak</a></li>
+            <li><a href="<?= site_url('/') ?>" class="<?= ($activePage === 'home') ? 'active' : '' ?>">Beranda</a></li>
+            <li><a href="<?= site_url('profil') ?>" class="<?= ($activePage === 'profile') ? 'active' : '' ?>">Profil Masjid</a></li>
+            <li><a href="<?= site_url('berita') ?>" class="<?= ($activePage === 'news') ? 'active' : '' ?>">Berita & Kajian</a></li>
+            <li><a href="<?= site_url('program') ?>" class="<?= ($activePage === 'programs') ? 'active' : '' ?>">Program</a></li>
+            <li><a href="<?= site_url('donasi') ?>" class="<?= ($activePage === 'donation') ? 'active' : '' ?>">Donasi Online</a></li>
+            <li><a href="<?= site_url('kontak') ?>" class="<?= ($activePage === 'contact') ? 'active' : '' ?>">Kontak</a></li>
         </ul>
 
         <div>
-            <a href="/admin/dashboard" class="btn-portal btn-portal-primary">Login Pengurus</a>
+            <a href="<?= site_url('admin/dashboard') ?>" class="btn-portal btn-portal-primary">Login Pengurus</a>
         </div>
     </header>
 
@@ -42,9 +42,9 @@
             </div>
             <div>
                 <h4 style="color: white; margin-bottom: 12px;">Navigasi Cepat</h4>
-                <p><a href="/profil">Profil & Sejarah</a></p>
-                <p><a href="/berita">Jadwal Kajian</a></p>
-                <p><a href="/donasi">Donasi Infaq Online</a></p>
+                <p><a href="<?= site_url('profil') ?>">Profil & Sejarah</a></p>
+                <p><a href="<?= site_url('berita') ?>">Jadwal Kajian</a></p>
+                <p><a href="<?= site_url('donasi') ?>">Donasi Infaq Online</a></p>
             </div>
             <div>
                 <h4 style="color: white; margin-bottom: 12px;">Hubungi Kami</h4>

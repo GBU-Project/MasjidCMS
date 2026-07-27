@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $this->renderSection('title') ?> — MasjidCMS Admin</title>
-    <link rel="stylesheet" href="/assets/css/admin-dashboard.css">
+    <link rel="stylesheet" href="<?= base_url('assets/css/app-theme.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('assets/css/admin-dashboard.css') ?>">
 </head>
 <body>
     <!-- Top Header Nav Bar -->
@@ -28,43 +29,43 @@
     <aside class="app-sidebar">
         <ul class="nav-menu-list">
             <li>
-                <a href="/admin/dashboard" class="nav-item-link active">
+                <a href="<?= site_url('admin/dashboard') ?>" class="nav-item-link active">
                     <span>📊</span>
                     <span class="nav-text">Dashboard</span>
                 </a>
             </li>
             <li>
-                <a href="/admin/masjid" class="nav-item-link">
+                <a href="<?= site_url('admin/masjid') ?>" class="nav-item-link">
                     <span>🕌</span>
                     <span class="nav-text">Profil Masjid</span>
                 </a>
             </li>
             <li>
-                <a href="/admin/jamaah" class="nav-item-link">
+                <a href="<?= site_url('admin/jamaah') ?>" class="nav-item-link">
                     <span>👥</span>
                     <span class="nav-text">Data Jamaah</span>
                 </a>
             </li>
             <li>
-                <a href="/admin/family" class="nav-item-link">
+                <a href="<?= site_url('admin/family') ?>" class="nav-item-link">
                     <span>👨‍👩‍👧</span>
                     <span class="nav-text">Data Keluarga</span>
                 </a>
             </li>
             <li>
-                <a href="/admin/financial" class="nav-item-link">
+                <a href="<?= site_url('admin/financial') ?>" class="nav-item-link">
                     <span>💰</span>
                     <span class="nav-text">Keuangan & Kas</span>
                 </a>
             </li>
             <li>
-                <a href="/admin/reporting" class="nav-item-link">
+                <a href="<?= site_url('admin/reporting') ?>" class="nav-item-link">
                     <span>📈</span>
                     <span class="nav-text">Laporan Keuangan</span>
                 </a>
             </li>
             <li>
-                <a href="/admin/settings" class="nav-item-link">
+                <a href="<?= site_url('admin/settings') ?>" class="nav-item-link">
                     <span>⚙️</span>
                     <span class="nav-text">Pengaturan System</span>
                 </a>
@@ -72,7 +73,7 @@
         </ul>
     </aside>
 
-    <!-- Main Workspace Workspace -->
+    <!-- Main Workspace Area -->
     <main class="app-main-content">
         <?= $this->renderSection('content') ?>
     </main>
