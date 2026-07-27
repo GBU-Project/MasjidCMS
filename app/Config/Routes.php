@@ -39,3 +39,11 @@ $routes->get('admin/financial/detail/(:segment)', '\App\Controllers\AdminFinanci
 $routes->get('admin/reporting', '\App\Controllers\AdminReportingWorkspaceController::index');
 $routes->get('admin/reporting/preview', '\App\Controllers\AdminReportingWorkspaceController::preview');
 
+// Web Installer Routes
+$routes->match(['get', 'post'], 'install', '\App\Controllers\InstallerController::welcome');
+$routes->match(['get', 'post'], 'install/requirements', '\App\Controllers\InstallerController::requirements');
+$routes->match(['get', 'post'], 'install/database', '\App\Controllers\InstallerController::database');
+$routes->match(['get', 'post'], 'install/application', '\App\Controllers\InstallerController::application');
+$routes->match(['get', 'post'], 'install/admin', '\App\Controllers\InstallerController::admin');
+$routes->match(['get', 'post'], 'install/finish', '\App\Controllers\InstallerController::finish');
+
