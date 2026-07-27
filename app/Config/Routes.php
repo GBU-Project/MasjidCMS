@@ -25,3 +25,6 @@ if (file_exists(APPPATH . 'Domains/Financial/Routes/financial.php')) {
     require APPPATH . 'Domains/Financial/Routes/financial.php';
 }
 
+// Admin Dashboard Route
+$routes->get('admin/dashboard', '\App\Controllers\AdminDashboardController::index');
+
