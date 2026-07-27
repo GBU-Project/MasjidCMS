@@ -17,6 +17,7 @@
         <?php endif; ?>
 
         <form action="<?= site_url('install/database') ?>" method="POST" style="display: flex; flex-direction: column; gap: 14px;">
+            <?= csrf_field() ?>
             <div style="display: grid; grid-template-columns: 3fr 1fr; gap: 12px;">
                 <div>
                     <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 4px;">Database Host</label>

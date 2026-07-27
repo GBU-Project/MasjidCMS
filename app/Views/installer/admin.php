@@ -17,6 +17,7 @@
         <?php endif; ?>
 
         <form action="<?= site_url('install/admin') ?>" method="POST" style="display: flex; flex-direction: column; gap: 14px;">
+            <?= csrf_field() ?>
             <div>
                 <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 4px;">Nama Lengkap Pengurus</label>
                 <input type="text" name="name" value="Super Administrator DKM" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;" required>

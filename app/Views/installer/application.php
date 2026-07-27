@@ -11,6 +11,7 @@
         <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 20px;">Konfigurasi Aplikasi & Generate File .env</h2>
 
         <form action="<?= site_url('install/application') ?>" method="POST" style="display: flex; flex-direction: column; gap: 14px;">
+            <?= csrf_field() ?>
             <div>
                 <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 4px;">Nama Aplikasi / Masjid</label>
                 <input type="text" name="app_name" value="MasjidCMS — Masjid Agung" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;">
