@@ -34,9 +34,22 @@ class AuthenticationController extends BaseController
     {
         try {
             $rawInput = $this->request->getJSON(true) ?? $this->request->getPost();
+            $username = (string) ($rawInput['username'] ?? '');
+            $ip = $this->request ? $this->request->getIPAddress() : '127.0.0.1';
+            $throttleKey = 'login_attempts_' . md5($ip . '_' . $username);
+
+            $throttler = \Config\Services::throttler();
+            // Allow max 5 login attempts per 300 seconds (5 minutes)
+            if ($throttler && ! $throttler->check($throttleKey, 5, 300)) {
+                return $this->respondError(
+                    'Terlalu banyak percobaan login yang gagal. Akun/IP ter-lockout sementara. Silakan coba 5 menit lagi.',
+                    ['throttle' => 'Rate limit exceeded'],
+                    429
+                );
+            }
 
             $loginDto = new LoginRequest(
-                username: (string) ($rawInput['username'] ?? ''),
+                username: $username,
                 password: (string) ($rawInput['password'] ?? ''),
                 remember: (bool) ($rawInput['remember'] ?? false)
             );

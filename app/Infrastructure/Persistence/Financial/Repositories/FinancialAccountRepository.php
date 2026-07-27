@@ -29,7 +29,19 @@ class FinancialAccountRepository implements FinancialAccountRepositoryInterface
 
     public function findById(int $id): ?FinancialAccount
     {
+        if ($this->db === null) {
+            return null;
+        }
         $row = $this->db->table('financial_accounts')->where('id', $id)->get()->getRowArray();
+        return $row ? FinancialAccountDataMapper::toDomain($row) : null;
+    }
+
+    public function findByIdForUpdate(int $id): ?FinancialAccount
+    {
+        if ($this->db === null) {
+            return null;
+        }
+        $row = $this->db->table('financial_accounts')->where('id', $id)->forUpdate()->get()->getRowArray();
         return $row ? FinancialAccountDataMapper::toDomain($row) : null;
     }
 

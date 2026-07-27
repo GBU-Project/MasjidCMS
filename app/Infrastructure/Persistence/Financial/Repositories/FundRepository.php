@@ -30,7 +30,19 @@ class FundRepository implements FundRepositoryInterface
 
     public function findById(int $id): ?Fund
     {
+        if ($this->db === null) {
+            return null;
+        }
         $row = $this->db->table('funds')->where('id', $id)->where('deleted_at', null)->get()->getRowArray();
+        return $row ? FundDataMapper::toDomain($row) : null;
+    }
+
+    public function findByIdForUpdate(int $id): ?Fund
+    {
+        if ($this->db === null) {
+            return null;
+        }
+        $row = $this->db->table('funds')->where('id', $id)->where('deleted_at', null)->forUpdate()->get()->getRowArray();
         return $row ? FundDataMapper::toDomain($row) : null;
     }
 
