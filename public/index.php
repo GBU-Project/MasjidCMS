@@ -56,4 +56,13 @@ $paths = new Paths();
 // LOAD THE FRAMEWORK BOOTSTRAP FILE
 require $paths->systemDirectory . '/Boot.php';
 
+// Pre-boot .env sanitization if invalid session.savePath exists
+$envPath = FCPATH . '../.env';
+if (file_exists($envPath)) {
+    $envRaw = file_get_contents($envPath);
+    if (str_contains($envRaw, "WRITEPATH 'session'")) {
+        @file_put_contents($envPath, str_replace("session.savePath = WRITEPATH 'session'", "# session.savePath = ''", $envRaw));
+    }
+}
+
 exit(Boot::bootWeb($paths));
