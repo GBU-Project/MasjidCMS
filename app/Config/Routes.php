@@ -28,4 +28,7 @@ if (file_exists(APPPATH . 'Domains/Financial/Routes/financial.php')) {
 // Admin Routes
 $routes->get('admin/dashboard', '\App\Controllers\AdminDashboardController::index');
 $routes->get('admin/master', '\App\Controllers\AdminMasterDataController::index');
+$routes->get('admin/financial', '\App\Controllers\AdminFinancialWorkspaceController::index');
+$routes->get('admin/financial/create', '\App\Controllers\AdminFinancialWorkspaceController::create');
+$routes->get('admin/financial/detail/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::detail/$1');
 
