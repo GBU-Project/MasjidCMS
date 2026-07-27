@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Web Installation Wizard — MasjidCMS</title>
-    <link rel="stylesheet" href="../assets/css/admin-dashboard.css">
+    <link rel="stylesheet" href="<?= base_url('assets/css/admin-dashboard.css') ?>">
 </head>
 <body style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--bg-app); padding: 24px;">
     <div class="panel-card" style="max-width: 580px; width: 100%; text-align: center; padding: 40px;">
@@ -22,7 +22,7 @@
             </ol>
         </div>
 
-        <a href="requirements" class="btn btn-primary" style="padding: 12px 32px; font-size: 15px; width: 100%; justify-content: center;">Mulai Instalasi Otomatis ›</a>
+        <a href="<?= site_url('install/requirements') ?>" class="btn btn-primary" style="padding: 12px 32px; font-size: 15px; width: 100%; justify-content: center;">Mulai Instalasi Otomatis ›</a>
     </div>
 </body>
 </html>

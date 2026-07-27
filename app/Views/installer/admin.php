@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Step 5: Super Admin Account — MasjidCMS</title>
-    <link rel="stylesheet" href="../assets/css/admin-dashboard.css">
+    <link rel="stylesheet" href="<?= base_url('assets/css/admin-dashboard.css') ?>">
 </head>
 <body style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--bg-app); padding: 24px;">
     <div class="panel-card" style="max-width: 600px; width: 100%; padding: 32px;">
@@ -16,7 +16,7 @@
             </div>
         <?php endif; ?>
 
-        <form action="admin" method="POST" style="display: flex; flex-direction: column; gap: 14px;">
+        <form action="<?= site_url('install/admin') ?>" method="POST" style="display: flex; flex-direction: column; gap: 14px;">
             <div>
                 <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 4px;">Nama Lengkap Pengurus</label>
                 <input type="text" name="name" value="Super Administrator DKM" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;" required>
@@ -43,7 +43,7 @@
             </div>
 
             <div style="display: flex; justify-content: space-between; margin-top: 12px;">
-                <a href="application" class="btn btn-secondary">‹ Kembali</a>
+                <a href="<?= site_url('install/application') ?>" class="btn btn-secondary">‹ Kembali</a>
                 <button type="submit" class="btn btn-primary">Selesaikan & Buat Akun ›</button>
             </div>
         </form>

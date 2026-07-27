@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Step 6: Installation Finished — MasjidCMS</title>
-    <link rel="stylesheet" href="../assets/css/admin-dashboard.css">
+    <link rel="stylesheet" href="<?= base_url('assets/css/admin-dashboard.css') ?>">
 </head>
 <body style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--bg-app); padding: 24px;">
     <div class="panel-card" style="max-width: 580px; width: 100%; text-align: center; padding: 40px;">
@@ -17,7 +17,7 @@
             <p style="color: var(--status-warning-text); margin-top: 8px;">* Harap simpan kredensial Anda dan ganti password secara berkala.</p>
         </div>
 
-        <a href="../admin/dashboard" class="btn btn-primary" style="padding: 12px 32px; font-size: 15px; width: 100%; justify-content: center;">Buka Admin Dashboard Sekarang ›</a>
+        <a href="<?= site_url('admin/dashboard') ?>" class="btn btn-primary" style="padding: 12px 32px; font-size: 15px; width: 100%; justify-content: center;">Buka Admin Dashboard Sekarang ›</a>
     </div>
 </body>
 </html>

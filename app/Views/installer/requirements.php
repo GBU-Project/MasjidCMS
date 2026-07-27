@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Step 2: System Requirements — MasjidCMS</title>
-    <link rel="stylesheet" href="../assets/css/admin-dashboard.css">
+    <link rel="stylesheet" href="<?= base_url('assets/css/admin-dashboard.css') ?>">
 </head>
 <body style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--bg-app); padding: 24px;">
     <div class="panel-card" style="max-width: 640px; width: 100%; padding: 32px;">
@@ -42,9 +42,9 @@
         </table>
 
         <div style="display: flex; justify-content: space-between;">
-            <a href="../install" class="btn btn-secondary">‹ Kembali</a>
+            <a href="<?= site_url('install') ?>" class="btn btn-secondary">‹ Kembali</a>
             <?php if ($allPass): ?>
-                <a href="database" class="btn btn-primary">Lanjut ke Step 3 (Database) ›</a>
+                <a href="<?= site_url('install/database') ?>" class="btn btn-primary">Lanjut ke Step 3 (Database) ›</a>
             <?php else: ?>
                 <button class="btn btn-primary" disabled>Perbaiki Error Sebelum Lanjut</button>
             <?php endif; ?>
