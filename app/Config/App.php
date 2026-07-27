@@ -18,29 +18,23 @@ class App extends BaseConfig
      */
     public string $baseURL = 'http://localhost:8080/';
 
-    /**
-     * Allowed Hostnames in the Site URL other than the hostname in the baseURL.
-     * If you want to accept multiple Hostnames, set this.
-     *
-     * E.g.,
-     * When your site URL ($baseURL) is 'http://example.com/', and your site
-     * also accepts 'http://media.example.com/' and 'http://accounts.example.com/':
-     *     ['media.example.com', 'accounts.example.com']
-     *
-     * @var list<string>
-     */
+    public function __construct()
+    {
+        parent::__construct();
+
+        // Dynamically detect base URL from Apache / CLI environment when .env is absent
+        if (isset($_SERVER['HTTP_HOST'])) {
+            $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
+            $host = $_SERVER['HTTP_HOST'];
+            $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
+            $dir = rtrim(dirname($scriptName), '/\\');
+            $this->baseURL = $protocol . '://' . $host . ($dir ? $dir . '/' : '/');
+        }
+    }
+
     public array $allowedHostnames = [];
 
-    /**
-     * --------------------------------------------------------------------------
-     * Index File
-     * --------------------------------------------------------------------------
-     *
-     * Typically, this will be your `index.php` file, unless you've renamed it to
-     * something else. If you have configured your web server to remove this file
-     * from your site URIs, set this variable to an empty string.
-     */
-    public string $indexPage = 'index.php';
+    public string $indexPage = '';
 
     /**
      * --------------------------------------------------------------------------
