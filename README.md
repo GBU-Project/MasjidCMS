@@ -1,69 +1,43 @@
-# CodeIgniter 4 Application Starter
+# MasjidCMS — Platform Manajemen Masjid Berbasis Domain-Driven Design
 
-## What is CodeIgniter?
+[![Version](https://img.shields.io/badge/version-v1.0.0--rc1-blue.svg)](https://github.com/MasjidCMS/MasjidCMS/releases/tag/v1.0.0-rc1)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Build Status](https://img.shields.io/badge/tests-88%20passed-brightgreen.svg)]()
 
-CodeIgniter is a PHP full-stack web framework that is light, fast, flexible and secure.
-More information can be found at the [official site](https://codeigniter.com).
+**MasjidCMS** adalah aplikasi manajemen masjid modern berbasis **CodeIgniter 4 (PHP 8.2+)** yang dirancang menggunakan arsitektur **Domain-Driven Design (DDD)**. 
 
-This repository holds a composer-installable app starter.
-It has been built from the
-[development repository](https://github.com/codeigniter4/CodeIgniter4).
+Aplikasi ini mencakup pengelola identitas masjid, data jamaah, keluarga, hak akses (RBAC), serta **Modul Akuntansi Keuangan Masjid (Fund Accounting & Double-Entry Bookkeeping)** yang akurat dan sesuai dengan prinsip Syariah.
 
-More information about the plans for version 4 can be found in [CodeIgniter 4](https://forum.codeigniter.com/forumdisplay.php?fid=28) on the forums.
+---
 
-You can read the [user guide](https://codeigniter.com/user_guide/)
-corresponding to the latest version of the framework.
+## 🌟 Fitur Utama (v1.0.0-rc1)
 
-## Installation & updates
+- 🏛️ **Master Data & Profil Institusi**: Pengelolaan identitas masjid (`Organization`), data jamaah, dan susunan keluarga.
+- 🔐 **Dynamic RBAC & Auth Security**: Otorisasi berbasis role (`Super Admin`, `Chairman`, `Treasurer`, `Finance Manager`, `Staff`), dilengkapi CSRF token randomization & brute-force rate-limiting lockout (HTTP 429).
+- 💰 **Akuntansi Kantong Dana (Fund Accounting - ADR-0005)**: Pemisahan dana terikat (Zakat, Qurban, Wakaf) dan dana bebas (Kas Umum, Pembangunan). Enforcing aturan syariah `BR-FIN-01` s/d `BR-FIN-04`.
+- 📖 **Double-Entry Posting Engine (ADR-0006)**: Pembentukan jurnal otomatis seimbang (`Debit == Credit`) dan jurnal pembalik (*reversal journal*).
+- 📊 **Read-Only Reporting Engine**: Laporan Neraca Saldo (Trial Balance), Buku Besar (General Ledger), Buku Kas (Cash Book), Saldo Kantong Dana, dan Laporan Operasional Pendapatan/Beban.
+- ⚡ **Race Condition Protection**: Penguncian pesimistik (`SELECT ... FOR UPDATE`) menjaga integritas saldo kas saat posting konkuren.
 
-`composer create-project codeigniter4/appstarter` then `composer update` whenever
-there is a new release of the framework.
+---
 
-When updating, check the release notes to see if there are any changes you might need to apply
-to your `app` folder. The affected files can be copied or merged from
-`vendor/codeigniter4/framework/app`.
+## 🚀 Panduan Instalasi & Penggunaan
 
-## Setup
+Silakan baca dokumen [INSTALLATION.md](INSTALLATION.md) untuk langkah-langkah setup server, konfigurasi `.env`, migrasi database, dan seeding master data.
 
-Copy `env` to `.env` and tailor for your app, specifically the baseURL
-and any database settings.
+---
 
-## Important Change with index.php
+## 📄 Dokumentasi Arsitektur
 
-`index.php` is no longer in the root of the project! It has been moved inside the *public* folder,
-for better security and separation of components.
+Dokumentasi lengkap arsitektur sistem dapat ditemukan di direktori `docs/`:
+- [SAD v1.1](docs/architecture/SAD_V1.1.md) — Software Architecture Document
+- [ADR-0005](docs/adr/ADR-0005-FUND-ACCOUNTING-MODEL.md) — Architectural Decision Record: Fund Accounting Model
+- [ADR-0006](docs/adr/ADR-0006-FINANCIAL-POSTING-AND-BALANCE.md) — Architectural Decision Record: Financial Posting & Balance Strategy
+- [UAT Checklist](docs/UAT_RC1_CHECKLIST.md) — User Acceptance Test Results
+- [Release Notes RC1](RELEASE_NOTES_RC1.md) — Catatan Rilis RC1
 
-This means that you should configure your web server to "point" to your project's *public* folder, and
-not to the project root. A better practice would be to configure a virtual host to point there. A poor practice would be to point your web server to the project root and expect to enter *public/...*, as the rest of your logic and the
-framework are exposed.
+---
 
-**Please** read the user guide for a better explanation of how CI4 works!
+## 📝 Lisensi
 
-## Repository Management
-
-We use GitHub issues, in our main repository, to track **BUGS** and to track approved **DEVELOPMENT** work packages.
-We use our [forum](http://forum.codeigniter.com) to provide SUPPORT and to discuss
-FEATURE REQUESTS.
-
-This repository is a "distribution" one, built by our release preparation script.
-Problems with it can be raised on our forum, or as issues in the main repository.
-
-## Server Requirements
-
-PHP version 8.2 or higher is required, with the following extensions installed:
-
-- [intl](http://php.net/manual/en/intl.requirements.php)
-- [mbstring](http://php.net/manual/en/mbstring.installation.php)
-
-> [!WARNING]
-> - The end of life date for PHP 7.4 was November 28, 2022.
-> - The end of life date for PHP 8.0 was November 26, 2023.
-> - The end of life date for PHP 8.1 was December 31, 2025.
-> - If you are still using below PHP 8.2, you should upgrade immediately.
-> - The end of life date for PHP 8.2 will be December 31, 2026.
-
-Additionally, make sure that the following extensions are enabled in your PHP:
-
-- json (enabled by default - don't turn it off)
-- [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
-- [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
+Proyek ini dilisensikan di bawah [MIT License](LICENSE).
