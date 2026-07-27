@@ -14,3 +14,8 @@ if (file_exists(APPPATH . 'Domains/Masjid/Routes/masjid.php')) {
 if (file_exists(APPPATH . 'Domains/Jamaah/Routes/jamaah.php')) {
     require APPPATH . 'Domains/Jamaah/Routes/jamaah.php';
 }
+
+// Load Domain Family Routes
+if (file_exists(APPPATH . 'Domains/Family/Routes/family.php')) {
+    require APPPATH . 'Domains/Family/Routes/family.php';
+}
