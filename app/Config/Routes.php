@@ -2,8 +2,13 @@
 
 use CodeIgniter\Router\RouteCollection;
 
-/** @var RouteCollection $routes */
-$routes->get('/', 'Home::index');
+// Public Portal Routes
+$routes->get('/', '\App\Controllers\PublicPortalController::index');
+$routes->get('profil', '\App\Controllers\PublicPortalController::profile');
+$routes->get('berita', '\App\Controllers\PublicPortalController::news');
+$routes->get('program', '\App\Controllers\PublicPortalController::programs');
+$routes->get('donasi', '\App\Controllers\PublicPortalController::donation');
+$routes->get('kontak', '\App\Controllers\PublicPortalController::contact');
 
 // Load Domain Masjid Routes
 if (file_exists(APPPATH . 'Domains/Masjid/Routes/masjid.php')) {
