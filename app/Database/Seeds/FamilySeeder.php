@@ -37,19 +37,19 @@ class FamilySeeder extends Seeder
 
         // Link Jamaah members if jamaahs table has records
         $jamaahBuilder = $this->db->table('jamaahs');
-        if ($this->db->tableExists('jamaahs')) {
-            // Set Head
-            $jamaahBuilder->where('id', $headId)->update([
-                'family_id'            => $familyId,
-                'family_relation_type' => 'HEAD',
-            ]);
+        if ($this->db->tableExists('jamaahs') && $this->db->fieldExists('family_id', 'jamaahs')) {
+            $updateData = ['family_id' => $familyId];
+            if ($this->db->fieldExists('family_relation_type', 'jamaahs')) {
+                $updateData['family_relation_type'] = 'HEAD';
+            }
+            $jamaahBuilder->where('id', $headId)->update($updateData);
 
             // Set Wife if Hj. Siti Walidah exists
             $wifeId = 'b2c3d4e5-f6a7-8901-bcde-222233334444';
-            $jamaahBuilder->where('id', $wifeId)->update([
-                'family_id'            => $familyId,
-                'family_relation_type' => 'WIFE',
-            ]);
+            if ($this->db->fieldExists('family_relation_type', 'jamaahs')) {
+                $updateData['family_relation_type'] = 'WIFE';
+            }
+            $jamaahBuilder->where('id', $wifeId)->update($updateData);
         }
     }
 }

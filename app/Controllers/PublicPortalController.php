@@ -11,11 +11,36 @@ class PublicPortalController extends BaseController
 
     public function index(): string
     {
+        helper(['form', 'url']);
         $db = Database::connect();
 
         $masjidName = 'Masjid Agung Darussalam';
         $activePrograms = [];
+        $activeServices = [];
+        $pengurusList = [];
         $latestPosts = [];
+        $settings = [];
+
+        if ($db->tableExists('settings')) {
+            $rawSettings = $db->table('settings')->get()->getResultArray();
+            foreach ($rawSettings as $s) {
+                $settings[$s['setting_key']] = $s['setting_value'];
+            }
+        }
+
+        $defaultOrder = ['hero', 'prayer', 'profile', 'program', 'layanan', 'pengurus', 'kajian', 'gallery', 'donation'];
+        $sectionOrder = $defaultOrder;
+        if (!empty($settings['homepage_section_order'])) {
+            $decoded = json_decode($settings['homepage_section_order'], true);
+            if (is_array($decoded) && count($decoded) > 0) {
+                $sectionOrder = $decoded;
+            }
+        }
+
+        $limitProgram = (int) ($settings['limit_program'] ?? 6);
+        $limitLayanan = (int) ($settings['limit_layanan'] ?? 4);
+        $limitPengurus = (int) ($settings['limit_pengurus'] ?? 3);
+        $limitKajian = (int) ($settings['limit_kajian'] ?? 6);
 
         if ($db->tableExists('masjids')) {
             $m = $db->table('masjids')->get()->getRowArray();
@@ -23,30 +48,96 @@ class PublicPortalController extends BaseController
                 $masjidName = $m['name'];
             }
         }
-        if ($db->tableExists('programs')) {
-            $builder = $db->table('programs');
-            if ($db->fieldExists('status', 'programs')) {
-                $builder->where('status', 'ACTIVE');
-            } elseif ($db->fieldExists('is_active', 'programs')) {
-                $builder->where('is_active', 1);
+
+        if ($db->tableExists('program_kegiatan')) {
+            $builder = $db->table('program_kegiatan');
+            if ($db->tableExists('bidang')) {
+                $builder->select('program_kegiatan.*, bidang.name as bidang_name')
+                        ->join('bidang', 'bidang.id = program_kegiatan.bidang_id', 'left');
             }
-            $activePrograms = $builder->get()->getResultArray();
+            if ($db->fieldExists('homepage_visible', 'program_kegiatan')) {
+                $builder->where('program_kegiatan.homepage_visible', 1);
+            }
+            $activePrograms = $builder->where('program_kegiatan.status', 'ACTIVE')
+                                     ->orderBy('program_kegiatan.created_at', 'DESC')
+                                     ->limit($limitProgram)
+                                     ->get()
+                                     ->getResultArray();
         }
+
+        if ($db->tableExists('layanan_masjid')) {
+            $builder = $db->table('layanan_masjid')->where('status', 'ACTIVE');
+            if ($db->fieldExists('homepage_visible', 'layanan_masjid')) {
+                $builder->where('homepage_visible', 1);
+            }
+            $activeServices = $builder->orderBy('urutan', 'ASC')->limit($limitLayanan)->get()->getResultArray();
+        }
+
+        if ($db->tableExists('pengurus')) {
+            $builder = $db->table('pengurus')->where('pengurus.status', 'ACTIVE');
+            if ($db->tableExists('bidang')) {
+                $builder->select('pengurus.*, bidang.name as bidang_name')
+                        ->join('bidang', 'bidang.id = pengurus.bidang_id', 'left');
+            }
+            if ($db->fieldExists('homepage_visible', 'pengurus')) {
+                $builder->where('pengurus.homepage_visible', 1);
+            }
+            $pengurusList = $builder->orderBy('pengurus.urutan', 'ASC')->limit($limitPengurus)->get()->getResultArray();
+        }
+
         if ($db->tableExists('posts')) {
-            $latestPosts = $db->table('posts')->where('is_published', 1)->orderBy('created_at', 'DESC')->limit(3)->get()->getResultArray();
+            $latestPosts = $db->table('posts')->where('is_published', 1)->orderBy('created_at', 'DESC')->limit($limitKajian)->get()->getResultArray();
         }
 
         return view('public/index', [
             'activePage'     => 'home',
             'masjidName'     => $masjidName,
+            'sectionOrder'   => $sectionOrder,
             'activePrograms' => $activePrograms,
+            'activeServices' => $activeServices,
+            'pengurusList'   => $pengurusList,
             'latestPosts'    => $latestPosts,
+            'settings'       => $settings,
         ]);
     }
 
     public function profile(): string
     {
-        return view('public/profile', ['activePage' => 'profile']);
+        $db = Database::connect();
+        $masjid = null;
+        if ($db->tableExists('masjids')) {
+            $masjid = $db->table('masjids')->get()->getRowArray();
+        }
+        return view('public/profile', [
+            'activePage' => 'profile',
+            'masjid'     => $masjid,
+        ]);
+    }
+
+    public function orgStructure(): string
+    {
+        $db = Database::connect();
+        $pengurusList = [];
+        $bidangList = [];
+
+        if ($db->tableExists('bidang')) {
+            $bidangList = $db->table('bidang')->where('deleted_at', null)->orderBy('sort_order', 'ASC')->get()->getResultArray();
+        }
+
+        if ($db->tableExists('pengurus')) {
+            $builder = $db->table('pengurus');
+            if ($db->tableExists('bidang')) {
+                $builder->select('pengurus.*, bidang.name as bidang_name')
+                        ->join('bidang', 'bidang.id = pengurus.bidang_id', 'left');
+            }
+            $pengurusList = $builder->orderBy('pengurus.urutan', 'ASC')->get()->getResultArray();
+        }
+
+        return view('public/org_structure', [
+            'activePage'   => 'org_structure',
+            'pengurusList' => $pengurusList,
+            'bidangList'   => $bidangList,
+        ]);
     }
 
     public function news(): string
@@ -74,19 +165,33 @@ class PublicPortalController extends BaseController
         $db = Database::connect();
         $programs = [];
 
-        if ($db->tableExists('programs')) {
-            $builder = $db->table('programs');
-            if ($db->fieldExists('status', 'programs')) {
-                $builder->where('status', 'ACTIVE');
-            } elseif ($db->fieldExists('is_active', 'programs')) {
-                $builder->where('is_active', 1);
+        if ($db->tableExists('program_kegiatan')) {
+            $builder = $db->table('program_kegiatan');
+            if ($db->tableExists('bidang')) {
+                $builder->select('program_kegiatan.*, bidang.name as bidang_name')
+                        ->join('bidang', 'bidang.id = program_kegiatan.bidang_id', 'left');
             }
-            $programs = $builder->get()->getResultArray();
+            $programs = $builder->where('program_kegiatan.status', 'ACTIVE')->orderBy('program_kegiatan.created_at', 'DESC')->get()->getResultArray();
         }
 
         return view('public/programs', [
             'activePage' => 'programs',
             'programs'   => $programs,
+        ]);
+    }
+
+    public function services(): string
+    {
+        $db = Database::connect();
+        $services = [];
+
+        if ($db->tableExists('layanan_masjid')) {
+            $services = $db->table('layanan_masjid')->where('status', 'ACTIVE')->orderBy('urutan', 'ASC')->get()->getResultArray();
+        }
+
+        return view('public/services', [
+            'activePage' => 'services',
+            'services'   => $services,
         ]);
     }
 

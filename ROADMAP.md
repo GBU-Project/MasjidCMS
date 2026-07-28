@@ -12,25 +12,12 @@
 - ✅ Read-Only Financial Reporting Engine (Trial Balance, Ledger, Cash Book, Fund Balance, Income Statement)
 - ✅ Production Security Hardening (CSRF Token Randomization, Login Rate-Limiting Throttler, Pessimistic Row Locking)
 
-### RC2 Development Progress (2026-07-28)
-
-#### New Features
-- Admin CRUD Foundation
-- CMS Create/Store/Delete
-- Master Data Create/Store
-- Financial Transaction Form Integration
-- Settings Upsert
-- Chart of Accounts Interface
-- Budget Interface
-- Financial Period Interface
-- Public Gallery
-- Financial Transparency Portal
-
-#### Improvements
-- Fixed UAT findings
-- Dashboard now supports operational workflow
-- Portal enhancement
-- CRUD foundation completed
+### v1.0.0-rc2 (Current Release Candidate) — 2026-07-28
+- ✅ Mosque Business Modules (Pengurus, Bidang, Layanan, Program, Inventaris)
+- ✅ Homepage Manager & Section Control Panel (Drag & Drop ordering, Visibility toggle, Limit control)
+- ✅ Dynamic Donation CTA Section Refactoring (No hardcoded strings, 100% DB driven settings)
+- ✅ Public Portal Pages (Public Org Structure, Public Services Catalog, Public Gallery, Public Financial Transparency)
+- ✅ Complete Admin CRUD Workspace Foundation (CMS, Financials, Master Data)
 
 ---
 

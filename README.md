@@ -1,49 +1,25 @@
 # MasjidCMS — Platform Manajemen Masjid Berbasis Domain-Driven Design
 
-[![Version](https://img.shields.io/badge/version-v1.0.0--rc1-blue.svg)](https://github.com/MasjidCMS/MasjidCMS/releases/tag/v1.0.0-rc1)
+[![Version](https://img.shields.io/badge/version-v1.0.0--rc2-blue.svg)](https://github.com/MasjidCMS/MasjidCMS/releases/tag/v1.0.0-rc2)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Build Status](https://img.shields.io/badge/tests-88%20passed-brightgreen.svg)]()
 
 **MasjidCMS** adalah aplikasi manajemen masjid modern berbasis **CodeIgniter 4 (PHP 8.2+)** yang dirancang menggunakan arsitektur **Domain-Driven Design (DDD)**. 
 
-Aplikasi ini mencakup pengelola identitas masjid, data jamaah, keluarga, hak akses (RBAC), serta **Modul Akuntansi Keuangan Masjid (Fund Accounting & Double-Entry Bookkeeping)** yang akurat dan sesuai dengan prinsip Syariah.
+Aplikasi ini mencakup pengelola identitas masjid, data jamaah, keluarga, hak akses (RBAC), **Modul Bisnis Masjid & Homepage Manager**, serta **Modul Akuntansi Keuangan Masjid (Fund Accounting & Double-Entry Bookkeeping)** yang akurat dan sesuai dengan prinsip Syariah.
 
 ---
 
-## 🌟 Fitur Utama (v1.0.0-rc1)
+## 🌟 Fitur Utama (v1.0.0-rc2)
 
+- 🎨 **Homepage Manager & Content Control (TASK-016A - 016E)**: Control panel admin untuk re-order section (drag & drop), visibilitas section, pengaturan limit konten, serta penyesuaian dinamis Banner Donasi CTA tanpa ubah kode.
+- 🕌 **Modul Bisnis Masjid (TASK-016)**: Modul Pengurus DKM, Bidang Kerja, Layanan Siaga Masjid, Program & Kegiatan, dan Inventaris.
 - 🏛️ **Master Data & Profil Institusi**: Pengelolaan identitas masjid (`Organization`), data jamaah, dan susunan keluarga.
 - 🔐 **Dynamic RBAC & Auth Security**: Otorisasi berbasis role (`Super Admin`, `Chairman`, `Treasurer`, `Finance Manager`, `Staff`), dilengkapi CSRF token randomization & brute-force rate-limiting lockout (HTTP 429).
 - 💰 **Akuntansi Kantong Dana (Fund Accounting - ADR-0005)**: Pemisahan dana terikat (Zakat, Qurban, Wakaf) dan dana bebas (Kas Umum, Pembangunan). Enforcing aturan syariah `BR-FIN-01` s/d `BR-FIN-04`.
 - 📖 **Double-Entry Posting Engine (ADR-0006)**: Pembentukan jurnal otomatis seimbang (`Debit == Credit`) dan jurnal pembalik (*reversal journal*).
 - 📊 **Read-Only Reporting Engine**: Laporan Neraca Saldo (Trial Balance), Buku Besar (General Ledger), Buku Kas (Cash Book), Saldo Kantong Dana, dan Laporan Operasional Pendapatan/Beban.
 - ⚡ **Race Condition Protection**: Penguncian pesimistik (`SELECT ... FOR UPDATE`) menjaga integritas saldo kas saat posting konkuren.
-
----
-
-## RC2 Development Progress (2026-07-28)
-
-### New Features
-
-- Admin CRUD Foundation
-- CMS Create/Store/Delete
-- Master Data Create/Store
-- Financial Transaction Form Integration
-- Settings Upsert
-- Chart of Accounts Interface
-- Budget Interface
-- Financial Period Interface
-- Public Gallery
-- Financial Transparency Portal
-
-### Improvements
-
-- Fixed UAT findings
-- Dashboard now supports operational workflow
-- Portal enhancement
-- CRUD foundation completed
-
----
 
 - Fixed duplicate migration blocker
 - Added missing CMS/System migrations

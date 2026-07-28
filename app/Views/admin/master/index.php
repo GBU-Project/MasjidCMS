@@ -21,24 +21,38 @@
 </div>
 
 <!-- Master Module Tab Navigation Bar -->
-<div style="border-bottom: 1px solid var(--border-light); margin-bottom: 20px; display: flex; gap: 8px;">
-    <a href="/admin/master?tab=masjid" class="nav-item-link <?= ($activeTab === 'masjid') ? 'active' : '' ?>">🕌 Profil Masjid</a>
-    <a href="/admin/master?tab=jamaah" class="nav-item-link <?= ($activeTab === 'jamaah') ? 'active' : '' ?>">👥 Data Jamaah</a>
-    <a href="/admin/master?tab=family" class="nav-item-link <?= ($activeTab === 'family') ? 'active' : '' ?>">👨‍👩‍👧 Data Keluarga</a>
-    <a href="/admin/master?tab=user" class="nav-item-link <?= ($activeTab === 'user') ? 'active' : '' ?>">👤 User Accounts</a>
-    <a href="/admin/master?tab=role" class="nav-item-link <?= ($activeTab === 'role') ? 'active' : '' ?>">🔑 Role Access</a>
-    <a href="/admin/master?tab=permission" class="nav-item-link <?= ($activeTab === 'permission') ? 'active' : '' ?>">🛡️ Permissions</a>
+<div style="border-bottom: 1px solid var(--border-light); margin-bottom: 20px; display: flex; gap: 8px; flex-wrap: wrap;">
+    <a href="<?= site_url('admin/master?tab=profil') ?>" class="nav-item-link <?= ($activeTab === 'profil' || $activeTab === 'masjid') ? 'active' : '' ?>">🕌 Profil Masjid</a>
+    <a href="<?= site_url('admin/master?tab=bidang') ?>" class="nav-item-link <?= ($activeTab === 'bidang') ? 'active' : '' ?>">🏛️ Data Bidang</a>
+    <a href="<?= site_url('admin/master?tab=pengurus') ?>" class="nav-item-link <?= ($activeTab === 'pengurus') ? 'active' : '' ?>">👔 Pengurus Masjid</a>
+    <a href="<?= site_url('admin/master?tab=jamaah') ?>" class="nav-item-link <?= ($activeTab === 'jamaah') ? 'active' : '' ?>">👥 Data Jamaah</a>
+    <a href="<?= site_url('admin/master?tab=family') ?>" class="nav-item-link <?= ($activeTab === 'family') ? 'active' : '' ?>">👨‍👩‍👧 Data Keluarga</a>
+    <a href="<?= site_url('admin/master?tab=user') ?>" class="nav-item-link <?= ($activeTab === 'user') ? 'active' : '' ?>">👤 User Accounts</a>
+    <a href="<?= site_url('admin/master?tab=role') ?>" class="nav-item-link <?= ($activeTab === 'role') ? 'active' : '' ?>">🔑 Role Access</a>
+    <a href="<?= site_url('admin/master?tab=permission') ?>" class="nav-item-link <?= ($activeTab === 'permission') ? 'active' : '' ?>">🛡️ Permissions</a>
 </div>
+
+<?php if (session()->getFlashdata('success')): ?>
+    <div style="background: #f0fdf4; border: 1px solid #86efac; color: #166534; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-weight: 500;">
+        ✅ <?= session()->getFlashdata('success') ?>
+    </div>
+<?php endif; ?>
+
+<?php if (session()->getFlashdata('error')): ?>
+    <div style="background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-weight: 500;">
+        ⚠️ <?= session()->getFlashdata('error') ?>
+    </div>
+<?php endif; ?>
 
 <!-- Reusable Toolbar -->
 <?= view('components/toolbar', [
-    'createUrl' => '/admin/master/create?tab=' . esc($activeTab),
-    'createLabel' => '+ Tambah ' . esc($activeModuleLabel ?? 'Data')
+    'createUrl' => site_url('admin/master/create?tab=' . $activeTab),
+    'createLabel' => '+ Tambah ' . ($activeModuleLabel ?? 'Data')
 ]) ?>
 
 <!-- Reusable Search & Filter Bar -->
 <?= view('components/search_filter', [
-    'placeholder' => 'Cari ' . esc($activeModuleLabel) . ' berdasarkan nama, nomor, atau kode...'
+    'placeholder' => 'Cari ' . ($activeModuleLabel ?? 'Data') . ' berdasarkan nama, nomor, atau kode...'
 ]) ?>
 
 <!-- Reusable Data Table Component -->

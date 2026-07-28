@@ -2,29 +2,19 @@
 
 All notable changes to the MasjidCMS platform are documented in this file. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## RC2 Development Progress (2026-07-28)
+## [v1.0.0-rc2] - 2026-07-28
 
-### New Features
+### Added
+- **Mosque Business Modules (TASK-016)**: Full database migrations (`2026-07-28-000013`), models (`PengurusModel`, `BidangModel`, `LayananModel`, `ProgramModel`), and seeders (`MosqueBusinessSeeder`).
+- **Homepage Manager & Section Control (TASK-016A - 016D)**: Admin workspace (`/admin/homepage-manager`) for section visibility toggles, drag & drop section re-ordering, content limit configuration, featured item toggles, and cache purging.
+- **Dynamic Homepage & Donation CTA Refactoring (TASK-016E)**: Removed hardcoded strings from portal view. Fully dynamic Section Donasi CTA driven by `settings` database table (`donation_title`, `donation_subtitle`, `donation_description`, `donation_btn_text`, `donation_btn_url`, `donation_bg_image`).
+- **New Public Portal Views**: Public Organizational Structure page (`/struktur-organisasi`) and Katalog Layanan Masjid page (`/layanan`).
+- **Admin CRUD Workspace Foundation**: Complete CRUD for CMS modules (Posts, Categories, Banners, Programs, Services, Gallery, Structure), Financials (COA, Budgets, Periods, Transactions), and Master Data.
 
-- Admin CRUD Foundation
-- CMS Create/Store/Delete
-- Master Data Create/Store
-- Financial Transaction Form Integration
-- Settings Upsert
-- Chart of Accounts Interface
-- Budget Interface
-- Financial Period Interface
-- Public Gallery
-- Financial Transparency Portal
-
-### Improvements
-
-- Fixed UAT findings
-- Dashboard now supports operational workflow
-- Portal enhancement
-- CRUD foundation completed
-
----
+### Fixed & Improved
+- Fixed HTTP 500 errors on public portal and CI4 route method deprecation warnings.
+- Fixed database schema alignments for missing system and CMS tables (`CreateMissingSystemAndCmsTables`).
+- Updated system documentation and upgrade guides (`UPGRADE_TASK016.md`).
 
 - Fixed duplicate migration blocker
 - Added missing CMS/System migrations

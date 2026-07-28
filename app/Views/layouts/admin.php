@@ -44,15 +44,83 @@
                 </a>
             </li>
             <li>
+                <a href="<?= site_url('admin/master?tab=bidang') ?>" class="nav-item-link">
+                    <span>🏛️</span>
+                    <span class="nav-text">Bidang</span>
+                </a>
+            </li>
+            <li>
+                <a href="<?= site_url('admin/master?tab=pengurus') ?>" class="nav-item-link">
+                    <span>👔</span>
+                    <span class="nav-text">Pengurus</span>
+                </a>
+            </li>
+            <li>
                 <a href="<?= site_url('admin/jamaah') ?>" class="nav-item-link">
                     <span>👥</span>
-                    <span class="nav-text">Data Jamaah</span>
+                    <span class="nav-text">Jamaah</span>
                 </a>
             </li>
             <li>
                 <a href="<?= site_url('admin/family') ?>" class="nav-item-link">
                     <span>👨‍👩‍👧</span>
-                    <span class="nav-text">Data Keluarga</span>
+                    <span class="nav-text">Keluarga</span>
+                </a>
+            </li>
+            <li>
+                <a href="<?= site_url('admin/users') ?>" class="nav-item-link">
+                    <span>👤</span>
+                    <span class="nav-text">User</span>
+                </a>
+            </li>
+            <li>
+                <a href="<?= site_url('admin/master?tab=role') ?>" class="nav-item-link">
+                    <span>🔑</span>
+                    <span class="nav-text">Role</span>
+                </a>
+            </li>
+            <li>
+                <a href="<?= site_url('admin/master?tab=permission') ?>" class="nav-item-link">
+                    <span>🛡️</span>
+                    <span class="nav-text">Permission</span>
+                </a>
+            </li>
+
+            <li style="padding: 12px 16px 4px; font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase;">CMS</li>
+            <li>
+                <a href="<?= site_url('admin/cms?tab=posts') ?>" class="nav-item-link">
+                    <span>📰</span>
+                    <span class="nav-text">Berita</span>
+                </a>
+            </li>
+            <li>
+                <a href="<?= site_url('admin/cms?tab=kajian') ?>" class="nav-item-link">
+                    <span>🕌</span>
+                    <span class="nav-text">Kajian</span>
+                </a>
+            </li>
+            <li>
+                <a href="<?= site_url('admin/cms?tab=program') ?>" class="nav-item-link">
+                    <span>🚩</span>
+                    <span class="nav-text">Program</span>
+                </a>
+            </li>
+            <li>
+                <a href="<?= site_url('admin/cms?tab=layanan') ?>" class="nav-item-link">
+                    <span>🤝</span>
+                    <span class="nav-text">Layanan</span>
+                </a>
+            </li>
+            <li>
+                <a href="<?= site_url('admin/cms?tab=pages') ?>" class="nav-item-link">
+                    <span>📄</span>
+                    <span class="nav-text">Pages</span>
+                </a>
+            </li>
+            <li>
+                <a href="<?= site_url('admin/cms?tab=gallery') ?>" class="nav-item-link">
+                    <span>🖼️</span>
+                    <span class="nav-text">Gallery</span>
                 </a>
             </li>
 
@@ -78,29 +146,53 @@
                 </a>
             </li>
 
-            <li style="padding: 12px 16px 4px; font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase;">CMS & SYSTEM</li>
-            <li>
-                <a href="<?= site_url('admin/cms') ?>" class="nav-item-link">
-                    <span>📰</span>
-                    <span class="nav-text">CMS & Portal Berita</span>
-                </a>
-            </li>
-            <li>
-                <a href="<?= site_url('admin/users') ?>" class="nav-item-link">
-                    <span>👤</span>
-                    <span class="nav-text">Pengguna (Users)</span>
-                </a>
-            </li>
-            <li>
-                <a href="<?= site_url('admin/rbac') ?>" class="nav-item-link">
-                    <span>🛡️</span>
-                    <span class="nav-text">Role & Permission</span>
-                </a>
-            </li>
+            <li style="padding: 12px 16px 4px; font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase;">WEBSITE MANAGEMENT</li>
             <li>
                 <a href="<?= site_url('admin/settings') ?>" class="nav-item-link">
+                    <span>🌐</span>
+                    <span class="nav-text">Website Settings</span>
+                </a>
+            </li>
+            <li>
+                <a href="<?= site_url('admin/homepage-manager') ?>" class="nav-item-link">
+                    <span>🎨</span>
+                    <span class="nav-text">Homepage Manager</span>
+                </a>
+            </li>
+            <li>
+                <a href="<?= site_url('admin/menu') ?>" class="nav-item-link">
+                    <span>🧭</span>
+                    <span class="nav-text">Navigation</span>
+                </a>
+            </li>
+            <li>
+                <a href="<?= site_url('admin/theme') ?>" class="nav-item-link">
+                    <span>🎨</span>
+                    <span class="nav-text">Theme</span>
+                </a>
+            </li>
+            <li>
+                <a href="<?= site_url('admin/media') ?>" class="nav-item-link">
+                    <span>📁</span>
+                    <span class="nav-text">Media Library</span>
+                </a>
+            </li>
+            <li>
+                <a href="<?= site_url('admin/settings?tab=seo') ?>" class="nav-item-link">
+                    <span>🔍</span>
+                    <span class="nav-text">SEO Settings</span>
+                </a>
+            </li>
+            <li>
+                <a href="<?= site_url('admin/settings?tab=advanced') ?>" class="nav-item-link">
                     <span>⚙️</span>
-                    <span class="nav-text">Pengaturan System</span>
+                    <span class="nav-text">Advanced Configuration</span>
+                </a>
+            </li>
+            <li>
+                <a href="<?= site_url('admin/notification') ?>" class="nav-item-link">
+                    <span>🔔</span>
+                    <span class="nav-text">Notifikasi</span>
                 </a>
             </li>
         </ul>

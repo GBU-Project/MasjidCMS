@@ -78,6 +78,54 @@
                 <input type="text" name="location" required value="<?= esc(old('location', $item['location'] ?? '')) ?>" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;">
             </div>
 
+        <?php elseif ($tab === 'program'): ?>
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 6px;">Nama Program / Kegiatan *</label>
+                <input type="text" name="nama" required value="<?= esc(old('nama', $item['nama'] ?? '')) ?>" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;">
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 6px;">Penanggung Jawab</label>
+                    <input type="text" name="penanggung_jawab" value="<?= esc(old('penanggung_jawab', $item['penanggung_jawab'] ?? '')) ?>" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;">
+                </div>
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 6px;">Lokasi Kegiatan</label>
+                    <input type="text" name="lokasi" value="<?= esc(old('lokasi', $item['lokasi'] ?? '')) ?>" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;">
+                </div>
+            </div>
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 6px;">Ringkasan Singkat</label>
+                <input type="text" name="ringkasan" value="<?= esc(old('ringkasan', $item['ringkasan'] ?? '')) ?>" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;">
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 6px;">Deskripsi Lengkap Program</label>
+                <textarea name="deskripsi" rows="4" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;"><?= esc(old('deskripsi', $item['deskripsi'] ?? '')) ?></textarea>
+            </div>
+
+        <?php elseif ($tab === 'layanan'): ?>
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 6px;">Nama Layanan *</label>
+                <input type="text" name="nama" required value="<?= esc(old('nama', $item['nama'] ?? '')) ?>" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;">
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 6px;">Icon Emoji</label>
+                    <input type="text" name="icon" value="<?= esc(old('icon', $item['icon'] ?? '🤝')) ?>" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;">
+                </div>
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 6px;">Kontak / WhatsApp</label>
+                    <input type="text" name="kontak" value="<?= esc(old('kontak', $item['kontak'] ?? '')) ?>" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;">
+                </div>
+            </div>
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 6px;">Jam Operasional Layanan</label>
+                <input type="text" name="jam_layanan" value="<?= esc(old('jam_layanan', $item['jam_layanan'] ?? '')) ?>" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;">
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 6px;">Deskripsi & Persyaratan</label>
+                <textarea name="deskripsi" rows="3" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;"><?= esc(old('deskripsi', $item['deskripsi'] ?? '')) ?></textarea>
+            </div>
+
         <?php elseif ($tab === 'pages'): ?>
             <div style="margin-bottom: 16px;">
                 <label style="display: block; font-weight: 600; margin-bottom: 6px;">Judul Halaman Statis *</label>

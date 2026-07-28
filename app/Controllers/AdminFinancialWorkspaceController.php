@@ -17,22 +17,26 @@ class AdminFinancialWorkspaceController extends BaseController
 
         try {
             if ($tab === 'transactions' && $db->tableExists('financial_transactions')) {
-                $headers = ['No. Transaksi', 'Tanggal', 'Jenis', 'Nominal (Rp)', 'Status'];
+                $headers = ['No. Transaksi', 'Tanggal', 'Jenis', 'Nominal (Rp)', 'Status', 'Aksi'];
                 $data = $db->table('financial_transactions')->orderBy('created_at', 'DESC')->get()->getResultArray();
                 foreach ($data as $t) {
                     $trxNo = $t['transaction_no'] ?? $t['transaction_number'] ?? ('TRX-' . $t['id']);
                     $rows[] = [
                         'columns' => [
-                            '<span class="stat-mono"><a href="/admin/financial/detail/' . esc($trxNo) . '">' . esc($trxNo) . '</a></span>',
+                            '<span class="stat-mono"><a href="' . site_url('admin/financial/detail/' . esc($trxNo)) . '">' . esc($trxNo) . '</a></span>',
                             esc(substr($t['transaction_date'], 0, 10)),
                             '<span class="badge ' . ($t['transaction_type'] === 'INCOME' ? 'badge-green' : 'badge-red') . '">' . esc($t['transaction_type']) . '</span>',
                             '<span class="stat-mono">' . number_format((float)$t['amount'], 0, ',', '.') . '</span>',
                             '<span class="badge ' . ($t['status'] === 'POSTED' ? 'badge-green' : 'badge-amber') . '">' . esc($t['status']) . '</span>',
+                            '<div style="display:flex; gap:4px;">' .
+                            '<a href="' . site_url('admin/financial/edit/' . $t['id']) . '" class="btn btn-secondary" style="padding: 2px 8px; font-size: 12px;">Edit</a>' .
+                            '<a href="' . site_url('admin/financial/delete/' . $t['id']) . '" class="btn btn-secondary" onclick="return confirm(\'Void/Hapus transaksi ini?\')" style="padding: 2px 8px; font-size: 12px; color: var(--status-danger-text);">Void</a>' .
+                            '</div>',
                         ]
                     ];
                 }
             } elseif ($tab === 'coa' && $db->tableExists('coa_accounts')) {
-                $headers = ['Kode COA', 'Nama Akun', 'Tipe Akun', 'Status'];
+                $headers = ['Kode COA', 'Nama Akun', 'Tipe Akun', 'Status', 'Aksi'];
                 $data = $db->table('coa_accounts')->get()->getResultArray();
                 foreach ($data as $c) {
                     $rows[] = [
@@ -41,11 +45,12 @@ class AdminFinancialWorkspaceController extends BaseController
                             '<strong>' . esc($c['name']) . '</strong>',
                             '<span class="badge badge-green">' . esc($c['account_type']) . '</span>',
                             '<span class="badge ' . ($c['is_active'] ? 'badge-green' : 'badge-amber') . '">' . ($c['is_active'] ? 'ACTIVE' : 'INACTIVE') . '</span>',
+                            '<a href="' . site_url('admin/financial/coa/delete/' . $c['id']) . '" class="btn btn-secondary" onclick="return confirm(\'Hapus COA ini?\')" style="padding: 2px 8px; font-size: 12px; color: var(--status-danger-text);">Hapus</a>',
                         ]
                     ];
                 }
             } elseif ($tab === 'budget' && $db->tableExists('budget')) {
-                $headers = ['Budget ID', 'Period ID', 'Allocated Amount', 'Used Amount'];
+                $headers = ['Budget ID', 'Period ID', 'Allocated Amount', 'Used Amount', 'Aksi'];
                 $data = $db->table('budget')->get()->getResultArray();
                 foreach ($data as $b) {
                     $rows[] = [
@@ -54,11 +59,12 @@ class AdminFinancialWorkspaceController extends BaseController
                             '<span class="stat-mono">PER-' . esc($b['period_id']) . '</span>',
                             '<span class="stat-mono">Rp ' . number_format((float)$b['allocated_amount'], 0, ',', '.') . '</span>',
                             '<span class="stat-mono">Rp ' . number_format((float)$b['used_amount'], 0, ',', '.') . '</span>',
+                            '<a href="' . site_url('admin/financial/budget/delete/' . $b['id']) . '" class="btn btn-secondary" onclick="return confirm(\'Hapus anggaran ini?\')" style="padding: 2px 8px; font-size: 12px; color: var(--status-danger-text);">Hapus</a>',
                         ]
                     ];
                 }
             } elseif ($tab === 'periods' && $db->tableExists('financial_periods')) {
-                $headers = ['Kode Periode', 'Nama Periode', 'Tanggal Mulai', 'Tanggal Selesai', 'Status Closing'];
+                $headers = ['Kode Periode', 'Nama Periode', 'Tanggal Mulai', 'Tanggal Selesai', 'Status Closing', 'Aksi'];
                 $data = $db->table('financial_periods')->get()->getResultArray();
                 foreach ($data as $p) {
                     $rows[] = [
@@ -68,6 +74,7 @@ class AdminFinancialWorkspaceController extends BaseController
                             esc($p['start_date']),
                             esc($p['end_date']),
                             '<span class="badge ' . ($p['is_closed'] ? 'badge-amber' : 'badge-green') . '">' . ($p['is_closed'] ? 'CLOSED' : 'OPEN') . '</span>',
+                            '<a href="' . site_url('admin/financial/periods/delete/' . $p['id']) . '" class="btn btn-secondary" onclick="return confirm(\'Hapus periode ini?\')" style="padding: 2px 8px; font-size: 12px; color: var(--status-danger-text);">Hapus</a>',
                         ]
                     ];
                 }
@@ -144,6 +151,12 @@ class AdminFinancialWorkspaceController extends BaseController
     {
         $db = Database::connect();
         try {
+            $rules = ['amount' => 'required|numeric', 'description' => 'required'];
+            if (!$this->validate($rules)) {
+                session()->setFlashdata('error', 'Gagal menyimpan transaksi: ' . implode(', ', $this->validator->getErrors()));
+                return redirect()->back()->withInput();
+            }
+
             $type = (string) ($this->request->getPost('transaction_type') ?: 'EXPENSE');
             $amount = (float) $this->request->getPost('amount');
             $desc = (string) $this->request->getPost('description');
@@ -152,28 +165,21 @@ class AdminFinancialWorkspaceController extends BaseController
             $uuid = sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x', mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0x0fff) | 0x4000, mt_rand(0, 0x3fff) | 0x8000, mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff));
             $trxNo = 'TRX-' . date('Ym') . '-' . str_pad((string) mt_rand(1, 9999), 5, '0', STR_PAD_LEFT);
 
-            // Get first fund & account if exists
             $fundId = 1;
             $accountId = 1;
             $finAccId = 1;
 
             if ($db->tableExists('funds')) {
                 $fRow = $db->table('funds')->get()->getRowArray();
-                if ($fRow) {
-                    $fundId = $fRow['id'];
-                }
+                if ($fRow) { $fundId = $fRow['id']; }
             }
             if ($db->tableExists('coa_accounts')) {
                 $cRow = $db->table('coa_accounts')->get()->getRowArray();
-                if ($cRow) {
-                    $accountId = $cRow['id'];
-                }
+                if ($cRow) { $accountId = $cRow['id']; }
             }
             if ($db->tableExists('financial_accounts')) {
                 $faRow = $db->table('financial_accounts')->get()->getRowArray();
-                if ($faRow) {
-                    $finAccId = $faRow['id'];
-                }
+                if ($faRow) { $finAccId = $faRow['id']; }
             }
 
             $db->table('financial_transactions')->insert([
@@ -192,7 +198,6 @@ class AdminFinancialWorkspaceController extends BaseController
                 'created_at'           => date('Y-m-d H:i:s'),
             ]);
 
-            // Update balance on financial_accounts
             if ($db->tableExists('financial_accounts')) {
                 if ($type === 'INCOME') {
                     $db->query("UPDATE financial_accounts SET balance = balance + {$amount} WHERE id = {$finAccId}");
@@ -200,11 +205,211 @@ class AdminFinancialWorkspaceController extends BaseController
                     $db->query("UPDATE financial_accounts SET balance = balance - {$amount} WHERE id = {$finAccId}");
                 }
             }
+
+            session()->setFlashdata('success', 'Transaksi ' . esc($trxNo) . ' berhasil disimpan.');
         } catch (\Throwable $e) {
             log_message('error', 'AdminFinancialWorkspaceController Store Exception: ' . $e->getMessage());
+            session()->setFlashdata('error', 'Terjadi kesalahan sistem saat menyimpan transaksi: ' . $e->getMessage());
+            return redirect()->back()->withInput();
         }
 
         return redirect()->to(site_url('admin/financial'));
+    }
+
+    public function storeCoa()
+    {
+        $db = Database::connect();
+        try {
+            $code = (string) $this->request->getPost('account_code');
+            $name = (string) $this->request->getPost('name');
+            $type = (string) ($this->request->getPost('account_type') ?: 'ASSET');
+            $uuid = sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x', mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0x0fff) | 0x4000, mt_rand(0, 0x3fff) | 0x8000, mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff));
+
+            if (!empty($code) && !empty($name) && $db->tableExists('coa_accounts')) {
+                $db->table('coa_accounts')->insert([
+                    'uuid'         => $uuid,
+                    'masjid_id'    => '1',
+                    'account_code' => $code,
+                    'name'         => $name,
+                    'account_type' => $type,
+                    'is_active'    => 1,
+                    'created_at'   => date('Y-m-d H:i:s'),
+                ]);
+                session()->setFlashdata('success', 'Akun COA ' . esc($code) . ' berhasil ditambahkan.');
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'AdminFinancialWorkspaceController StoreCOA Exception: ' . $e->getMessage());
+            session()->setFlashdata('error', 'Gagal menyimpan COA: ' . $e->getMessage());
+        }
+
+        return redirect()->to(site_url('admin/financial?tab=coa'));
+    }
+
+    public function deleteCoa(string $id)
+    {
+        $db = Database::connect();
+        try {
+            if ($db->tableExists('coa_accounts')) {
+                $db->table('coa_accounts')->where('id', $id)->delete();
+                session()->setFlashdata('success', 'Akun COA berhasil dihapus.');
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'AdminFinancialWorkspaceController DeleteCOA Exception: ' . $e->getMessage());
+            session()->setFlashdata('error', 'Gagal menghapus COA: ' . $e->getMessage());
+        }
+
+        return redirect()->to(site_url('admin/financial?tab=coa'));
+    }
+
+    public function storeBudget()
+    {
+        $db = Database::connect();
+        try {
+            $allocated = (float) $this->request->getPost('allocated_amount');
+            $periodId = (int) ($this->request->getPost('period_id') ?: 1);
+
+            if ($allocated > 0 && $db->tableExists('budget')) {
+                $db->table('budget')->insert([
+                    'period_id'        => $periodId,
+                    'account_id'       => 1,
+                    'fund_id'          => 1,
+                    'allocated_amount' => $allocated,
+                    'used_amount'      => 0,
+                ]);
+                session()->setFlashdata('success', 'Alokasi Budget berhasil disimpan.');
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'AdminFinancialWorkspaceController StoreBudget Exception: ' . $e->getMessage());
+            session()->setFlashdata('error', 'Gagal menyimpan Budget: ' . $e->getMessage());
+        }
+
+        return redirect()->to(site_url('admin/financial?tab=budget'));
+    }
+
+    public function deleteBudget(string $id)
+    {
+        $db = Database::connect();
+        try {
+            if ($db->tableExists('budget')) {
+                $db->table('budget')->where('id', $id)->delete();
+                session()->setFlashdata('success', 'Alokasi Budget berhasil dihapus.');
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'AdminFinancialWorkspaceController DeleteBudget Exception: ' . $e->getMessage());
+            session()->setFlashdata('error', 'Gagal menghapus Budget: ' . $e->getMessage());
+        }
+
+        return redirect()->to(site_url('admin/financial?tab=budget'));
+    }
+
+    public function storePeriod()
+    {
+        $db = Database::connect();
+        try {
+            $code = (string) $this->request->getPost('period_code');
+            $name = (string) $this->request->getPost('name');
+            $start = (string) $this->request->getPost('start_date');
+            $end = (string) $this->request->getPost('end_date');
+
+            if (!empty($code) && !empty($name) && $db->tableExists('financial_periods')) {
+                $db->table('financial_periods')->insert([
+                    'period_code' => $code,
+                    'name'        => $name,
+                    'start_date'  => $start ?: date('Y-01-01'),
+                    'end_date'    => $end ?: date('Y-12-31'),
+                    'is_closed'   => 0,
+                    'created_at'  => date('Y-m-d H:i:s'),
+                ]);
+                session()->setFlashdata('success', 'Periode Keuangan ' . esc($name) . ' berhasil ditambahkan.');
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'AdminFinancialWorkspaceController StorePeriod Exception: ' . $e->getMessage());
+            session()->setFlashdata('error', 'Gagal menyimpan Periode: ' . $e->getMessage());
+        }
+
+        return redirect()->to(site_url('admin/financial?tab=periods'));
+    }
+
+    public function deletePeriod(string $id)
+    {
+        $db = Database::connect();
+        try {
+            if ($db->tableExists('financial_periods')) {
+                $db->table('financial_periods')->where('id', $id)->delete();
+                session()->setFlashdata('success', 'Periode Keuangan berhasil dihapus.');
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'AdminFinancialWorkspaceController DeletePeriod Exception: ' . $e->getMessage());
+            session()->setFlashdata('error', 'Gagal menghapus Periode: ' . $e->getMessage());
+        }
+
+        return redirect()->to(site_url('admin/financial?tab=periods'));
+    }
+
+    public function storeJournal()
+    {
+        $db = Database::connect();
+        try {
+            $desc = (string) $this->request->getPost('description');
+            $jNo = 'JRN-' . date('Ym') . '-' . str_pad((string) mt_rand(1, 9999), 5, '0', STR_PAD_LEFT);
+            $uuid = sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x', mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0x0fff) | 0x4000, mt_rand(0, 0x3fff) | 0x8000, mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff));
+
+            if ($db->tableExists('journal_entries')) {
+                $trxRow = $db->table('financial_transactions')->get()->getRowArray();
+                $trxId = $trxRow ? $trxRow['id'] : null;
+
+                if (!$trxId) {
+                    $trxUuid = sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x', mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0x0fff) | 0x4000, mt_rand(0, 0x3fff) | 0x8000, mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff));
+                    $db->table('financial_transactions')->insert([
+                        'uuid'                 => $trxUuid,
+                        'masjid_id'            => '1',
+                        'fund_id'              => 1,
+                        'account_id'           => 1,
+                        'financial_account_id' => 1,
+                        'transaction_no'       => 'TRX-SYS-001',
+                        'transaction_type'     => 'INCOME',
+                        'amount'               => 0,
+                        'payment_method'       => 'CASH',
+                        'status'               => 'POSTED',
+                        'transaction_date'     => date('Y-m-d H:i:s'),
+                        'description'          => 'System Initial Transaction',
+                        'created_at'           => date('Y-m-d H:i:s'),
+                    ]);
+                    $trxId = $db->insertID();
+                }
+
+                $db->table('journal_entries')->insert([
+                    'uuid'           => $uuid,
+                    'journal_no'     => $jNo,
+                    'transaction_id' => $trxId,
+                    'entry_date'     => date('Y-m-d H:i:s'),
+                    'description'    => $desc ?: 'Pencatatan Jurnal Manual',
+                    'created_at'     => date('Y-m-d H:i:s'),
+                ]);
+                session()->setFlashdata('success', 'Catatan Jurnal Manual ' . esc($jNo) . ' berhasil diposting.');
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'AdminFinancialWorkspaceController StoreJournal Exception: ' . $e->getMessage());
+            session()->setFlashdata('error', 'Gagal memposting Jurnal: ' . $e->getMessage());
+        }
+
+        return redirect()->to(site_url('admin/financial?tab=journal'));
+    }
+
+    public function delete(string $id)
+    {
+        $db = Database::connect();
+        try {
+            if ($db->tableExists('financial_transactions')) {
+                $db->table('financial_transactions')->where('id', $id)->delete();
+                session()->setFlashdata('success', 'Transaksi berhasil di-void/dihapus.');
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'AdminFinancialWorkspaceController Delete Exception: ' . $e->getMessage());
+            session()->setFlashdata('error', 'Gagal menghapus transaksi: ' . $e->getMessage());
+        }
+
+        return redirect()->to(site_url('admin/financial?tab=transactions'));
     }
 
     public function detail(string $id): string

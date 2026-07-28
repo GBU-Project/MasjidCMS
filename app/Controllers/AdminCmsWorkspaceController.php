@@ -10,7 +10,21 @@ class AdminCmsWorkspaceController extends BaseController
     public function index(): string
     {
         $db = Database::connect();
-        $tab = (string) ($this->request->getGet('tab') ?? 'posts');
+        $path = $this->request->getUri()->getPath();
+        $defaultTab = 'posts';
+        if (str_contains($path, 'program')) {
+            $defaultTab = 'program';
+        } elseif (str_contains($path, 'layanan')) {
+            $defaultTab = 'layanan';
+        } elseif (str_contains($path, 'kajian')) {
+            $defaultTab = 'kajian';
+        } elseif (str_contains($path, 'pages')) {
+            $defaultTab = 'pages';
+        } elseif (str_contains($path, 'gallery')) {
+            $defaultTab = 'gallery';
+        }
+
+        $tab = (string) ($this->request->getGet('tab') ?? $defaultTab);
 
         $headers = [];
         $rows = [];
@@ -68,6 +82,47 @@ class AdminCmsWorkspaceController extends BaseController
                         ]
                     ];
                 }
+            } elseif ($tab === 'program' && $db->tableExists('program_kegiatan')) {
+                $headers = ['Nama Program / Kegiatan', 'Bidang', 'Penanggung Jawab', 'Lokasi', 'Status', 'Aksi'];
+                $builder = $db->table('program_kegiatan');
+                if ($db->tableExists('bidang')) {
+                    $builder->select('program_kegiatan.*, bidang.name as bidang_name')
+                            ->join('bidang', 'bidang.id = program_kegiatan.bidang_id', 'left');
+                }
+                $data = $builder->orderBy('program_kegiatan.created_at', 'DESC')->get()->getResultArray();
+                foreach ($data as $pr) {
+                    $rows[] = [
+                        'columns' => [
+                            '<strong>' . esc($pr['nama']) . '</strong>',
+                            '<span class="badge badge-blue">' . esc($pr['bidang_name'] ?? 'Umum') . '</span>',
+                            esc($pr['penanggung_jawab'] ?? '-'),
+                            esc($pr['lokasi'] ?? '-'),
+                            '<span class="badge badge-green">' . esc($pr['status'] ?? 'ACTIVE') . '</span>',
+                            '<div style="display:flex; gap:4px;">' .
+                            '<a href="' . site_url('admin/cms/edit/program/' . $pr['id']) . '" class="btn btn-secondary" style="padding: 2px 8px; font-size: 12px;">Edit</a>' .
+                            '<a href="' . site_url('admin/cms/delete/program/' . $pr['id']) . '" class="btn btn-secondary" onclick="return confirm(\'Hapus program ini?\')" style="padding: 2px 8px; font-size: 12px; color: var(--status-danger-text);">Hapus</a>' .
+                            '</div>',
+                        ]
+                    ];
+                }
+            } elseif ($tab === 'layanan' && $db->tableExists('layanan_masjid')) {
+                $headers = ['Nama Layanan', 'Icon', 'Jam Layanan', 'Kontak / Wa', 'Status', 'Aksi'];
+                $data = $db->table('layanan_masjid')->orderBy('urutan', 'ASC')->get()->getResultArray();
+                foreach ($data as $l) {
+                    $rows[] = [
+                        'columns' => [
+                            '<strong>' . esc($l['nama']) . '</strong>',
+                            '<span style="font-size: 18px;">' . esc($l['icon'] ?? '🤝') . '</span>',
+                            '<span class="stat-mono">' . esc($l['jam_layanan'] ?? '-') . '</span>',
+                            esc($l['kontak'] ?? '-'),
+                            '<span class="badge badge-green">' . esc($l['status'] ?? 'ACTIVE') . '</span>',
+                            '<div style="display:flex; gap:4px;">' .
+                            '<a href="' . site_url('admin/cms/edit/layanan/' . $l['id']) . '" class="btn btn-secondary" style="padding: 2px 8px; font-size: 12px;">Edit</a>' .
+                            '<a href="' . site_url('admin/cms/delete/layanan/' . $l['id']) . '" class="btn btn-secondary" onclick="return confirm(\'Hapus layanan ini?\')" style="padding: 2px 8px; font-size: 12px; color: var(--status-danger-text);">Hapus</a>' .
+                            '</div>',
+                        ]
+                    ];
+                }
             } elseif ($tab === 'gallery' && $db->tableExists('gallery')) {
                 $headers = ['ID Media', 'Caption Foto', 'Media Object', 'Aksi'];
                 $data = $db->table('gallery')->get()->getResultArray();
@@ -78,8 +133,8 @@ class AdminCmsWorkspaceController extends BaseController
                             '<strong>' . esc($g['caption'] ?? 'Foto Kegiatan Masjid') . '</strong>',
                             '<span class="badge badge-green">GALLERY ASSET</span>',
                             '<div style="display:flex; gap:4px;">' .
-                            '<a href="/admin/cms/edit/gallery/' . $g['id'] . '" class="btn btn-secondary" style="padding: 2px 8px; font-size: 12px;">Edit</a>' .
-                            '<a href="/admin/cms/delete/gallery/' . $g['id'] . '" class="btn btn-secondary" onclick="return confirm(\'Hapus foto ini?\')" style="padding: 2px 8px; font-size: 12px; color: var(--status-danger-text);">Hapus</a>' .
+                            '<a href="' . site_url('admin/cms/edit/gallery/' . $g['id']) . '" class="btn btn-secondary" style="padding: 2px 8px; font-size: 12px;">Edit</a>' .
+                            '<a href="' . site_url('admin/cms/delete/gallery/' . $g['id']) . '" class="btn btn-secondary" onclick="return confirm(\'Hapus foto ini?\')" style="padding: 2px 8px; font-size: 12px; color: var(--status-danger-text);">Hapus</a>' .
                             '</div>',
                         ]
                     ];
@@ -92,6 +147,8 @@ class AdminCmsWorkspaceController extends BaseController
         $moduleLabels = [
             'posts'   => 'Berita & Artikel Warta Masjid',
             'kajian'  => 'Jadwal Kajian Rutin & Tematik',
+            'program' => 'Program & Kegiatan Masjid',
+            'layanan' => 'Katalog Layanan Masjid',
             'pages'   => 'Halaman Statis CMS Portal',
             'gallery' => 'Galeri Foto & Media Kegiatan',
         ];
@@ -216,6 +273,51 @@ class AdminCmsWorkspaceController extends BaseController
 
                 session()->setFlashdata('success', 'Halaman Statis "' . esc($title) . '" berhasil ditambahkan.');
 
+            } elseif ($tab === 'program') {
+                $rules = ['nama' => 'required'];
+                if (!$this->validate($rules)) {
+                    session()->setFlashdata('error', 'Gagal menyimpan Program: ' . implode(', ', $this->validator->getErrors()));
+                    return redirect()->back()->withInput();
+                }
+
+                $nama = (string) $this->request->getPost('nama');
+                $db->table('program_kegiatan')->insert([
+                    'bidang_id'        => (int) ($this->request->getPost('bidang_id') ?: 1),
+                    'nama'             => $nama,
+                    'slug'             => url_title($nama, '-', true),
+                    'ringkasan'        => (string) $this->request->getPost('ringkasan'),
+                    'deskripsi'        => (string) $this->request->getPost('deskripsi'),
+                    'penanggung_jawab' => (string) $this->request->getPost('penanggung_jawab'),
+                    'lokasi'           => (string) $this->request->getPost('lokasi'),
+                    'status'           => 'ACTIVE',
+                    'featured'         => (int) ($this->request->getPost('featured') ?: 0),
+                    'created_at'       => date('Y-m-d H:i:s'),
+                ]);
+                session()->setFlashdata('success', 'Program "' . esc($nama) . '" berhasil ditambahkan.');
+
+            } elseif ($tab === 'layanan') {
+                $rules = ['nama' => 'required'];
+                if (!$this->validate($rules)) {
+                    session()->setFlashdata('error', 'Gagal menyimpan Layanan: ' . implode(', ', $this->validator->getErrors()));
+                    return redirect()->back()->withInput();
+                }
+
+                $nama = (string) $this->request->getPost('nama');
+                $db->table('layanan_masjid')->insert([
+                    'nama'        => $nama,
+                    'slug'        => url_title($nama, '-', true),
+                    'icon'        => (string) ($this->request->getPost('icon') ?: '🤝'),
+                    'deskripsi'   => (string) $this->request->getPost('deskripsi'),
+                    'persyaratan' => (string) $this->request->getPost('persyaratan'),
+                    'jam_layanan' => (string) $this->request->getPost('jam_layanan'),
+                    'kontak'      => (string) $this->request->getPost('kontak'),
+                    'lokasi'      => (string) $this->request->getPost('lokasi'),
+                    'status'      => 'ACTIVE',
+                    'urutan'      => (int) ($this->request->getPost('urutan') ?: 1),
+                    'created_at'  => date('Y-m-d H:i:s'),
+                ]);
+                session()->setFlashdata('success', 'Layanan "' . esc($nama) . '" berhasil ditambahkan.');
+
             } elseif ($tab === 'gallery') {
                 $rules = [
                     'caption' => 'required',
@@ -256,10 +358,11 @@ class AdminCmsWorkspaceController extends BaseController
     public function edit(string $type, string $id): string
     {
         $db = Database::connect();
-        $allowedTables = ['posts', 'kajian', 'pages', 'gallery'];
+        $allowedTables = ['posts', 'kajian', 'pages', 'gallery', 'program' => 'program_kegiatan', 'layanan' => 'layanan_masjid'];
+        $tableName = $allowedTables[$type] ?? $type;
         $item = null;
 
-        if (in_array($type, $allowedTables, true) && $db->tableExists($type)) {
+        if ($db->tableExists($tableName)) {
             if ($type === 'gallery') {
                 $builder = $db->table('gallery');
                 if ($db->tableExists('media')) {
@@ -268,7 +371,7 @@ class AdminCmsWorkspaceController extends BaseController
                 }
                 $item = $builder->where('gallery.id', $id)->get()->getRowArray();
             } else {
-                $item = $db->table($type)->where('id', $id)->get()->getRowArray();
+                $item = $db->table($tableName)->where('id', $id)->get()->getRowArray();
             }
         }
 
@@ -326,6 +429,27 @@ class AdminCmsWorkspaceController extends BaseController
                 ]);
                 session()->setFlashdata('success', 'Jadwal Kajian berhasil diperbarui.');
 
+            } elseif ($tab === 'program') {
+                $db->table('program_kegiatan')->where('id', $id)->update([
+                    'nama'             => (string) $this->request->getPost('nama'),
+                    'ringkasan'        => (string) $this->request->getPost('ringkasan'),
+                    'deskripsi'        => (string) $this->request->getPost('deskripsi'),
+                    'penanggung_jawab' => (string) $this->request->getPost('penanggung_jawab'),
+                    'lokasi'           => (string) $this->request->getPost('lokasi'),
+                ]);
+                session()->setFlashdata('success', 'Program Kegiatan berhasil diperbarui.');
+
+            } elseif ($tab === 'layanan') {
+                $db->table('layanan_masjid')->where('id', $id)->update([
+                    'nama'        => (string) $this->request->getPost('nama'),
+                    'icon'        => (string) $this->request->getPost('icon'),
+                    'deskripsi'   => (string) $this->request->getPost('deskripsi'),
+                    'persyaratan' => (string) $this->request->getPost('persyaratan'),
+                    'jam_layanan' => (string) $this->request->getPost('jam_layanan'),
+                    'kontak'      => (string) $this->request->getPost('kontak'),
+                ]);
+                session()->setFlashdata('success', 'Layanan Masjid berhasil diperbarui.');
+
             } elseif ($tab === 'pages') {
                 $rules = ['title' => 'required|min_length[3]', 'content' => 'required'];
                 if (!$this->validate($rules)) {
@@ -380,9 +504,10 @@ class AdminCmsWorkspaceController extends BaseController
     {
         $db = Database::connect();
         try {
-            $allowedTables = ['posts', 'kajian', 'pages', 'gallery'];
-            if (in_array($type, $allowedTables, true) && $db->tableExists($type)) {
-                $db->table($type)->where('id', $id)->delete();
+            $tableMap = ['posts' => 'posts', 'kajian' => 'kajian', 'pages' => 'pages', 'gallery' => 'gallery', 'program' => 'program_kegiatan', 'layanan' => 'layanan_masjid'];
+            $tableName = $tableMap[$type] ?? $type;
+            if ($db->tableExists($tableName)) {
+                $db->table($tableName)->where('id', $id)->delete();
                 session()->setFlashdata('success', 'Data ' . esc($type) . ' berhasil dihapus.');
             }
         } catch (\Throwable $e) {

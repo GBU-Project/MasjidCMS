@@ -81,9 +81,9 @@
 <!-- Quick Action Bar -->
 <div class="quick-action-bar">
     <span style="font-size: 14px; font-weight: 600; color: var(--text-main); margin-right: 8px;">Aksi Cepat:</span>
-    <a href="/admin/financial" class="btn btn-primary">+ Transaksi Baru</a>
-    <a href="/admin/master?tab=jamaah" class="btn btn-secondary">+ Tambah Jamaah</a>
-    <a href="/admin/master?tab=family" class="btn btn-secondary">+ Registrasi Keluarga</a>
+    <a href="<?= site_url('admin/financial') ?>" class="btn btn-primary">+ Transaksi Baru</a>
+    <a href="<?= site_url('admin/master?tab=jamaah') ?>" class="btn btn-secondary">+ Tambah Jamaah</a>
+    <a href="<?= site_url('admin/master?tab=family') ?>" class="btn btn-secondary">+ Registrasi Keluarga</a>
 </div>
 
 <!-- Dashboard Content Split Section -->
@@ -121,7 +121,7 @@
                                     <td><?= esc($rt['description'] ?? '-') ?></td>
                                     <td class="stat-mono">Rp <?= number_format((float)$rt['amount'], 0, ',', '.') ?></td>
                                     <td><span class="badge <?= $rt['status'] === 'POSTED' ? 'badge-green' : 'badge-amber' ?>"><?= esc($rt['status']) ?></span></td>
-                                    <td><a href="/admin/financial/detail/<?= esc($rt['transaction_no']) ?>" class="btn btn-primary" style="padding: 4px 10px; font-size: 12px;">Detail</a></td>
+                                    <td><a href="<?= site_url('admin/financial/detail/' . esc($rt['transaction_no'])) ?>" class="btn btn-primary" style="padding: 4px 10px; font-size: 12px;">Detail</a></td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php endif; ?>
