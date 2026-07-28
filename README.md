@@ -21,7 +21,29 @@ Aplikasi ini mencakup pengelola identitas masjid, data jamaah, keluarga, hak aks
 
 ---
 
-## RC1 Audit Fixes (2026-07-28)
+## RC2 Development Progress (2026-07-28)
+
+### New Features
+
+- Admin CRUD Foundation
+- CMS Create/Store/Delete
+- Master Data Create/Store
+- Financial Transaction Form Integration
+- Settings Upsert
+- Chart of Accounts Interface
+- Budget Interface
+- Financial Period Interface
+- Public Gallery
+- Financial Transparency Portal
+
+### Improvements
+
+- Fixed UAT findings
+- Dashboard now supports operational workflow
+- Portal enhancement
+- CRUD foundation completed
+
+---
 
 - Fixed duplicate migration blocker
 - Added missing CMS/System migrations
