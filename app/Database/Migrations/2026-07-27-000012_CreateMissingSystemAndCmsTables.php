@@ -330,9 +330,9 @@ class CreateMissingSystemAndCmsTables extends Migration
                 'null'     => true,
             ],
             'author_id' => [
-                'type'     => 'BIGINT',
-                'unsigned' => true,
-                'null'     => false,
+                'type'       => 'VARCHAR',
+                'constraint' => 36,
+                'null'       => true,
             ],
             'title' => [
                 'type'       => 'VARCHAR',

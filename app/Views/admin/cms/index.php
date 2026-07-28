@@ -24,6 +24,18 @@
     <a href="<?= site_url('admin/cms?tab=gallery') ?>" style="padding: 12px 0; text-decoration: none; font-size: 14px; font-weight: 600; color: <?= ($activeTab === 'gallery') ? 'var(--primary-600)' : 'var(--text-secondary)' ?>; border-bottom: 2px solid <?= ($activeTab === 'gallery') ? 'var(--primary-600)' : 'transparent' ?>;">🖼️ Galeri Foto</a>
 </div>
 
+<?php if (session()->getFlashdata('success')): ?>
+    <div style="background: #f0fdf4; border: 1px solid #86efac; color: #166534; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-weight: 500;">
+        ✅ <?= session()->getFlashdata('success') ?>
+    </div>
+<?php endif; ?>
+
+<?php if (session()->getFlashdata('error')): ?>
+    <div style="background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-weight: 500;">
+        ⚠️ <?= session()->getFlashdata('error') ?>
+    </div>
+<?php endif; ?>
+
 <!-- Module Table Panel -->
 <div class="panel-card" style="padding: 24px;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">

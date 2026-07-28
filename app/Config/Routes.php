@@ -43,18 +43,21 @@ $routes->get('admin/reporting/preview', '\App\Controllers\AdminReportingWorkspac
 $routes->get('admin/cms', '\App\Controllers\AdminCmsWorkspaceController::index');
 $routes->get('admin/cms/create', '\App\Controllers\AdminCmsWorkspaceController::create');
 $routes->post('admin/cms/store', '\App\Controllers\AdminCmsWorkspaceController::store');
+$routes->get('admin/cms/edit/(:segment)/(:segment)', '\App\Controllers\AdminCmsWorkspaceController::edit/$1/$2');
+$routes->post('admin/cms/update', '\App\Controllers\AdminCmsWorkspaceController::update');
+$routes->post('admin/cms/delete/(:segment)/(:segment)', '\App\Controllers\AdminCmsWorkspaceController::delete/$1/$2');
 $routes->get('admin/cms/delete/(:segment)/(:segment)', '\App\Controllers\AdminCmsWorkspaceController::delete/$1/$2');
 
 $routes->get('admin/settings', '\App\Controllers\AdminSystemWorkspaceController::index');
 $routes->post('admin/settings/store', '\App\Controllers\AdminSystemWorkspaceController::store');
 
 // Web Installer Routes
-$routes->match(['get', 'post'], 'install', '\App\Controllers\InstallerController::welcome');
-$routes->match(['get', 'post'], 'install/requirements', '\App\Controllers\InstallerController::requirements');
-$routes->match(['get', 'post'], 'install/database', '\App\Controllers\InstallerController::database');
-$routes->match(['get', 'post'], 'install/application', '\App\Controllers\InstallerController::application');
-$routes->match(['get', 'post'], 'install/admin', '\App\Controllers\InstallerController::admin');
-$routes->match(['get', 'post'], 'install/finish', '\App\Controllers\InstallerController::finish');
+$routes->match(['GET', 'POST'], 'install', '\App\Controllers\InstallerController::welcome');
+$routes->match(['GET', 'POST'], 'install/requirements', '\App\Controllers\InstallerController::requirements');
+$routes->match(['GET', 'POST'], 'install/database', '\App\Controllers\InstallerController::database');
+$routes->match(['GET', 'POST'], 'install/application', '\App\Controllers\InstallerController::application');
+$routes->match(['GET', 'POST'], 'install/admin', '\App\Controllers\InstallerController::admin');
+$routes->match(['GET', 'POST'], 'install/finish', '\App\Controllers\InstallerController::finish');
 
 // Load Domain Routes
 if (file_exists(APPPATH . 'Domains/Masjid/Routes/masjid.php')) {

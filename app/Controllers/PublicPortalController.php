@@ -7,6 +7,8 @@ use Config\Database;
 
 class PublicPortalController extends BaseController
 {
+    protected $helpers = ['form', 'url'];
+
     public function index(): string
     {
         $db = Database::connect();
@@ -22,7 +24,13 @@ class PublicPortalController extends BaseController
             }
         }
         if ($db->tableExists('programs')) {
-            $activePrograms = $db->table('programs')->where('is_active', 1)->get()->getResultArray();
+            $builder = $db->table('programs');
+            if ($db->fieldExists('status', 'programs')) {
+                $builder->where('status', 'ACTIVE');
+            } elseif ($db->fieldExists('is_active', 'programs')) {
+                $builder->where('is_active', 1);
+            }
+            $activePrograms = $builder->get()->getResultArray();
         }
         if ($db->tableExists('posts')) {
             $latestPosts = $db->table('posts')->where('is_published', 1)->orderBy('created_at', 'DESC')->limit(3)->get()->getResultArray();
@@ -67,7 +75,13 @@ class PublicPortalController extends BaseController
         $programs = [];
 
         if ($db->tableExists('programs')) {
-            $programs = $db->table('programs')->where('is_active', 1)->get()->getResultArray();
+            $builder = $db->table('programs');
+            if ($db->fieldExists('status', 'programs')) {
+                $builder->where('status', 'ACTIVE');
+            } elseif ($db->fieldExists('is_active', 'programs')) {
+                $builder->where('is_active', 1);
+            }
+            $programs = $builder->get()->getResultArray();
         }
 
         return view('public/programs', [
