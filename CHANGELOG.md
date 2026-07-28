@@ -2,6 +2,19 @@
 
 All notable changes to the MasjidCMS platform are documented in this file. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## RC1 Audit Fixes (2026-07-28)
+
+- Fixed duplicate migration blocker
+- Added missing CMS/System migrations
+- Fixed Dashboard schema mismatches
+- Connected dashboard statistics to live database
+- Fixed Financial Workspace queries
+- Implemented transaction detail page
+- Fixed Family-Jamaah joins
+- Enabled secure session regeneration
+- Added SECURITY.md
+- Completed QA Audit #1 remediation
+
 ---
 
 ## [v1.0.0-rc1] - 2026-07-27

@@ -21,6 +21,21 @@ Aplikasi ini mencakup pengelola identitas masjid, data jamaah, keluarga, hak aks
 
 ---
 
+## RC1 Audit Fixes (2026-07-28)
+
+- Fixed duplicate migration blocker
+- Added missing CMS/System migrations
+- Fixed Dashboard schema mismatches
+- Connected dashboard statistics to live database
+- Fixed Financial Workspace queries
+- Implemented transaction detail page
+- Fixed Family-Jamaah joins
+- Enabled secure session regeneration
+- Added SECURITY.md
+- Completed QA Audit #1 remediation
+
+---
+
 ## 🚀 Panduan Instalasi & Penggunaan
 
 Silakan baca dokumen [INSTALLATION.md](INSTALLATION.md) untuk langkah-langkah setup server, konfigurasi `.env`, migrasi database, dan seeding master data.

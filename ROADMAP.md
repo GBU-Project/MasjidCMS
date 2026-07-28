@@ -12,6 +12,18 @@
 - ✅ Read-Only Financial Reporting Engine (Trial Balance, Ledger, Cash Book, Fund Balance, Income Statement)
 - ✅ Production Security Hardening (CSRF Token Randomization, Login Rate-Limiting Throttler, Pessimistic Row Locking)
 
+### RC1 Audit Fixes (2026-07-28)
+- Fixed duplicate migration blocker
+- Added missing CMS/System migrations
+- Fixed Dashboard schema mismatches
+- Connected dashboard statistics to live database
+- Fixed Financial Workspace queries
+- Implemented transaction detail page
+- Fixed Family-Jamaah joins
+- Enabled secure session regeneration
+- Added SECURITY.md
+- Completed QA Audit #1 remediation
+
 ---
 
 ## 🔮 Future Milestones
