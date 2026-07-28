@@ -55,4 +55,26 @@ class AdminSystemWorkspaceController extends BaseController
             'rows'              => $rows,
         ]);
     }
+
+    public function store()
+    {
+        $db = Database::connect();
+        try {
+            $key = (string) $this->request->getPost('setting_key');
+            $val = (string) $this->request->getPost('setting_value');
+            $group = (string) ($this->request->getPost('setting_group') ?: 'general');
+
+            if (!empty($key) && $db->tableExists('settings')) {
+                $db->table('settings')->upsert([
+                    'setting_key'   => $key,
+                    'setting_value' => $val,
+                    'setting_group' => $group,
+                ]);
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'AdminSystemWorkspaceController Store Exception: ' . $e->getMessage());
+        }
+
+        return redirect()->to(site_url('admin/settings?tab=settings'));
+    }
 }

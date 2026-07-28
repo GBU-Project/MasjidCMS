@@ -43,12 +43,13 @@
 <!-- Step 1 Form Card -->
 <div class="panel-card" style="max-width: 720px; margin-left: 0;">
     <div class="panel-header">
-        <span>Langkah 1: Informasi Dasar Transaksi</span>
+        <span>Form Transaksi Keuangan</span>
     </div>
-    <form style="display: flex; flex-direction: column; gap: 16px;">
+    <form action="<?= site_url('admin/financial/store') ?>" method="POST" style="display: flex; flex-direction: column; gap: 16px; padding: 20px;">
+        <?= csrf_field() ?>
         <div>
             <label style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px;">Jenis Transaksi <span style="color: red;">*</span></label>
-            <select style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: var(--radius-md); font-size: 14px;">
+            <select name="transaction_type" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: var(--radius-md); font-size: 14px;">
                 <option value="INCOME">Pemasukan (INCOME)</option>
                 <option value="EXPENSE">Pengeluaran (EXPENSE)</option>
                 <option value="ADJUSTMENT">Penyesuaian (ADJUSTMENT)</option>
@@ -57,22 +58,22 @@
 
         <div>
             <label style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px;">Nominal Transaksi (Rp) <span style="color: red;">*</span></label>
-            <input type="number" placeholder="500000" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: var(--radius-md); font-size: 14px;">
+            <input type="number" name="amount" step="0.01" required placeholder="500000" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: var(--radius-md); font-size: 14px;">
         </div>
 
         <div>
             <label style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px;">Tanggal Transaksi <span style="color: red;">*</span></label>
-            <input type="date" value="<?= date('Y-m-d') ?>" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: var(--radius-md); font-size: 14px;">
+            <input type="date" name="transaction_date" required value="<?= date('Y-m-d') ?>" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: var(--radius-md); font-size: 14px;">
         </div>
 
         <div>
             <label style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px;">Deskripsi / Keterangan Transaksi <span style="color: red;">*</span></label>
-            <textarea rows="3" placeholder="Penerimaan donasi infaq jumat jamaah..." style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: var(--radius-md); font-size: 14px;"></textarea>
+            <textarea name="description" rows="3" required placeholder="Penerimaan donasi infaq jumat jamaah..." style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: var(--radius-md); font-size: 14px;"></textarea>
         </div>
 
         <div style="display: flex; justify-content: space-between; margin-top: 12px;">
             <a href="/admin/financial" class="btn btn-secondary">Batal</a>
-            <button type="button" class="btn btn-primary">Lanjut ke Step 2 (Account & Fund) ›</button>
+            <button type="submit" class="btn btn-primary">💾 Simpan Transaksi</button>
         </div>
     </form>
 </div>

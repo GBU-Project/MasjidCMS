@@ -12,8 +12,7 @@
         <p class="page-subtitle">Kelola konten berita, jadwal kajian rutin, halaman statis, dan galeri foto portal publik masjid.</p>
     </div>
     <div style="display: flex; gap: 8px;">
-        <a href="<?= site_url('admin/cms?tab=posts') ?>" class="btn btn-secondary">📝 Tulis Berita Baru</a>
-        <a href="<?= site_url('admin/cms?tab=kajian') ?>" class="btn btn-primary">📅 Tambah Jadwal Kajian</a>
+        <a href="<?= site_url('admin/cms/create?tab=' . esc($activeTab)) ?>" class="btn btn-primary">+ Tambah Konten Baru (<?= esc(strtoupper($activeTab)) ?>)</a>
     </div>
 </div>
 

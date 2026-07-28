@@ -23,6 +23,9 @@
 <!-- Workspace Tab Navigation -->
 <div style="border-bottom: 1px solid var(--border-light); margin-bottom: 20px; display: flex; gap: 8px;">
     <a href="/admin/financial?tab=transactions" class="nav-item-link <?= ($activeTab === 'transactions') ? 'active' : '' ?>">💳 Daftar Transaksi</a>
+    <a href="/admin/financial?tab=coa" class="nav-item-link <?= ($activeTab === 'coa') ? 'active' : '' ?>">📋 Chart of Accounts (COA)</a>
+    <a href="/admin/financial?tab=budget" class="nav-item-link <?= ($activeTab === 'budget') ? 'active' : '' ?>">📊 Anggaran / RAB</a>
+    <a href="/admin/financial?tab=periods" class="nav-item-link <?= ($activeTab === 'periods') ? 'active' : '' ?>">📅 Periode & Tutup Buku</a>
     <a href="/admin/financial?tab=approvals" class="nav-item-link <?= ($activeTab === 'approvals') ? 'active' : '' ?>">⏳ Queue Persetujuan</a>
     <a href="/admin/financial?tab=transfer" class="nav-item-link <?= ($activeTab === 'transfer') ? 'active' : '' ?>">🔄 Transfer Kantong Dana</a>
     <a href="/admin/financial?tab=journal" class="nav-item-link <?= ($activeTab === 'journal') ? 'active' : '' ?>">📖 Buku Jurnal (Ledger)</a>

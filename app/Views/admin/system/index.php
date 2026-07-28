@@ -19,6 +19,31 @@
     <a href="<?= site_url('admin/settings?tab=audit') ?>" style="padding: 12px 0; text-decoration: none; font-size: 14px; font-weight: 600; color: <?= ($activeTab === 'audit') ? 'var(--primary-600)' : 'var(--text-secondary)' ?>; border-bottom: 2px solid <?= ($activeTab === 'audit') ? 'var(--primary-600)' : 'transparent' ?>;">📜 Audit Activity Log</a>
 </div>
 
+<?php if ($activeTab === 'settings'): ?>
+    <!-- Add / Update Setting Form -->
+    <div class="panel-card" style="padding: 20px; margin-bottom: 24px; max-width: 600px;">
+        <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 12px;">+ Tambah / Ubah Pengaturan System</h4>
+        <form action="<?= site_url('admin/settings/store') ?>" method="POST" style="display: flex; flex-direction: column; gap: 12px;">
+            <?= csrf_field() ?>
+            <div>
+                <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px;">Setting Key *</label>
+                <input type="text" name="setting_key" required placeholder="Contoh: site_title atau mosque_name" style="width: 100%; padding: 6px 10px; border: 1px solid var(--border-light); border-radius: 6px; font-size: 13px;">
+            </div>
+            <div>
+                <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px;">Setting Value *</label>
+                <input type="text" name="setting_value" required placeholder="Nilai konfigurasi..." style="width: 100%; padding: 6px 10px; border: 1px solid var(--border-light); border-radius: 6px; font-size: 13px;">
+            </div>
+            <div>
+                <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px;">Grup Konfigurasi</label>
+                <input type="text" name="setting_group" value="general" placeholder="general" style="width: 100%; padding: 6px 10px; border: 1px solid var(--border-light); border-radius: 6px; font-size: 13px;">
+            </div>
+            <div>
+                <button type="submit" class="btn btn-primary" style="padding: 6px 14px; font-size: 13px;">💾 Simpan Pengaturan</button>
+            </div>
+        </form>
+    </div>
+<?php endif; ?>
+
 <!-- Module Table Panel -->
 <div class="panel-card" style="padding: 24px;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">

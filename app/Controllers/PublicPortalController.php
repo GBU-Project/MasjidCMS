@@ -95,4 +95,60 @@ class PublicPortalController extends BaseController
     {
         return view('public/contact', ['activePage' => 'contact']);
     }
+
+    public function gallery(): string
+    {
+        $db = Database::connect();
+        $gallery = [];
+        try {
+            if ($db->tableExists('gallery')) {
+                $builder = $db->table('gallery');
+                if ($db->tableExists('media')) {
+                    $builder->select('gallery.*, media.filepath')
+                            ->join('media', 'media.id = gallery.media_id', 'left');
+                }
+                $gallery = $builder->get()->getResultArray();
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'PublicPortalController Gallery Exception: ' . $e->getMessage());
+        }
+
+        return view('public/gallery', [
+            'activePage' => 'gallery',
+            'gallery'    => $gallery,
+        ]);
+    }
+
+    public function transparency(): string
+    {
+        $db = Database::connect();
+        $transactions = [];
+        $totalIncome = 0;
+        $totalExpense = 0;
+        try {
+            if ($db->tableExists('financial_transactions')) {
+                $transactions = $db->table('financial_transactions')
+                    ->select('transaction_no, transaction_type, amount, transaction_date, description')
+                    ->orderBy('transaction_date', 'DESC')
+                    ->limit(20)
+                    ->get()
+                    ->getResultArray();
+
+                $incQuery = $db->table('financial_transactions')->selectSum('amount')->where('transaction_type', 'INCOME')->get()->getRow();
+                $totalIncome = (float) ($incQuery->amount ?? 0);
+
+                $expQuery = $db->table('financial_transactions')->selectSum('amount')->where('transaction_type', 'EXPENSE')->get()->getRow();
+                $totalExpense = (float) ($expQuery->amount ?? 0);
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'PublicPortalController Transparency Exception: ' . $e->getMessage());
+        }
+
+        return view('public/transparency', [
+            'activePage'   => 'transparency',
+            'transactions' => $transactions,
+            'totalIncome'  => $totalIncome,
+            'totalExpense' => $totalExpense,
+        ]);
+    }
 }
