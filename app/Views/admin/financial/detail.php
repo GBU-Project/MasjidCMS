@@ -1,6 +1,15 @@
 <?= $this->extend('layouts/admin') ?>
 
-<?= $this->section('title') ?>Detail Transaksi TRX-202607-00088<?= $this->endSection() ?>
+<?php
+    $trxNo = esc($transaction['transaction_no'] ?? $transactionId);
+    $amount = isset($transaction['amount']) ? number_format((float)$transaction['amount'], 0, ',', '.') : '0';
+    $type = esc($transaction['transaction_type'] ?? 'EXPENSE');
+    $status = esc($transaction['status'] ?? 'DRAFT');
+    $desc = esc($transaction['description'] ?? 'Detail Transaksi');
+    $date = esc($transaction['transaction_date'] ?? date('Y-m-d H:i:s'));
+?>
+
+<?= $this->section('title') ?>Detail Transaksi <?= $trxNo ?><?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
 <!-- Breadcrumb -->
@@ -9,18 +18,17 @@
     <span>/</span>
     <span>Keuangan</span>
     <span>/</span>
-    <span class="breadcrumb-active">TRX-202607-00088</span>
+    <span class="breadcrumb-active"><?= $trxNo ?></span>
 </div>
 
 <!-- Header Title -->
 <div class="content-header-title">
     <div>
-        <h1>Detail Transaksi <span class="stat-mono">TRX-202607-00088</span></h1>
+        <h1>Detail Transaksi <span class="stat-mono"><?= $trxNo ?></span></h1>
         <p style="font-size: 14px; color: var(--text-muted);">Informasi lengkap transaksi, jurnal double-entry, log persetujuan, dan audit trail.</p>
     </div>
     <div style="display: flex; gap: 8px;">
-        <button class="btn btn-primary">Approve Transaksi</button>
-        <button class="btn btn-secondary" style="color: var(--status-danger-text);">Reject</button>
+        <a href="/admin/financial" class="btn btn-secondary">← Kembali</a>
     </div>
 </div>
 
@@ -36,37 +44,29 @@
 <div class="panel-card" style="max-width: 800px; margin-left: 0;">
     <div class="panel-header">
         <span>Informasi Detail Transaksi</span>
-        <span class="badge badge-amber">PENDING APPROVAL</span>
+        <span class="badge <?= $status === 'POSTED' ? 'badge-green' : 'badge-amber' ?>"><?= $status ?></span>
     </div>
     <table class="data-table">
         <tbody>
             <tr>
                 <td style="width: 200px; font-weight: 600;">No. Transaksi</td>
-                <td class="stat-mono">TRX-202607-00088</td>
+                <td class="stat-mono"><?= $trxNo ?></td>
             </tr>
             <tr>
                 <td style="font-weight: 600;">Jenis Transaksi</td>
-                <td><span class="badge badge-amber">EXPENSE</span></td>
+                <td><span class="badge <?= $type === 'INCOME' ? 'badge-green' : 'badge-red' ?>"><?= $type ?></span></td>
             </tr>
             <tr>
                 <td style="font-weight: 600;">Nominal Transaksi</td>
-                <td class="stat-mono" style="font-size: 18px; font-weight: 700; color: var(--text-main);">Rp 250.000</td>
-            </tr>
-            <tr>
-                <td style="font-weight: 600;">Kantong Dana (Fund)</td>
-                <td>Kas Tunai Umum (UNRESTRICTED)</td>
-            </tr>
-            <tr>
-                <td style="font-weight: 600;">Kode Akun COA</td>
-                <td class="stat-mono">50001 — Beban Kebersihan</td>
+                <td class="stat-mono" style="font-size: 18px; font-weight: 700; color: var(--text-main);">Rp <?= $amount ?></td>
             </tr>
             <tr>
                 <td style="font-weight: 600;">Deskripsi</td>
-                <td>Pembelian alat kebersihan dan perlengkapan jumat masjid</td>
+                <td><?= $desc ?></td>
             </tr>
             <tr>
                 <td style="font-weight: 600;">Tanggal Input</td>
-                <td>27 Juli 2026 10:15:00</td>
+                <td><?= $date ?></td>
             </tr>
         </tbody>
     </table>

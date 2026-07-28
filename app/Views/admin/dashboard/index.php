@@ -28,7 +28,7 @@
             <span class="stat-label">Masjid Terdaftar</span>
             <div class="stat-icon">🕌</div>
         </div>
-        <div class="stat-figure">1</div>
+        <div class="stat-figure"><?= esc($totalMasjids) ?></div>
         <span class="stat-delta">Active Institutional Profile</span>
     </div>
 
@@ -37,8 +37,8 @@
             <span class="stat-label">Total Jamaah</span>
             <div class="stat-icon">👥</div>
         </div>
-        <div class="stat-figure">485</div>
-        <span class="stat-delta">+12 jamaah bulan ini</span>
+        <div class="stat-figure"><?= esc($totalJamaah) ?></div>
+        <span class="stat-delta">Jamaah Terdaftar</span>
     </div>
 
     <div class="stat-card">
@@ -46,7 +46,7 @@
             <span class="stat-label">Keluarga (KK)</span>
             <div class="stat-icon">👨‍👩‍👧</div>
         </div>
-        <div class="stat-figure">142</div>
+        <div class="stat-figure"><?= esc($totalFamilies) ?></div>
         <span class="stat-delta">Kepala Keluarga Aktif</span>
     </div>
 
@@ -55,7 +55,7 @@
             <span class="stat-label">Pending Approval</span>
             <div class="stat-icon">⏳</div>
         </div>
-        <div class="stat-figure" style="color: var(--status-warning-text);">3</div>
+        <div class="stat-figure" style="color: var(--status-warning-text);"><?= esc($pendingApprovals) ?></div>
         <span class="stat-delta" style="color: var(--status-warning-text);">Butuh persetujuan DKM</span>
     </div>
 
@@ -64,8 +64,8 @@
             <span class="stat-label">Donasi Hari Ini</span>
             <div class="stat-icon">📥</div>
         </div>
-        <div class="stat-figure stat-mono">Rp 750.000</div>
-        <span class="stat-delta">+5 transaksi masuk</span>
+        <div class="stat-figure stat-mono">Rp <?= number_format((float)($todayDonation ?? 0), 0, ',', '.') ?></div>
+        <span class="stat-delta">Transaksi Hari Ini</span>
     </div>
 
     <div class="stat-card">
@@ -73,7 +73,7 @@
             <span class="stat-label">Saldo Kas Utama</span>
             <div class="stat-icon">💰</div>
         </div>
-        <div class="stat-figure stat-mono" style="color: var(--primary-600);">Rp 45.850.000</div>
+        <div class="stat-figure stat-mono" style="color: var(--primary-600);">Rp <?= number_format((float)($totalBalance ?? 0), 0, ',', '.') ?></div>
         <span class="stat-delta">Tervalidasi Double Entry</span>
     </div>
 </div>
@@ -81,22 +81,20 @@
 <!-- Quick Action Bar -->
 <div class="quick-action-bar">
     <span style="font-size: 14px; font-weight: 600; color: var(--text-main); margin-right: 8px;">Aksi Cepat:</span>
-    <button class="btn btn-primary">+ Transaksi Baru</button>
-    <button class="btn btn-secondary">+ Tambah Jamaah</button>
-    <button class="btn btn-secondary">+ Registrasi Keluarga</button>
-    <button class="btn btn-secondary">+ Program Baru</button>
-    <button class="btn btn-secondary">📤 Upload Dokumen</button>
+    <a href="/admin/financial" class="btn btn-primary">+ Transaksi Baru</a>
+    <a href="/admin/master?tab=jamaah" class="btn btn-secondary">+ Tambah Jamaah</a>
+    <a href="/admin/master?tab=family" class="btn btn-secondary">+ Registrasi Keluarga</a>
 </div>
 
 <!-- Dashboard Content Split Section -->
 <div class="dashboard-sections-grid">
     <!-- Left Column: Pending Approval & Recent Transactions -->
     <div>
-        <!-- Pending Financial Approvals Panel -->
+        <!-- Transaksi Terbaru Panel -->
         <div class="panel-card">
             <div class="panel-header">
-                <span>Transaksi Menunggu Persetujuan (Pending Approval)</span>
-                <span class="badge badge-amber">3 Transaksi</span>
+                <span>Transaksi Terbaru</span>
+                <span class="badge badge-blue"><?= count($recentTransactions) ?> Transaksi</span>
             </div>
             <div class="table-container">
                 <table class="data-table">
@@ -111,30 +109,22 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td class="stat-mono">TRX-202607-00088</td>
-                            <td>27 Jul 2026</td>
-                            <td>Beban Kebersihan Halaman</td>
-                            <td class="stat-mono">Rp 250.000</td>
-                            <td><span class="badge badge-amber">PENDING</span></td>
-                            <td><button class="btn btn-primary" style="padding: 4px 10px; font-size: 12px;">Review</button></td>
-                        </tr>
-                        <tr>
-                            <td class="stat-mono">TRX-202607-00089</td>
-                            <td>27 Jul 2026</td>
-                            <td>Donasi Pembangunan Menara</td>
-                            <td class="stat-mono">Rp 5.000.000</td>
-                            <td><span class="badge badge-amber">PENDING</span></td>
-                            <td><button class="btn btn-primary" style="padding: 4px 10px; font-size: 12px;">Review</button></td>
-                        </tr>
-                        <tr>
-                            <td class="stat-mono">TRX-202607-00090</td>
-                            <td>27 Jul 2026</td>
-                            <td>Honorarium Ustadz Kajian</td>
-                            <td class="stat-mono">Rp 500.000</td>
-                            <td><span class="badge badge-amber">PENDING</span></td>
-                            <td><button class="btn btn-primary" style="padding: 4px 10px; font-size: 12px;">Review</button></td>
-                        </tr>
+                        <?php if (empty($recentTransactions)): ?>
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: var(--text-muted);">Belum ada transaksi recorded.</td>
+                            </tr>
+                        <?php else: ?>
+                            <?php foreach ($recentTransactions as $rt): ?>
+                                <tr>
+                                    <td class="stat-mono"><?= esc($rt['transaction_no']) ?></td>
+                                    <td><?= esc(substr($rt['transaction_date'] ?? date('Y-m-d'), 0, 10)) ?></td>
+                                    <td><?= esc($rt['description'] ?? '-') ?></td>
+                                    <td class="stat-mono">Rp <?= number_format((float)$rt['amount'], 0, ',', '.') ?></td>
+                                    <td><span class="badge <?= $rt['status'] === 'POSTED' ? 'badge-green' : 'badge-amber' ?>"><?= esc($rt['status']) ?></span></td>
+                                    <td><a href="/admin/financial/detail/<?= esc($rt['transaction_no']) ?>" class="btn btn-primary" style="padding: 4px 10px; font-size: 12px;">Detail</a></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </tbody>
                 </table>
             </div>
