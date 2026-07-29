@@ -35,8 +35,22 @@ class AuthenticationFilter implements FilterInterface
         if (!$user) {
             SecurityContext::clear();
 
-            $response = service('response');
-            return ResponseFormatter::error($response, 'Unauthenticated. Please log in first.', null, 401);
+            // TASK-019A Security Blocker Remediation (29 Juli 2026):
+            // Sebelumnya filter ini selalu mengembalikan JSON 401 mentah,
+            // termasuk untuk navigasi browser biasa ke /admin/*. Sekarang
+            // request non-API/non-AJAX diarahkan (redirect) ke halaman
+            // login yang baru diaktifkan, sementara klien API/JSON tetap
+            // menerima 401 terstruktur seperti sebelumnya.
+            helper('url');
+            $uri = ltrim($request->getUri()->getPath(), '/');
+            $isApiRequest = str_starts_with($uri, 'api/') || $request->isAJAX();
+
+            if ($isApiRequest) {
+                $response = service('response');
+                return ResponseFormatter::error($response, 'Unauthenticated. Please log in first.', null, 401);
+            }
+
+            return redirect()->to('/login')->with('error', 'Silakan login terlebih dahulu untuk mengakses halaman ini.');
         }
 
         // Set user terotentikasi ke SecurityContext

@@ -60,6 +60,18 @@ class RbacSeeder extends Seeder
             ['id' => 'p-08', 'permission_code' => 'family.update', 'module_name' => 'Family', 'description' => 'Mengubah data keluarga'],
             ['id' => 'p-09', 'permission_code' => 'family.delete', 'module_name' => 'Family', 'description' => 'Menghapus data keluarga'],
             ['id' => 'p-10', 'permission_code' => 'admin.manage', 'module_name' => 'Admin', 'description' => 'Manajemen pengguna dan peran'],
+
+            // TASK-019A Security Blocker Remediation (29 Juli 2026):
+            // Permission berikut ditambahkan karena rute admin/masjid dan
+            // admin/financial/* sebelumnya tidak memiliki kontrol akses
+            // sama sekali (lihat Laporan Audit IT Independen 29 Juli 2026).
+            // Ditambahkan di sini agar role yang sudah ada (ADMIN_MASJID)
+            // tetap bisa mengakses modul tsb setelah filter 'rbac' aktif.
+            ['id' => 'p-11', 'permission_code' => 'masjid.read', 'module_name' => 'Masjid', 'description' => 'Melihat profil/data masjid'],
+            ['id' => 'p-12', 'permission_code' => 'masjid.create', 'module_name' => 'Masjid', 'description' => 'Membuat data masjid'],
+            ['id' => 'p-13', 'permission_code' => 'masjid.update', 'module_name' => 'Masjid', 'description' => 'Mengubah data masjid'],
+            ['id' => 'p-14', 'permission_code' => 'masjid.delete', 'module_name' => 'Masjid', 'description' => 'Menghapus data masjid'],
+            ['id' => 'p-15', 'permission_code' => 'financial.manage', 'module_name' => 'Financial', 'description' => 'Mengelola transaksi, jurnal, COA, budget, dan periode keuangan'],
         ];
 
         $permTable = $this->db->table('permissions');
@@ -84,6 +96,11 @@ class RbacSeeder extends Seeder
             ['role_id' => 'r-admin-masjid-02', 'permission_code' => 'family.update'],
             ['role_id' => 'r-admin-masjid-02', 'permission_code' => 'family.delete'],
             ['role_id' => 'r-admin-masjid-02', 'permission_code' => 'admin.manage'],
+            ['role_id' => 'r-admin-masjid-02', 'permission_code' => 'masjid.read'],
+            ['role_id' => 'r-admin-masjid-02', 'permission_code' => 'masjid.create'],
+            ['role_id' => 'r-admin-masjid-02', 'permission_code' => 'masjid.update'],
+            ['role_id' => 'r-admin-masjid-02', 'permission_code' => 'masjid.delete'],
+            ['role_id' => 'r-admin-masjid-02', 'permission_code' => 'financial.manage'],
 
             // Operator permissions
             ['role_id' => 'r-operator-03', 'permission_code' => 'dashboard.view'],
@@ -91,11 +108,13 @@ class RbacSeeder extends Seeder
             ['role_id' => 'r-operator-03', 'permission_code' => 'jamaah.create'],
             ['role_id' => 'r-operator-03', 'permission_code' => 'jamaah.update'],
             ['role_id' => 'r-operator-03', 'permission_code' => 'family.read'],
+            ['role_id' => 'r-operator-03', 'permission_code' => 'masjid.read'],
 
             // Viewer permissions
             ['role_id' => 'r-viewer-04', 'permission_code' => 'dashboard.view'],
             ['role_id' => 'r-viewer-04', 'permission_code' => 'jamaah.read'],
             ['role_id' => 'r-viewer-04', 'permission_code' => 'family.read'],
+            ['role_id' => 'r-viewer-04', 'permission_code' => 'masjid.read'],
         ];
 
         $rpTable = $this->db->table('role_permissions');

@@ -26,7 +26,12 @@ class RoleRepository extends BaseRepository
             return [];
         }
 
-        // Skeleton query builder placeholder
+        // TASK-019A Security Blocker Remediation (29 Juli 2026):
+        // Kolom 'slug' sebelumnya tidak ada di skema tabel 'roles'
+        // (kolom sebenarnya adalah 'role_code' -- lihat migration
+        // CreateRbacTables). Baru terdeteksi sekarang karena jalur ini
+        // sebelumnya tidak pernah benar-benar dipakai untuk memutuskan
+        // izin akses non-Super-Admin.
         $rows = $this->builder()
             ->select('roles.*')
             ->join('user_roles', 'user_roles.role_id = roles.id')
@@ -39,7 +44,7 @@ class RoleRepository extends BaseRepository
             $roles[] = new Role(
                 $row['id'] ?? null,
                 $row['name'] ?? '',
-                $row['slug'] ?? '',
+                $row['role_code'] ?? '',
                 $row['description'] ?? ''
             );
         }

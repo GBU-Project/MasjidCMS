@@ -3,6 +3,9 @@
 use CodeIgniter\Router\RouteCollection;
 
 // Public Portal Routes
+// Catatan TASK-019A: rute ini SENGAJA dibiarkan tanpa filter 'auth'/'rbac'
+// karena memang dirancang sebagai halaman publik (profil, berita, donasi,
+// transparansi, dll.) yang harus bisa diakses siapa pun tanpa login.
 $routes->get('/', '\App\Controllers\PublicPortalController::index');
 $routes->get('profil', '\App\Controllers\PublicPortalController::profile');
 $routes->get('struktur-organisasi', '\App\Controllers\PublicPortalController::orgStructure');
@@ -14,101 +17,149 @@ $routes->get('kontak', '\App\Controllers\PublicPortalController::contact');
 $routes->get('galeri', '\App\Controllers\PublicPortalController::gallery');
 $routes->get('transparansi', '\App\Controllers\PublicPortalController::transparency');
 
-// Media Library Routes
-$routes->get('admin/media', '\App\Controllers\AdminMediaController::index');
-$routes->get('admin/media/api', '\App\Controllers\AdminMediaController::apiList');
-$routes->post('admin/media/upload', '\App\Controllers\AdminMediaController::upload');
-$routes->post('admin/media/delete/(:segment)', '\App\Controllers\AdminMediaController::delete/$1');
-$routes->post('admin/media/bulk-delete', '\App\Controllers\AdminMediaController::bulkDelete');
-$routes->post('admin/media/rename', '\App\Controllers\AdminMediaController::rename');
+// ---------------------------------------------------------------------
+// Authentication Routes (Browser-facing, session based)
+// TASK-019A Security Blocker Remediation (29 Juli 2026):
+// Sebelumnya TIDAK ADA satupun rute login yang aktif di aplikasi ini
+// (app/Domains/System/Routes/auth.php didefinisikan tapi tidak pernah
+// di-require). Ditambahkan di sini agar mekanisme login benar-benar
+// bisa diakses pengguna melalui browser.
+// ---------------------------------------------------------------------
+$routes->get('login', '\App\Controllers\AuthPageController::showLogin');
+$routes->post('login', '\App\Controllers\AuthPageController::login');
+$routes->get('logout', '\App\Controllers\AuthPageController::logout');
 
-// Admin Workspace Routes
-$routes->get('admin/dashboard', '\App\Controllers\AdminDashboardController::index');
+// Aktifkan juga JSON Auth API (auth/login, auth/logout, auth/refresh) untuk
+// kebutuhan klien programatik (mobile/SPA) -- sebelumnya file ini ada tapi
+// tidak pernah di-require sama sekali.
+if (file_exists(APPPATH . 'Domains/System/Routes/auth.php')) {
+    require APPPATH . 'Domains/System/Routes/auth.php';
+}
 
-// Master Data Workspace Routes
-$routes->get('admin/master', '\App\Controllers\AdminMasterDataController::index');
-$routes->get('admin/master/create', '\App\Controllers\AdminMasterDataController::create');
-$routes->post('admin/master/store', '\App\Controllers\AdminMasterDataController::store');
-$routes->get('admin/master/edit/(:segment)/(:segment)', '\App\Controllers\AdminMasterDataController::edit/$1/$2');
-$routes->post('admin/master/update', '\App\Controllers\AdminMasterDataController::update');
-$routes->get('admin/master/delete/(:segment)/(:segment)', '\App\Controllers\AdminMasterDataController::delete/$1/$2');
-$routes->get('admin/masjid', '\App\Controllers\AdminMasterDataController::index');
-$routes->get('admin/bidang', '\App\Controllers\AdminMasterDataController::index');
-$routes->get('admin/pengurus', '\App\Controllers\AdminMasterDataController::index');
-$routes->get('admin/jamaah', '\App\Controllers\AdminMasterDataController::index');
-$routes->get('admin/family', '\App\Controllers\AdminMasterDataController::index');
-$routes->get('admin/users', '\App\Controllers\AdminMasterDataController::index');
-$routes->get('admin/rbac', '\App\Controllers\AdminMasterDataController::index');
+// ---------------------------------------------------------------------
+// ADMIN WORKSPACE ROUTES
+// TASK-019A Security Blocker Remediation (29 Juli 2026):
+// TEMUAN KRITIS sebelumnya: seluruh rute admin/* di bawah ini terdaftar
+// TANPA filter 'auth'/'rbac' sama sekali, sehingga panel admin (termasuk
+// modul Keuangan, User/RBAC, Settings) bisa diakses SIAPA PUN tanpa
+// login. Filter AuthenticationFilter & AuthorizationFilter sudah lama
+// dirancang dengan benar (lihat app/Filters/*) namun tidak pernah
+// "di-wiring" ke rute-rute ini.
+//
+// Perbaikan: seluruh rute admin/* dibungkus $routes->group('admin', ...)
+// dengan filter wajib ['auth', 'rbac']. Filter 'rbac' tanpa argumen
+// hanya mensyaratkan pengguna sudah login (dan Super Admin selalu bypass
+// -- lihat AuthorizationFilter::before()). Untuk aksi sensitif (mutasi
+// data keuangan & manajemen user/RBAC), ditambahkan permission_code
+// spesifik ('financial.manage', 'admin.manage') di level rute individual.
+// ---------------------------------------------------------------------
+$routes->group('admin', ['filter' => ['auth', 'rbac']], static function (RouteCollection $routes) {
 
-// Financial Workspace Routes
-$routes->get('admin/financial', '\App\Controllers\AdminFinancialWorkspaceController::index');
-$routes->get('admin/financial/create', '\App\Controllers\AdminFinancialWorkspaceController::create');
-$routes->post('admin/financial/store', '\App\Controllers\AdminFinancialWorkspaceController::store');
-$routes->get('admin/financial/edit/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::edit/$1');
-$routes->post('admin/financial/update', '\App\Controllers\AdminFinancialWorkspaceController::update');
-$routes->get('admin/financial/delete/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::delete/$1');
-$routes->get('admin/financial/detail/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::detail/$1');
+    // Media Library Routes
+    $routes->get('media', '\App\Controllers\AdminMediaController::index');
+    $routes->get('media/api', '\App\Controllers\AdminMediaController::apiList');
+    $routes->post('media/upload', '\App\Controllers\AdminMediaController::upload');
+    $routes->post('media/delete/(:segment)', '\App\Controllers\AdminMediaController::delete/$1');
+    $routes->post('media/bulk-delete', '\App\Controllers\AdminMediaController::bulkDelete');
+    $routes->post('media/rename', '\App\Controllers\AdminMediaController::rename');
 
-$routes->post('admin/financial/coa/store', '\App\Controllers\AdminFinancialWorkspaceController::storeCoa');
-$routes->get('admin/financial/coa/edit/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::editCoa/$1');
-$routes->post('admin/financial/coa/update', '\App\Controllers\AdminFinancialWorkspaceController::updateCoa');
-$routes->get('admin/financial/coa/delete/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::deleteCoa/$1');
+    // Admin Workspace Routes
+    $routes->get('dashboard', '\App\Controllers\AdminDashboardController::index');
 
-$routes->post('admin/financial/budget/store', '\App\Controllers\AdminFinancialWorkspaceController::storeBudget');
-$routes->get('admin/financial/budget/edit/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::editBudget/$1');
-$routes->post('admin/financial/budget/update', '\App\Controllers\AdminFinancialWorkspaceController::updateBudget');
-$routes->get('admin/financial/budget/delete/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::deleteBudget/$1');
+    // Master Data Workspace Routes (User/Role/Permission management -> permission sensitif)
+    $routes->get('master', '\App\Controllers\AdminMasterDataController::index');
+    $routes->get('master/create', '\App\Controllers\AdminMasterDataController::create');
+    $routes->post('master/store', '\App\Controllers\AdminMasterDataController::store', ['filter' => 'rbac:admin.manage']);
+    $routes->get('master/edit/(:segment)/(:segment)', '\App\Controllers\AdminMasterDataController::edit/$1/$2');
+    $routes->post('master/update', '\App\Controllers\AdminMasterDataController::update', ['filter' => 'rbac:admin.manage']);
+    $routes->get('master/delete/(:segment)/(:segment)', '\App\Controllers\AdminMasterDataController::delete/$1/$2', ['filter' => 'rbac:admin.manage']);
+    $routes->get('masjid', '\App\Controllers\AdminMasterDataController::index');
+    $routes->get('bidang', '\App\Controllers\AdminMasterDataController::index');
+    $routes->get('pengurus', '\App\Controllers\AdminMasterDataController::index');
+    $routes->get('jamaah', '\App\Controllers\AdminMasterDataController::index');
+    $routes->get('family', '\App\Controllers\AdminMasterDataController::index');
+    $routes->get('users', '\App\Controllers\AdminMasterDataController::index', ['filter' => 'rbac:admin.manage']);
+    $routes->get('rbac', '\App\Controllers\AdminMasterDataController::index', ['filter' => 'rbac:admin.manage']);
 
-$routes->post('admin/financial/periods/store', '\App\Controllers\AdminFinancialWorkspaceController::storePeriod');
-$routes->get('admin/financial/periods/edit/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::editPeriod/$1');
-$routes->post('admin/financial/periods/update', '\App\Controllers\AdminFinancialWorkspaceController::updatePeriod');
-$routes->get('admin/financial/periods/delete/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::deletePeriod/$1');
+    // Financial Workspace Routes (mutasi dana masjid -> permission sensitif)
+    $routes->get('financial', '\App\Controllers\AdminFinancialWorkspaceController::index');
+    $routes->get('financial/create', '\App\Controllers\AdminFinancialWorkspaceController::create');
+    $routes->post('financial/store', '\App\Controllers\AdminFinancialWorkspaceController::store', ['filter' => 'rbac:financial.manage']);
+    $routes->get('financial/edit/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::edit/$1');
+    $routes->post('financial/update', '\App\Controllers\AdminFinancialWorkspaceController::update', ['filter' => 'rbac:financial.manage']);
+    $routes->get('financial/delete/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::delete/$1', ['filter' => 'rbac:financial.manage']);
+    $routes->get('financial/detail/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::detail/$1');
 
-$routes->post('admin/financial/journal/store', '\App\Controllers\AdminFinancialWorkspaceController::storeJournal');
+    $routes->post('financial/coa/store', '\App\Controllers\AdminFinancialWorkspaceController::storeCoa', ['filter' => 'rbac:financial.manage']);
+    $routes->get('financial/coa/edit/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::editCoa/$1');
+    $routes->post('financial/coa/update', '\App\Controllers\AdminFinancialWorkspaceController::updateCoa', ['filter' => 'rbac:financial.manage']);
+    $routes->get('financial/coa/delete/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::deleteCoa/$1', ['filter' => 'rbac:financial.manage']);
 
-// Reporting Workspace Routes
-$routes->get('admin/reporting', '\App\Controllers\AdminReportingWorkspaceController::index');
-$routes->get('admin/reporting/preview', '\App\Controllers\AdminReportingWorkspaceController::preview');
+    $routes->post('financial/budget/store', '\App\Controllers\AdminFinancialWorkspaceController::storeBudget', ['filter' => 'rbac:financial.manage']);
+    $routes->get('financial/budget/edit/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::editBudget/$1');
+    $routes->post('financial/budget/update', '\App\Controllers\AdminFinancialWorkspaceController::updateBudget', ['filter' => 'rbac:financial.manage']);
+    $routes->get('financial/budget/delete/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::deleteBudget/$1', ['filter' => 'rbac:financial.manage']);
 
-// CMS & System Workspace Routes
-$routes->get('admin/cms', '\App\Controllers\AdminCmsWorkspaceController::index');
-$routes->get('admin/cms/create', '\App\Controllers\AdminCmsWorkspaceController::create');
-$routes->post('admin/cms/store', '\App\Controllers\AdminCmsWorkspaceController::store');
-$routes->get('admin/cms/edit/(:segment)/(:segment)', '\App\Controllers\AdminCmsWorkspaceController::edit/$1/$2');
-$routes->post('admin/cms/update', '\App\Controllers\AdminCmsWorkspaceController::update');
-$routes->post('admin/cms/delete/(:segment)/(:segment)', '\App\Controllers\AdminCmsWorkspaceController::delete/$1/$2');
-$routes->get('admin/cms/delete/(:segment)/(:segment)', '\App\Controllers\AdminCmsWorkspaceController::delete/$1/$2');
-$routes->get('admin/program', '\App\Controllers\AdminCmsWorkspaceController::index');
-$routes->get('admin/layanan-cms', '\App\Controllers\AdminCmsWorkspaceController::index');
+    $routes->post('financial/periods/store', '\App\Controllers\AdminFinancialWorkspaceController::storePeriod', ['filter' => 'rbac:financial.manage']);
+    $routes->get('financial/periods/edit/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::editPeriod/$1');
+    $routes->post('financial/periods/update', '\App\Controllers\AdminFinancialWorkspaceController::updatePeriod', ['filter' => 'rbac:financial.manage']);
+    $routes->get('financial/periods/delete/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::deletePeriod/$1', ['filter' => 'rbac:financial.manage']);
 
-// Website & Homepage Manager Routes
-$routes->get('admin/homepage-manager', '\App\Controllers\AdminHomepageManagerController::index');
-$routes->post('admin/homepage-manager/save-order', '\App\Controllers\AdminHomepageManagerController::saveOrder');
-$routes->post('admin/homepage-manager/save-settings', '\App\Controllers\AdminHomepageManagerController::saveSettings');
-$routes->post('admin/homepage-manager/bulk-action', '\App\Controllers\AdminHomepageManagerController::bulkAction');
-$routes->post('admin/homepage-manager/reset-default', '\App\Controllers\AdminHomepageManagerController::resetDefault');
-$routes->post('admin/homepage-manager/clear-cache', '\App\Controllers\AdminHomepageManagerController::clearCache');
-$routes->get('admin/theme', '\App\Controllers\AdminSystemWorkspaceController::index');
+    $routes->post('financial/journal/store', '\App\Controllers\AdminFinancialWorkspaceController::storeJournal', ['filter' => 'rbac:financial.manage']);
 
-$routes->get('admin/settings', '\App\Controllers\AdminSystemWorkspaceController::index');
-$routes->post('admin/settings/store', '\App\Controllers\AdminSystemWorkspaceController::store');
-$routes->get('admin/settings/delete/(:segment)', '\App\Controllers\AdminSystemWorkspaceController::deleteSetting/$1');
+    // Reporting Workspace Routes (read-only, cukup 'auth')
+    $routes->get('reporting', '\App\Controllers\AdminReportingWorkspaceController::index');
+    $routes->get('reporting/preview', '\App\Controllers\AdminReportingWorkspaceController::preview');
 
-$routes->get('admin/menu', '\App\Controllers\AdminSystemWorkspaceController::index');
-$routes->post('admin/menu/store', '\App\Controllers\AdminSystemWorkspaceController::storeMenu');
-$routes->get('admin/menu/edit/(:segment)', '\App\Controllers\AdminSystemWorkspaceController::editMenu/$1');
-$routes->post('admin/menu/update', '\App\Controllers\AdminSystemWorkspaceController::updateMenu');
-$routes->get('admin/menu/delete/(:segment)', '\App\Controllers\AdminSystemWorkspaceController::deleteMenu/$1');
+    // CMS & System Workspace Routes
+    $routes->get('cms', '\App\Controllers\AdminCmsWorkspaceController::index');
+    $routes->get('cms/create', '\App\Controllers\AdminCmsWorkspaceController::create');
+    $routes->post('cms/store', '\App\Controllers\AdminCmsWorkspaceController::store', ['filter' => 'rbac:admin.manage']);
+    $routes->get('cms/edit/(:segment)/(:segment)', '\App\Controllers\AdminCmsWorkspaceController::edit/$1/$2');
+    $routes->post('cms/update', '\App\Controllers\AdminCmsWorkspaceController::update', ['filter' => 'rbac:admin.manage']);
+    $routes->post('cms/delete/(:segment)/(:segment)', '\App\Controllers\AdminCmsWorkspaceController::delete/$1/$2', ['filter' => 'rbac:admin.manage']);
+    $routes->get('cms/delete/(:segment)/(:segment)', '\App\Controllers\AdminCmsWorkspaceController::delete/$1/$2', ['filter' => 'rbac:admin.manage']);
+    $routes->get('program', '\App\Controllers\AdminCmsWorkspaceController::index');
+    $routes->get('layanan-cms', '\App\Controllers\AdminCmsWorkspaceController::index');
 
-$routes->get('admin/media', '\App\Controllers\AdminSystemWorkspaceController::index');
-$routes->post('admin/media/store', '\App\Controllers\AdminSystemWorkspaceController::storeMedia');
-$routes->get('admin/media/delete/(:segment)', '\App\Controllers\AdminSystemWorkspaceController::deleteMedia/$1');
+    // Website & Homepage Manager Routes
+    $routes->get('homepage-manager', '\App\Controllers\AdminHomepageManagerController::index');
+    $routes->post('homepage-manager/save-order', '\App\Controllers\AdminHomepageManagerController::saveOrder', ['filter' => 'rbac:admin.manage']);
+    $routes->post('homepage-manager/save-settings', '\App\Controllers\AdminHomepageManagerController::saveSettings', ['filter' => 'rbac:admin.manage']);
+    $routes->post('homepage-manager/bulk-action', '\App\Controllers\AdminHomepageManagerController::bulkAction', ['filter' => 'rbac:admin.manage']);
+    $routes->post('homepage-manager/reset-default', '\App\Controllers\AdminHomepageManagerController::resetDefault', ['filter' => 'rbac:admin.manage']);
+    $routes->post('homepage-manager/clear-cache', '\App\Controllers\AdminHomepageManagerController::clearCache', ['filter' => 'rbac:admin.manage']);
+    $routes->get('theme', '\App\Controllers\AdminSystemWorkspaceController::index');
 
-$routes->get('admin/notification', '\App\Controllers\AdminSystemWorkspaceController::index');
-$routes->post('admin/notification/store', '\App\Controllers\AdminSystemWorkspaceController::storeNotification');
-$routes->get('admin/notification/delete/(:segment)', '\App\Controllers\AdminSystemWorkspaceController::deleteNotification/$1');
+    $routes->get('settings', '\App\Controllers\AdminSystemWorkspaceController::index');
+    $routes->post('settings/store', '\App\Controllers\AdminSystemWorkspaceController::store', ['filter' => 'rbac:admin.manage']);
+    $routes->get('settings/delete/(:segment)', '\App\Controllers\AdminSystemWorkspaceController::deleteSetting/$1', ['filter' => 'rbac:admin.manage']);
+
+    $routes->get('menu', '\App\Controllers\AdminSystemWorkspaceController::index');
+    $routes->post('menu/store', '\App\Controllers\AdminSystemWorkspaceController::storeMenu', ['filter' => 'rbac:admin.manage']);
+    $routes->get('menu/edit/(:segment)', '\App\Controllers\AdminSystemWorkspaceController::editMenu/$1');
+    $routes->post('menu/update', '\App\Controllers\AdminSystemWorkspaceController::updateMenu', ['filter' => 'rbac:admin.manage']);
+    $routes->get('menu/delete/(:segment)', '\App\Controllers\AdminSystemWorkspaceController::deleteMenu/$1', ['filter' => 'rbac:admin.manage']);
+
+    // NOTE (pra-eksisting, di luar cakupan TASK-019A): rute 'admin/media' &
+    // 'admin/media/*' berikut ini duplikat/di-shadow oleh AdminMediaController
+    // di atas (didaftarkan lebih dulu sehingga versi AdminSystemWorkspaceController
+    // ini tidak pernah tereksekusi). Dipertahankan apa adanya agar scope
+    // perubahan tetap fokus ke perbaikan kontrol akses; direkomendasikan
+    // dibersihkan terpisah.
+    $routes->get('media', '\App\Controllers\AdminSystemWorkspaceController::index');
+    $routes->post('media/store', '\App\Controllers\AdminSystemWorkspaceController::storeMedia', ['filter' => 'rbac:admin.manage']);
+    $routes->get('media/delete/(:segment)', '\App\Controllers\AdminSystemWorkspaceController::deleteMedia/$1', ['filter' => 'rbac:admin.manage']);
+
+    $routes->get('notification', '\App\Controllers\AdminSystemWorkspaceController::index');
+    $routes->post('notification/store', '\App\Controllers\AdminSystemWorkspaceController::storeNotification', ['filter' => 'rbac:admin.manage']);
+    $routes->get('notification/delete/(:segment)', '\App\Controllers\AdminSystemWorkspaceController::deleteNotification/$1', ['filter' => 'rbac:admin.manage']);
+});
 
 // Web Installer Routes
+// Catatan: rute ini tetap tanpa filter 'auth' by design (dipakai sebelum
+// akun admin pertama ada), sudah dikecualikan pula dari filter CSRF global
+// di app/Config/Filters.php ('except' => ['install/*', 'install']).
 $routes->match(['GET', 'POST'], 'install', '\App\Controllers\InstallerController::welcome');
 $routes->match(['GET', 'POST'], 'install/requirements', '\App\Controllers\InstallerController::requirements');
 $routes->match(['GET', 'POST'], 'install/database', '\App\Controllers\InstallerController::database');
