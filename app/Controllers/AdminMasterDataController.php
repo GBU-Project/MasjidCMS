@@ -7,6 +7,23 @@ use Config\Database;
 
 class AdminMasterDataController extends BaseController
 {
+    /**
+     * Standard action-column markup used across all Master Data tabs.
+     * Only Edit & Delete are rendered because those are the only actions
+     * with a real, working implementation. View/History are intentionally
+     * omitted (TASK-018) until those features actually exist — no dummy
+     * buttons.
+     */
+    private function actionButtons(string $editUrl, string $deleteUrl, string $confirmMessage): string
+    {
+        $confirm = esc($confirmMessage, 'js');
+
+        return '<div class="row-actions" style="display:flex; gap:4px; justify-content:flex-end;">'
+            . '<a href="' . esc($editUrl) . '" class="btn btn-secondary" style="padding: 4px 8px; font-size: 12px;" title="Edit Data">✏️</a>'
+            . '<a href="' . esc($deleteUrl) . '" class="btn btn-secondary" onclick="return confirm(\'' . $confirm . '\')" style="padding: 4px 8px; font-size: 12px; color: var(--status-danger-text);" title="Hapus Data">🗑️</a>'
+            . '</div>';
+    }
+
     public function index(): string
     {
         $db = Database::connect();
@@ -44,10 +61,11 @@ class AdminMasterDataController extends BaseController
                             esc($m['city'] ?? '-'),
                             '<span class="badge badge-green">' . esc($m['status'] ?? $m['legal_status'] ?? 'Terverifikasi') . '</span>',
                             esc($m['phone'] ?? '-'),
-                            '<div style="display:flex; gap:4px;">' .
-                            '<a href="' . site_url('admin/master/edit/profil/' . $m['id']) . '" class="btn btn-secondary" style="padding: 2px 8px; font-size: 12px;">Edit</a>' .
-                            '<a href="' . site_url('admin/master/delete/masjids/' . $m['id']) . '" class="btn btn-secondary" onclick="return confirm(\'Hapus profil masjid ini?\')" style="padding: 2px 8px; font-size: 12px; color: var(--status-danger-text);">Hapus</a>' .
-                            '</div>',
+                            $this->actionButtons(
+                                site_url('admin/master/edit/profil/' . $m['id']),
+                                site_url('admin/master/delete/masjids/' . $m['id']),
+                                'Hapus profil masjid ini?'
+                            ),
                         ]
                     ];
                 }
@@ -62,10 +80,11 @@ class AdminMasterDataController extends BaseController
                             esc($j['gender'] ?? '-'),
                             esc($j['phone'] ?? '-'),
                             '<span class="badge badge-green">' . esc($j['status'] ?? 'ACTIVE') . '</span>',
-                            '<div style="display:flex; gap:4px;">' .
-                            '<a href="' . site_url('admin/master/edit/jamaah/' . $j['id']) . '" class="btn btn-secondary" style="padding: 2px 8px; font-size: 12px;">Edit</a>' .
-                            '<a href="' . site_url('admin/master/delete/jamaahs/' . $j['id']) . '" class="btn btn-secondary" onclick="return confirm(\'Hapus jamaah ini?\')" style="padding: 2px 8px; font-size: 12px; color: var(--status-danger-text);">Hapus</a>' .
-                            '</div>',
+                            $this->actionButtons(
+                                site_url('admin/master/edit/jamaah/' . $j['id']),
+                                site_url('admin/master/delete/jamaahs/' . $j['id']),
+                                'Hapus jamaah ini?'
+                            ),
                         ]
                     ];
                 }
@@ -86,10 +105,11 @@ class AdminMasterDataController extends BaseController
                             '<strong>' . esc($headName) . '</strong>',
                             esc($f['address'] ?? '-'),
                             esc(substr($f['created_at'] ?? date('Y-m-d'), 0, 10)),
-                            '<div style="display:flex; gap:4px;">' .
-                            '<a href="' . site_url('admin/master/edit/family/' . $f['id']) . '" class="btn btn-secondary" style="padding: 2px 8px; font-size: 12px;">Edit</a>' .
-                            '<a href="' . site_url('admin/master/delete/families/' . $f['id']) . '" class="btn btn-secondary" onclick="return confirm(\'Hapus keluarga ini?\')" style="padding: 2px 8px; font-size: 12px; color: var(--status-danger-text);">Hapus</a>' .
-                            '</div>',
+                            $this->actionButtons(
+                                site_url('admin/master/edit/family/' . $f['id']),
+                                site_url('admin/master/delete/families/' . $f['id']),
+                                'Hapus keluarga ini?'
+                            ),
                         ]
                     ];
                 }
@@ -105,10 +125,11 @@ class AdminMasterDataController extends BaseController
                             '<strong>' . esc($fullName) . '</strong>',
                             esc($u['email']),
                             '<span class="badge badge-green">' . ($isActive ? 'ACTIVE' : 'INACTIVE') . '</span>',
-                            '<div style="display:flex; gap:4px;">' .
-                            '<a href="' . site_url('admin/master/edit/user/' . $u['id']) . '" class="btn btn-secondary" style="padding: 2px 8px; font-size: 12px;">Edit</a>' .
-                            '<a href="' . site_url('admin/master/delete/users/' . $u['id']) . '" class="btn btn-secondary" onclick="return confirm(\'Hapus user ini?\')" style="padding: 2px 8px; font-size: 12px; color: var(--status-danger-text);">Hapus</a>' .
-                            '</div>',
+                            $this->actionButtons(
+                                site_url('admin/master/edit/user/' . $u['id']),
+                                site_url('admin/master/delete/users/' . $u['id']),
+                                'Hapus user ini?'
+                            ),
                         ]
                     ];
                 }
@@ -121,10 +142,11 @@ class AdminMasterDataController extends BaseController
                             '<span class="stat-mono">' . esc(substr($r['id'], 0, 8)) . '...</span>',
                             '<strong>' . esc($r['name']) . '</strong>',
                             esc($r['description'] ?? '-'),
-                            '<div style="display:flex; gap:4px;">' .
-                            '<a href="' . site_url('admin/master/edit/role/' . $r['id']) . '" class="btn btn-secondary" style="padding: 2px 8px; font-size: 12px;">Edit</a>' .
-                            '<a href="' . site_url('admin/master/delete/roles/' . $r['id']) . '" class="btn btn-secondary" onclick="return confirm(\'Hapus role ini?\')" style="padding: 2px 8px; font-size: 12px; color: var(--status-danger-text);">Hapus</a>' .
-                            '</div>',
+                            $this->actionButtons(
+                                site_url('admin/master/edit/role/' . $r['id']),
+                                site_url('admin/master/delete/roles/' . $r['id']),
+                                'Hapus role ini?'
+                            ),
                         ]
                     ];
                 }
@@ -139,10 +161,11 @@ class AdminMasterDataController extends BaseController
                             esc($b['description'] ?? '-'),
                             '<span class="stat-mono">' . esc($b['sort_order'] ?? 1) . '</span>',
                             '<span class="badge badge-green">' . esc($b['status'] ?? 'ACTIVE') . '</span>',
-                            '<div style="display:flex; gap:4px;">' .
-                            '<a href="' . site_url('admin/master/edit/bidang/' . $b['id']) . '" class="btn btn-secondary" style="padding: 2px 8px; font-size: 12px;">Edit</a>' .
-                            '<a href="' . site_url('admin/master/delete/bidang/' . $b['id']) . '" class="btn btn-secondary" onclick="return confirm(\'Hapus bidang ini?\')" style="padding: 2px 8px; font-size: 12px; color: var(--status-danger-text);">Hapus</a>' .
-                            '</div>',
+                            $this->actionButtons(
+                                site_url('admin/master/edit/bidang/' . $b['id']),
+                                site_url('admin/master/delete/bidang/' . $b['id']),
+                                'Hapus bidang ini?'
+                            ),
                         ]
                     ];
                 }
@@ -162,10 +185,11 @@ class AdminMasterDataController extends BaseController
                             esc($p['bidang_name'] ?? '-'),
                             esc($p['telepon'] ?? '-'),
                             '<span class="badge badge-green">' . esc($p['status'] ?? 'ACTIVE') . '</span>',
-                            '<div style="display:flex; gap:4px;">' .
-                            '<a href="' . site_url('admin/master/edit/pengurus/' . $p['id']) . '" class="btn btn-secondary" style="padding: 2px 8px; font-size: 12px;">Edit</a>' .
-                            '<a href="' . site_url('admin/master/delete/pengurus/' . $p['id']) . '" class="btn btn-secondary" onclick="return confirm(\'Hapus pengurus ini?\')" style="padding: 2px 8px; font-size: 12px; color: var(--status-danger-text);">Hapus</a>' .
-                            '</div>',
+                            $this->actionButtons(
+                                site_url('admin/master/edit/pengurus/' . $p['id']),
+                                site_url('admin/master/delete/pengurus/' . $p['id']),
+                                'Hapus pengurus ini?'
+                            ),
                         ]
                     ];
                 }
@@ -178,10 +202,11 @@ class AdminMasterDataController extends BaseController
                             '<span class="stat-mono">' . esc(substr($p['id'], 0, 8)) . '...</span>',
                             '<strong>' . esc($p['name'] ?? $p['permission_code'] ?? '-') . '</strong>',
                             esc($p['description'] ?? '-'),
-                            '<div style="display:flex; gap:4px;">' .
-                            '<a href="' . site_url('admin/master/edit/permission/' . $p['id']) . '" class="btn btn-secondary" style="padding: 2px 8px; font-size: 12px;">Edit</a>' .
-                            '<a href="' . site_url('admin/master/delete/permissions/' . $p['id']) . '" class="btn btn-secondary" onclick="return confirm(\'Hapus permission ini?\')" style="padding: 2px 8px; font-size: 12px; color: var(--status-danger-text);">Hapus</a>' .
-                            '</div>',
+                            $this->actionButtons(
+                                site_url('admin/master/edit/permission/' . $p['id']),
+                                site_url('admin/master/delete/permissions/' . $p['id']),
+                                'Hapus permission ini?'
+                            ),
                         ]
                     ];
                 }
@@ -231,15 +256,18 @@ class AdminMasterDataController extends BaseController
                 }
 
                 $db->table('masjids')->insert([
-                    'code'       => (string) $this->request->getPost('code'),
-                    'name'       => (string) $this->request->getPost('name'),
-                    'slug'       => url_title((string) $this->request->getPost('name'), '-', true),
-                    'city'       => (string) $this->request->getPost('city'),
-                    'phone'      => (string) $this->request->getPost('phone'),
-                    'email'      => (string) $this->request->getPost('email'),
-                    'address'    => (string) $this->request->getPost('address'),
-                    'status'     => 'active',
-                    'created_at' => date('Y-m-d H:i:s'),
+                    'code'          => (string) $this->request->getPost('code'),
+                    'name'          => (string) $this->request->getPost('name'),
+                    'slug'          => url_title((string) $this->request->getPost('name'), '-', true),
+                    'city'          => (string) $this->request->getPost('city'),
+                    'phone'         => (string) $this->request->getPost('phone'),
+                    'email'         => (string) $this->request->getPost('email'),
+                    'address'       => (string) $this->request->getPost('address'),
+                    'history_text'  => (string) $this->request->getPost('history_text'),
+                    'vision_text'   => (string) $this->request->getPost('vision_text'),
+                    'mission_text'  => (string) $this->request->getPost('mission_text'),
+                    'status'        => 'active',
+                    'created_at'    => date('Y-m-d H:i:s'),
                 ]);
                 session()->setFlashdata('success', 'Profil Masjid berhasil disimpan.');
 
@@ -451,14 +479,24 @@ class AdminMasterDataController extends BaseController
 
         try {
             if ($tab === 'profil') {
-                $db->table('masjids')->where('id', $id)->update([
+                $profileData = [
                     'code'    => (string) $this->request->getPost('code'),
                     'name'    => (string) $this->request->getPost('name'),
                     'city'    => (string) $this->request->getPost('city'),
                     'phone'   => (string) $this->request->getPost('phone'),
                     'email'   => (string) $this->request->getPost('email'),
                     'address' => (string) $this->request->getPost('address'),
-                ]);
+                ];
+
+                // Defensive: only write these columns if the migration that
+                // adds them has actually run on this database.
+                foreach (['history_text', 'vision_text', 'mission_text'] as $narrativeField) {
+                    if ($db->fieldExists($narrativeField, 'masjids')) {
+                        $profileData[$narrativeField] = (string) $this->request->getPost($narrativeField);
+                    }
+                }
+
+                $db->table('masjids')->where('id', $id)->update($profileData);
                 session()->setFlashdata('success', 'Profil Masjid berhasil diperbarui.');
 
             } elseif ($tab === 'bidang') {

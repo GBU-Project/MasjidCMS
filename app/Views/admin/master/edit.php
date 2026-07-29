@@ -60,6 +60,20 @@
                 <label style="display: block; font-weight: 600; margin-bottom: 6px;">Alamat Lengkap</label>
                 <textarea name="address" rows="3" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;"><?= esc(old('address', $item['address'] ?? '')) ?></textarea>
             </div>
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 6px;">Sejarah Singkat</label>
+                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">Ditampilkan di halaman publik "Profil & Visi Misi Masjid".</p>
+                <textarea name="history_text" rows="4" placeholder="Ceritakan sejarah singkat berdirinya masjid..." style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;"><?= esc(old('history_text', $item['history_text'] ?? '')) ?></textarea>
+            </div>
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 6px;">Visi</label>
+                <textarea name="vision_text" rows="2" placeholder="Visi masjid..." style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;"><?= esc(old('vision_text', $item['vision_text'] ?? '')) ?></textarea>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 6px;">Misi</label>
+                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">Satu poin misi per baris — setiap baris akan tampil sebagai daftar bernomor di halaman publik.</p>
+                <textarea name="mission_text" rows="4" placeholder="Menyelenggarakan ibadah dan kegiatan syiar Islam...&#10;Mengelola dana ZISWAF secara transparan..." style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;"><?= esc(old('mission_text', $item['mission_text'] ?? '')) ?></textarea>
+            </div>
 
         <?php elseif ($tab === 'bidang'): ?>
             <div style="margin-bottom: 16px;">
