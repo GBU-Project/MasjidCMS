@@ -85,6 +85,30 @@ class RbacSeeder extends Seeder
 
         // 3. Seed Role Permissions Mapping
         $rolePerms = [
+            // TASK-019A Hotfix (patch audit, 29 Juli 2026): SUPER_ADMIN
+            // sebelumnya tidak diberi role_permissions sama sekali, murni
+            // mengandalkan bypass di AuthorizationFilter/AuthenticatedUser
+            // ::isSuperAdmin(). Bypass itu ternyata rusak (lihat patch di
+            // AuthenticatedUser.php & AuthenticationRepository.php) --
+            // akibatnya Super Admin mendapat 403 di semua rute
+            // 'rbac:<permission>'. Baris berikut jadi jaring pengaman agar
+            // Super Admin tetap berfungsi walau bypass bermasalah lagi.
+            ['role_id' => 'r-super-admin-01', 'permission_code' => 'dashboard.view'],
+            ['role_id' => 'r-super-admin-01', 'permission_code' => 'jamaah.read'],
+            ['role_id' => 'r-super-admin-01', 'permission_code' => 'jamaah.create'],
+            ['role_id' => 'r-super-admin-01', 'permission_code' => 'jamaah.update'],
+            ['role_id' => 'r-super-admin-01', 'permission_code' => 'jamaah.delete'],
+            ['role_id' => 'r-super-admin-01', 'permission_code' => 'family.read'],
+            ['role_id' => 'r-super-admin-01', 'permission_code' => 'family.create'],
+            ['role_id' => 'r-super-admin-01', 'permission_code' => 'family.update'],
+            ['role_id' => 'r-super-admin-01', 'permission_code' => 'family.delete'],
+            ['role_id' => 'r-super-admin-01', 'permission_code' => 'admin.manage'],
+            ['role_id' => 'r-super-admin-01', 'permission_code' => 'masjid.read'],
+            ['role_id' => 'r-super-admin-01', 'permission_code' => 'masjid.create'],
+            ['role_id' => 'r-super-admin-01', 'permission_code' => 'masjid.update'],
+            ['role_id' => 'r-super-admin-01', 'permission_code' => 'masjid.delete'],
+            ['role_id' => 'r-super-admin-01', 'permission_code' => 'financial.manage'],
+
             // Admin Masjid permissions
             ['role_id' => 'r-admin-masjid-02', 'permission_code' => 'dashboard.view'],
             ['role_id' => 'r-admin-masjid-02', 'permission_code' => 'jamaah.read'],

@@ -53,10 +53,26 @@ class AuthenticatedUser
 
     /**
      * Memeriksa apakah user merupakan Super Admin.
+     *
+     * TASK-019A Hotfix (patch audit, 29 Juli 2026): sebelumnya hanya
+     * mencocokkan literal 'superadmin'/'admin', padahal skema RBAC
+     * sesungguhnya (RbacSeeder / CreateRbacTables) memakai role_code
+     * 'SUPER_ADMIN'. Akibatnya method ini SELALU false untuk akun Super
+     * Admin manapun -- filter 'rbac:xxx' menolak Super Admin dengan 403
+     * karena RbacSeeder tidak pernah memberi role SUPER_ADMIN permission
+     * eksplisit apa pun (didesain bergantung penuh pada bypass ini).
+     * Perbandingan dibuat case-insensitive agar tetap kompatibel dengan
+     * role_code lama ('superadmin'/'admin') bila ada di data existing.
      */
     public function isSuperAdmin(): bool
     {
-        return in_array('superadmin', $this->roles, true) || in_array('admin', $this->roles, true);
+        foreach ($this->roles as $role) {
+            if (in_array(strtoupper((string) $role), ['SUPER_ADMIN', 'SUPERADMIN', 'ADMIN'], true)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

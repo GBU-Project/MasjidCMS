@@ -15,6 +15,7 @@ use App\Application\Financial\Services\RejectTransactionApplicationService;
 use App\Application\Financial\Services\TransferFundApplicationService;
 use App\Application\Financial\Services\VoidTransactionApplicationService;
 use App\Core\Controllers\BaseController;
+use App\Core\Security\SecurityContext;
 use App\Core\Support\ResponseFormatter;
 use App\Domains\Financial\Exceptions\BusinessRuleException;
 use App\Domains\Financial\Exceptions\EntityNotFoundException;
@@ -90,8 +91,15 @@ class FinancialApiController extends BaseController
     public function approve(string $uuid): ResponseInterface
     {
         try {
-            $json = $this->request->getJSON(true) ?? [];
-            $req = new ApproveTransactionRequest($uuid, (string) ($json['approver_user_id'] ?? 'user-dkm'));
+            // TASK-019A Hotfix (patch audit, 29 Juli 2026): approver_user_id
+            // SEBELUMNYA diambil dari body JSON milik client -- user yang
+            // sudah login (siapa pun dengan permission 'financial.manage')
+            // bisa memalsukan approver_user_id milik user lain. Diambil
+            // paksa dari SecurityContext (sesi login), bukan input client.
+            // Rute ini sudah mewajibkan filter 'auth' sehingga
+            // SecurityContext::user() dijamin tidak null di titik ini.
+            $approverUserId = (string) (SecurityContext::user()->id ?? 'user-dkm');
+            $req = new ApproveTransactionRequest($uuid, $approverUserId);
 
             $service = $this->approveService ?? new ApproveTransactionApplicationService(
                 new \App\Infrastructure\Persistence\Financial\Repositories\FinancialTransactionRepository(),
@@ -109,10 +117,13 @@ class FinancialApiController extends BaseController
     public function reject(string $uuid): ResponseInterface
     {
         try {
+            // TASK-019A Hotfix (patch audit, 29 Juli 2026): lihat catatan
+            // yang sama di approve() -- identitas penolak diambil dari
+            // sesi login, bukan dari body JSON yang bisa dipalsukan.
             $json = $this->request->getJSON(true) ?? [];
             $req = new RejectTransactionRequest(
                 $uuid,
-                (string) ($json['approver_user_id'] ?? 'user-dkm'),
+                (string) (SecurityContext::user()->id ?? 'user-dkm'),
                 $json['notes'] ?? null
             );
 

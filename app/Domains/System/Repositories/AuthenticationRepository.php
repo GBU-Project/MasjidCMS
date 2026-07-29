@@ -14,6 +14,18 @@ class AuthenticationRepository extends BaseRepository
 {
     protected string $table = 'users';
 
+    protected RoleRepository $roleRepository;
+    protected PermissionRepository $permissionRepository;
+
+    public function __construct(
+        ?RoleRepository $roleRepository = null,
+        ?PermissionRepository $permissionRepository = null
+    ) {
+        parent::__construct();
+        $this->roleRepository = $roleRepository ?? new RoleRepository();
+        $this->permissionRepository = $permissionRepository ?? new PermissionRepository();
+    }
+
     /**
      * Mencari data pengguna untuk otentikasi berdasarkan username atau email.
      *
@@ -69,14 +81,38 @@ class AuthenticationRepository extends BaseRepository
             return null;
         }
 
+        $userId = $data['id'] ?? null;
+
+        // TASK-019A Hotfix: 'users' table tidak memiliki kolom 'roles'/
+        // 'permissions' (lihat migration CreateRbacTables) -- data tsb
+        // sebelumnya SELALU kosong karena dibaca dari kolom yang tidak
+        // ada. Roles/permissions sesungguhnya berasal dari tabel
+        // roles/permissions/user_roles/role_permissions via repository
+        // yang sama dipakai DatabasePermissionProvider, supaya
+        // AuthenticatedUser::isSuperAdmin() dan cache di sesi konsisten
+        // dengan pemeriksaan permission granular saat request berikutnya.
+        $roleCodes = [];
+        $permissionCodes = [];
+
+        if ($userId !== null) {
+            $roleCodes = array_map(
+                static fn ($role) => $role->slug,
+                $this->roleRepository->findByUserId($userId)
+            );
+            $permissionCodes = array_map(
+                static fn ($permission) => $permission->slug,
+                $this->permissionRepository->findByUserId($userId)
+            );
+        }
+
         return new AuthenticatedUser(
-            id: $data['id'] ?? null,
+            id: $userId,
             username: $data['username'] ?? '',
             displayName: $data['display_name'] ?? $data['username'] ?? '',
             email: $data['email'] ?? '',
             passwordHash: $data['password_hash'] ?? $data['password'] ?? null,
-            roles: is_string($data['roles'] ?? null) ? json_decode($data['roles'], true) : ($data['roles'] ?? []),
-            permissions: is_string($data['permissions'] ?? null) ? json_decode($data['permissions'], true) : ($data['permissions'] ?? [])
+            roles: $roleCodes,
+            permissions: $permissionCodes
         );
     }
 }
