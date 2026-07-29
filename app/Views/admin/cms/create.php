@@ -43,7 +43,7 @@
             </div>
             <div style="margin-bottom: 16px;">
                 <label style="display: block; font-weight: 600; margin-bottom: 6px;">Isi Berita / Konten *</label>
-                <textarea name="content" rows="6" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;" placeholder="Tulis artikel berita masjid di sini..."></textarea>
+                <textarea name="content" id="cms_post_content" class="tinymce-full" rows="6" placeholder="Tulis artikel berita masjid di sini..."></textarea>
             </div>
             <div style="margin-bottom: 20px;">
                 <label style="display: block; font-weight: 600; margin-bottom: 6px;">Status Publikasi</label>
@@ -98,7 +98,7 @@
             </div>
             <div style="margin-bottom: 20px;">
                 <label style="display: block; font-weight: 600; margin-bottom: 6px;">Deskripsi Lengkap Program</label>
-                <textarea name="deskripsi" rows="4" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;" placeholder="Detail program kegiatan..."></textarea>
+                <textarea name="deskripsi" class="tinymce-medium" rows="4" placeholder="Detail program kegiatan..."></textarea>
             </div>
 
         <?php elseif ($tab === 'layanan'): ?>
@@ -122,7 +122,7 @@
             </div>
             <div style="margin-bottom: 20px;">
                 <label style="display: block; font-weight: 600; margin-bottom: 6px;">Deskripsi & Persyaratan</label>
-                <textarea name="deskripsi" rows="3" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;" placeholder="Deskripsi layanan..."></textarea>
+                <textarea name="deskripsi" class="tinymce-simple" rows="3" placeholder="Deskripsi layanan..."></textarea>
             </div>
 
         <?php elseif ($tab === 'pages'): ?>
@@ -136,7 +136,7 @@
             </div>
             <div style="margin-bottom: 16px;">
                 <label style="display: block; font-weight: 600; margin-bottom: 6px;">Isi Halaman *</label>
-                <textarea name="content" rows="8" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;" placeholder="Konten halaman statis portal..."></textarea>
+                <textarea name="content" class="tinymce-full" rows="6" placeholder="Tulis konten halaman di sini..."></textarea>
             </div>
             <div style="margin-bottom: 20px;">
                 <label style="display: block; font-weight: 600; margin-bottom: 6px;">Status Halaman</label>

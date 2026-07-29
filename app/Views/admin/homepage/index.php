@@ -173,8 +173,11 @@ input:checked + .slider:before {
     </div>
 </div>
 
-<!-- FEATURE 2 & 3: SECTION-BASED BUSINESS CARDS -->
-<h2 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin-bottom: 16px;">📊 Kelola Visibilitas & Limit Konten Modul</h2>
+<!-- SECTION 1: HOMEPAGE SUMMARY CARDS -->
+<div style="margin-bottom: 16px;">
+    <h2 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">📊 Homepage Summary Cards</h2>
+    <p style="font-size: 13px; color: var(--text-muted);">Kelola statistik ringkas, visibilitas modul, dan limit jumlah item penayangan.</p>
+</div>
 
 <div class="section-cards-grid">
     <!-- 1. PROGRAM CARD -->
@@ -439,104 +442,108 @@ input:checked + .slider:before {
             <a href="<?= site_url('admin/cms?tab=posts') ?>" class="btn btn-secondary" style="flex: 1; text-align: center; padding: 6px; font-size: 12px;">⚙️ Kelola</a>
         </div>
     </div>
+</div>
 
-    <!-- 5. DONATION CTA SECTION CARD -->
-    <?php $dStat = $sectionStats['donation'] ?? []; ?>
-    <div class="biz-card" style="grid-column: span 1 / -1;">
-        <div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <span style="font-size: 28px;">💰</span>
-                    <div>
-                        <h3 style="font-size: 16px; font-weight: 800; color: var(--text-primary);">Donasi & Infaq CTA Section</h3>
-                        <span style="font-size: 12px; color: var(--text-tertiary);">Banner Himbauan & Tombol Infaq</span>
-                    </div>
-                </div>
-                <?php if ($dStat['is_visible'] ?? true): ?>
-                    <span class="badge badge-green">🟢 Ditampilkan</span>
-                <?php else: ?>
-                    <span class="badge badge-red" style="background: #fef2f2; color: #991b1b; border: 1px solid #fca5a5;">⚪ Disembunyikan</span>
-                <?php endif; ?>
+<!-- SECTION 2: HOMEPAGE CONTENT EDITOR -->
+<div style="margin-bottom: 20px;">
+    <h2 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">✍️ Homepage Content Editor</h2>
+    <p style="font-size: 13px; color: var(--text-muted);">Kelola konten teks, pesan himbauan, tombol CTA, dan latar belakang visual section halaman utama portal.</p>
+</div>
+
+<!-- DONATION & INFAQ CTA EDITOR CARD (FULL WIDTH) -->
+<?php $dStat = $sectionStats['donation'] ?? []; ?>
+<div class="panel-card" style="padding: 24px; margin-bottom: 32px; border-radius: 12px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 32px;">💰</span>
+            <div>
+                <h3 style="font-size: 17px; font-weight: 800; color: var(--text-primary); margin-bottom: 2px;">Donasi & Infaq CTA Section Editor</h3>
+                <span style="font-size: 12px; color: var(--text-tertiary);">Pesan Himbauan Donasi & Tombol Ajak Infaq Halaman Depan</span>
+            </div>
+        </div>
+        <?php if ($dStat['is_visible'] ?? true): ?>
+            <span class="badge badge-green" style="padding: 6px 12px; font-size: 12px;">🟢 Ditampilkan</span>
+        <?php else: ?>
+            <span class="badge badge-red" style="padding: 6px 12px; font-size: 12px; background: #fef2f2; color: #991b1b; border: 1px solid #fca5a5;">⚪ Disembunyikan</span>
+        <?php endif; ?>
+    </div>
+
+    <form action="<?= site_url('admin/homepage-manager/save-settings') ?>" method="POST">
+        <?= csrf_field() ?>
+        <div class="switch-container" style="margin-bottom: 20px; background: #f8fafc; padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border-light, #e2e8f0);">
+            <span class="switch-label" style="font-size: 14px;">Tampilkan Section Donasi di Homepage Portal</span>
+            <label class="switch">
+                <input type="hidden" name="show_donation_section" value="0">
+                <input type="checkbox" name="show_donation_section" value="1" <?= (($settings['show_donation_section'] ?? '1') === '1') ? 'checked' : '' ?> onchange="this.form.submit()">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; background: var(--bg-surface, #f8fafc); padding: 24px; border-radius: 12px; border: 1px solid var(--border-light, #e2e8f0);">
+            <!-- Title Input -->
+            <div style="grid-column: 1 / -1;">
+                <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
+                    📌 Judul Banner (Title)
+                </label>
+                <input type="text" name="donation_title" value="<?= esc($settings['donation_title'] ?? '💰 Mari Infaq & Sedekah Melalui {masjidName}') ?>" class="form-control" style="width: 100%; padding: 10px 14px; font-size: 16px; font-weight: 700; border-radius: 8px; border: 1px solid var(--border-light); background: white;" placeholder="Contoh: 💰 Mari Infaq & Sedekah Melalui {masjidName}">
+                <span style="font-size: 11px; color: var(--text-tertiary); margin-top: 4px; display: block;">💡 Gunakan placeholder <code>{masjidName}</code> untuk menyisipkan Nama Masjid secara otomatis.</span>
             </div>
 
-            <form action="<?= site_url('admin/homepage-manager/save-settings') ?>" method="POST" style="margin-top: 12px;">
-                <?= csrf_field() ?>
-                <div class="switch-container" style="margin-bottom: 16px;">
-                    <span class="switch-label">Tampilkan Section Donasi di Homepage</span>
-                    <label class="switch">
-                        <input type="hidden" name="show_donation_section" value="0">
-                        <input type="checkbox" name="show_donation_section" value="1" <?= (($settings['show_donation_section'] ?? '1') === '1') ? 'checked' : '' ?> onchange="this.form.submit()">
-                        <span class="slider"></span>
+            <!-- Subtitle Input -->
+            <div style="grid-column: 1 / -1;">
+                <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
+                    🏷️ Subjudul Himbauan (Subtitle)
+                </label>
+                <input type="text" name="donation_subtitle" value="<?= esc($settings['donation_subtitle'] ?? 'Bantu operasional masjid & program sosial keumatan') ?>" class="form-control" style="width: 100%; padding: 10px 14px; font-size: 14px; font-weight: 600; border-radius: 8px; border: 1px solid var(--border-light); background: white;" placeholder="Contoh: Bantu operasional masjid & program sosial keumatan">
+            </div>
+
+            <!-- Description Textarea (Min 7 Rows, Auto-Resize, Char Counter) -->
+            <div style="grid-column: 1 / -1;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <label style="font-size: 13px; font-weight: 700; color: var(--text-primary);">
+                        📝 Deskripsi / Pesan Ajak Donasi (Description)
                     </label>
+                    <span id="donationDescCounter" style="font-size: 12px; color: var(--text-tertiary); font-weight: 600;">0 karakter</span>
                 </div>
+                <textarea id="donation_description_input" name="donation_description" rows="7" class="form-control" style="width: 100%; min-height: 160px; padding: 12px 14px; font-size: 14px; line-height: 1.6; border-radius: 8px; border: 1px solid var(--border-light); background: white; resize: vertical;" placeholder="Tuliskan kalimat himbauan donasi yang menyentuh, amanah, dan mengajak jamaah untuk berinfaq..." oninput="updateDonationDescUX(this)"><?= esc($settings['donation_description'] ?? 'Setiap rupiah donasi Anda disalurkan secara aman, akuntabel, dan terdaftar dalam Laporan Keuangan Transparan Masjid.') ?></textarea>
+                <span style="font-size: 11px; color: var(--text-tertiary); margin-top: 4px; display: block;">💡 Area teks ini otomatis menyesuaikan tinggi baris pengetikan agar nyaman digunakan untuk pesan panjang.</span>
+            </div>
 
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; background: var(--bg-surface, #f8fafc); padding: 20px; border-radius: 12px; border: 1px solid var(--border-light, #e2e8f0);">
-                    <!-- Title Input -->
-                    <div style="grid-column: 1 / -1;">
-                        <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
-                            📌 Judul Banner (Title)
-                        </label>
-                        <input type="text" name="donation_title" value="<?= esc($settings['donation_title'] ?? '💰 Mari Infaq & Sedekah Melalui {masjidName}') ?>" class="form-control" style="width: 100%; padding: 10px 14px; font-size: 16px; font-weight: 700; border-radius: 8px; border: 1px solid var(--border-light); background: white;" placeholder="Contoh: 💰 Mari Infaq & Sedekah Melalui {masjidName}">
-                        <span style="font-size: 11px; color: var(--text-tertiary); margin-top: 4px; display: block;">💡 Gunakan placeholder <code>{masjidName}</code> untuk menyisipkan Nama Masjid secara otomatis.</span>
-                    </div>
+            <!-- Button Text Input -->
+            <div>
+                <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
+                    🔘 Teks Tombol CTA (Button Text)
+                </label>
+                <input type="text" name="donation_btn_text" value="<?= esc($settings['donation_btn_text'] ?? 'Salurkan Donasi Sekarang ›') ?>" class="form-control" style="width: 100%; padding: 10px 12px; font-size: 14px; font-weight: 600; border-radius: 8px; border: 1px solid var(--border-light); background: white;" placeholder="Contoh: Salurkan Donasi Sekarang ›">
+            </div>
 
-                    <!-- Subtitle Input -->
-                    <div style="grid-column: 1 / -1;">
-                        <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
-                            🏷️ Subjudul Himbauan (Subtitle)
-                        </label>
-                        <input type="text" name="donation_subtitle" value="<?= esc($settings['donation_subtitle'] ?? 'Bantu operasional masjid & program sosial keumatan') ?>" class="form-control" style="width: 100%; padding: 10px 14px; font-size: 14px; font-weight: 600; border-radius: 8px; border: 1px solid var(--border-light); background: white;" placeholder="Contoh: Bantu operasional masjid & program sosial keumatan">
-                    </div>
+            <!-- Button URL Input -->
+            <div>
+                <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
+                    🔗 Link Tujuan Tombol (Button URL)
+                </label>
+                <input type="text" name="donation_btn_url" value="<?= esc($settings['donation_btn_url'] ?? 'donasi') ?>" class="form-control" style="width: 100%; padding: 10px 12px; font-size: 14px; font-weight: 600; border-radius: 8px; border: 1px solid var(--border-light); background: white;" placeholder="Contoh: donasi atau https://masjid.com/donasi">
+            </div>
 
-                    <!-- Description Textarea (Min 7 Rows, Auto-Resize, Char Counter) -->
-                    <div style="grid-column: 1 / -1;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                            <label style="font-size: 13px; font-weight: 700; color: var(--text-primary);">
-                                📝 Deskripsi / Pesan Ajak Donasi (Description)
-                            </label>
-                            <span id="donationDescCounter" style="font-size: 12px; color: var(--text-tertiary); font-weight: 600;">0 karakter</span>
-                        </div>
-                        <textarea id="donation_description_input" name="donation_description" rows="7" class="form-control" style="width: 100%; min-height: 160px; padding: 12px 14px; font-size: 14px; line-height: 1.6; border-radius: 8px; border: 1px solid var(--border-light); background: white; resize: vertical;" placeholder="Tuliskan kalimat himbauan donasi yang menyentuh, amanah, dan mengajak jamaah untuk berinfaq..." oninput="updateDonationDescUX(this)"><?= esc($settings['donation_description'] ?? 'Setiap rupiah donasi Anda disalurkan secara aman, akuntabel, dan terdaftar dalam Laporan Keuangan Transparan Masjid.') ?></textarea>
-                        <span style="font-size: 11px; color: var(--text-tertiary); margin-top: 4px; display: block;">💡 Area teks ini otomatis menyesuaikan tinggi baris pengetikan agar nyaman digunakan untuk pesan panjang.</span>
-                    </div>
-
-                    <!-- Button Text Input -->
-                    <div>
-                        <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
-                            🔘 Teks Tombol CTA (Button Text)
-                        </label>
-                        <input type="text" name="donation_btn_text" value="<?= esc($settings['donation_btn_text'] ?? 'Salurkan Donasi Sekarang ›') ?>" class="form-control" style="width: 100%; padding: 10px 12px; font-size: 14px; font-weight: 600; border-radius: 8px; border: 1px solid var(--border-light); background: white;" placeholder="Contoh: Salurkan Donasi Sekarang ›">
-                    </div>
-
-                    <!-- Button URL Input -->
-                    <div>
-                        <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
-                            🔗 Link Tujuan Tombol (Button URL)
-                        </label>
-                        <input type="text" name="donation_btn_url" value="<?= esc($settings['donation_btn_url'] ?? 'donasi') ?>" class="form-control" style="width: 100%; padding: 10px 12px; font-size: 14px; font-weight: 600; border-radius: 8px; border: 1px solid var(--border-light); background: white;" placeholder="Contoh: donasi atau https://masjid.com/donasi">
-                    </div>
-
-                    <!-- Background Image URL Input with Media Library Picker -->
-                    <div style="grid-column: 1 / -1;">
-                        <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
-                            🖼️ Latar Belakang / Background Image (Media Library / URL)
-                        </label>
-                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                            <input type="text" id="donation_bg_image_input" name="donation_bg_image" value="<?= esc($settings['donation_bg_image'] ?? '') ?>" class="form-control" style="flex: 1; min-width: 260px; padding: 10px 12px; font-size: 13px; border-radius: 8px; border: 1px solid var(--border-light); background: white;" placeholder="URL Gambar Latar (misal: /uploads/banners/donasi-bg.jpg)">
-                            <button type="button" onclick="selectFromMediaLibrary('donation_bg_image_input')" class="btn btn-secondary" style="padding: 10px 16px; font-size: 13px; font-weight: 700; white-space: nowrap;">
-                                📁 Media Library
-                            </button>
-                        </div>
-                        <span style="font-size: 11px; color: var(--text-tertiary); margin-top: 4px; display: block;">💡 Kosongkan jika ingin menggunakan warna latar belakang bawaan *Syariah Gradient*.</span>
-                    </div>
+            <!-- Background Image URL Input with Media Library Picker -->
+            <div style="grid-column: 1 / -1;">
+                <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
+                    🖼️ Latar Belakang / Background Image (Media Library / URL)
+                </label>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <input type="text" id="donation_bg_image_input" name="donation_bg_image" value="<?= esc($settings['donation_bg_image'] ?? '') ?>" class="form-control" style="flex: 1; min-width: 260px; padding: 10px 12px; font-size: 13px; border-radius: 8px; border: 1px solid var(--border-light); background: white;" placeholder="URL Gambar Latar (misal: /uploads/banners/donasi-bg.jpg)">
+                    <button type="button" onclick="selectFromMediaLibrary('donation_bg_image_input')" class="btn btn-secondary" style="padding: 10px 16px; font-size: 13px; font-weight: 700; white-space: nowrap;">
+                        📁 Media Library
+                    </button>
                 </div>
-
-                <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
-                    <button type="submit" class="btn btn-primary" style="padding: 10px 24px; font-size: 14px; font-weight: 700; box-shadow: 0 4px 10px rgba(22, 163, 74, 0.25);">💾 Simpan Pengaturan Donasi</button>
-                </div>
-            </form>
+                <span style="font-size: 11px; color: var(--text-tertiary); margin-top: 4px; display: block;">💡 Kosongkan jika ingin menggunakan warna latar belakang bawaan *Syariah Gradient*.</span>
+            </div>
         </div>
-    </div>
+
+        <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+            <button type="submit" class="btn btn-primary" style="padding: 12px 28px; font-size: 15px; font-weight: 700; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);">💾 Simpan Pengaturan Donasi</button>
+        </div>
+    </form>
 </div>
 
 <script>

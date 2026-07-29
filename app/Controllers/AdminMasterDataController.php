@@ -410,7 +410,7 @@ class AdminMasterDataController extends BaseController
         return redirect()->to(site_url('admin/master?tab=' . $tab));
     }
 
-    public function edit(string $type, string $id): string
+    public function edit(string $type, string $id)
     {
         $db = Database::connect();
         $tableMap = [

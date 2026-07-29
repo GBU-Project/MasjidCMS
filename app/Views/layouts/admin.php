@@ -202,5 +202,12 @@
     <main class="app-main-content">
         <?= $this->renderSection('content') ?>
     </main>
+
+    <!-- Universal Media Picker Modal -->
+    <?= $this->include('admin/media/picker_modal') ?>
+
+    <!-- Self-Hosted TinyMCE Community & Unified Media Library JS Engine -->
+    <script src="<?= base_url('assets/vendor/tinymce/tinymce.min.js') ?>"></script>
+    <script src="<?= base_url('assets/js/media-picker.js') ?>"></script>
 </body>
 </html>

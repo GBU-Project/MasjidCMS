@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $this->renderSection('title') ?> — Portal MasjidCMS</title>
     <link rel="stylesheet" href="<?= base_url('assets/css/public-portal.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('assets/css/portal-ui2.css') ?>">
     <style>
         .dropdown-item { position: relative; display: inline-block; }
         .dropdown-item .dropdown-menu { display: none; position: absolute; top: 100%; left: 0; background: white; border: 1px solid var(--border-light, #e2e8f0); border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); list-style: none; padding: 8px 0; min-width: 180px; z-index: 1000; }
@@ -14,7 +15,9 @@
     </style>
 </head>
 <body>
-    <!-- Top Public Header Nav -->
+    <?php $currentPath = trim((string) service('request')->getPath(), '/'); $showLayoutHeader = ($currentPath !== '' && $currentPath !== '/'); ?>
+
+    <?php if ($showLayoutHeader): ?>
     <header class="public-header">
         <div class="brand-title">
             <span>🕌</span>
@@ -41,13 +44,13 @@
             <a href="<?= site_url('admin/dashboard') ?>" class="btn-portal btn-portal-primary">Login Pengurus</a>
         </div>
     </header>
+    <?php endif; ?>
 
-    <!-- Page Main Content Area -->
     <main>
         <?= $this->renderSection('content') ?>
     </main>
 
-    <!-- Public Footer -->
+    <?php if ($showLayoutHeader): ?>
     <footer class="public-footer">
         <div class="footer-grid">
             <div>
@@ -74,5 +77,6 @@
             <p>&copy; <?= date('Y') ?> MasjidCMS. All Rights Reserved. Built with CodeIgniter 4 & DDD Architecture.</p>
         </div>
     </footer>
+    <?php endif; ?>
 </body>
 </html>

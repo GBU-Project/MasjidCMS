@@ -14,6 +14,14 @@ $routes->get('kontak', '\App\Controllers\PublicPortalController::contact');
 $routes->get('galeri', '\App\Controllers\PublicPortalController::gallery');
 $routes->get('transparansi', '\App\Controllers\PublicPortalController::transparency');
 
+// Media Library Routes
+$routes->get('admin/media', '\App\Controllers\AdminMediaController::index');
+$routes->get('admin/media/api', '\App\Controllers\AdminMediaController::apiList');
+$routes->post('admin/media/upload', '\App\Controllers\AdminMediaController::upload');
+$routes->post('admin/media/delete/(:segment)', '\App\Controllers\AdminMediaController::delete/$1');
+$routes->post('admin/media/bulk-delete', '\App\Controllers\AdminMediaController::bulkDelete');
+$routes->post('admin/media/rename', '\App\Controllers\AdminMediaController::rename');
+
 // Admin Workspace Routes
 $routes->get('admin/dashboard', '\App\Controllers\AdminDashboardController::index');
 

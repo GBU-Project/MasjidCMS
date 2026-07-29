@@ -42,10 +42,11 @@ class PublicPortalController extends BaseController
         $limitPengurus = (int) ($settings['limit_pengurus'] ?? 3);
         $limitKajian = (int) ($settings['limit_kajian'] ?? 6);
 
+        $masjid = null;
         if ($db->tableExists('masjids')) {
-            $m = $db->table('masjids')->get()->getRowArray();
-            if ($m) {
-                $masjidName = $m['name'];
+            $masjid = $db->table('masjids')->get()->getRowArray();
+            if ($masjid) {
+                $masjidName = $masjid['name'];
             }
         }
 
@@ -89,15 +90,43 @@ class PublicPortalController extends BaseController
             $latestPosts = $db->table('posts')->where('is_published', 1)->orderBy('created_at', 'DESC')->limit($limitKajian)->get()->getResultArray();
         }
 
+        $kajianList = [];
+        if ($db->tableExists('kajian')) {
+            $kajianList = $db->table('kajian')->orderBy('schedule_date', 'DESC')->limit(6)->get()->getResultArray();
+        }
+
+        $financialSummary = [
+            'total_balance' => 0,
+            'total_income'  => 0,
+            'total_expense' => 0,
+        ];
+        if ($db->tableExists('financial_accounts')) {
+            $sumObj = $db->table('financial_accounts')->selectSum('balance', 'tot')->get()->getRowArray();
+            $financialSummary['total_balance'] = (float) ($sumObj['tot'] ?? 0);
+        }
+        if ($db->tableExists('financial_transactions')) {
+            $typeCol = $db->fieldExists('transaction_type', 'financial_transactions') ? 'transaction_type' : ($db->fieldExists('type', 'financial_transactions') ? 'type' : null);
+            if ($typeCol) {
+                $incObj = $db->table('financial_transactions')->selectSum('amount', 'tot')->where($typeCol, 'INCOME')->get()->getRowArray();
+                $expObj = $db->table('financial_transactions')->selectSum('amount', 'tot')->where($typeCol, 'EXPENSE')->get()->getRowArray();
+                $financialSummary['total_income']  = (float) ($incObj['tot'] ?? 0);
+                $financialSummary['total_expense'] = (float) ($expObj['tot'] ?? 0);
+            }
+        }
+
         return view('public/index', [
-            'activePage'     => 'home',
-            'masjidName'     => $masjidName,
-            'sectionOrder'   => $sectionOrder,
-            'activePrograms' => $activePrograms,
-            'activeServices' => $activeServices,
-            'pengurusList'   => $pengurusList,
-            'latestPosts'    => $latestPosts,
-            'settings'       => $settings,
+            'activePage'       => 'home',
+            'masjidName'       => $masjidName,
+            'masjid'           => $masjid,
+            'sectionOrder'     => $sectionOrder,
+            'activePrograms'   => $activePrograms,
+            'activeServices'   => $activeServices,
+            'pengurusList'     => $pengurusList,
+            'latestPosts'      => $latestPosts,
+            'kajianList'       => $kajianList,
+            'financialSummary' => $financialSummary,
+            'settings'         => $settings,
+            'donationSettings' => $settings,
         ]);
     }
 

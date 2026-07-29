@@ -144,14 +144,39 @@ class AdminFinancialWorkspaceController extends BaseController
 
     public function create(): string
     {
-        return view('admin/financial/create');
+        $db = Database::connect();
+        $funds = [];
+        $financialAccounts = [];
+        $coaAccounts = [];
+
+        if ($db->tableExists('funds')) {
+            $funds = $db->table('funds')->get()->getResultArray();
+        }
+        if ($db->tableExists('financial_accounts')) {
+            $financialAccounts = $db->table('financial_accounts')->get()->getResultArray();
+        }
+        if ($db->tableExists('coa_accounts')) {
+            $coaAccounts = $db->table('coa_accounts')->where('is_active', 1)->get()->getResultArray();
+        }
+
+        return view('admin/financial/create', [
+            'funds'             => $funds,
+            'financialAccounts' => $financialAccounts,
+            'coaAccounts'       => $coaAccounts,
+        ]);
     }
 
     public function store()
     {
         $db = Database::connect();
         try {
-            $rules = ['amount' => 'required|numeric', 'description' => 'required'];
+            $rules = [
+                'amount'               => 'required|numeric|greater_than[0]',
+                'description'          => 'required',
+                'fund_id'              => 'required|numeric',
+                'financial_account_id' => 'required|numeric',
+                'account_id'           => 'required|numeric',
+            ];
             if (!$this->validate($rules)) {
                 session()->setFlashdata('error', 'Gagal menyimpan transaksi: ' . implode(', ', $this->validator->getErrors()));
                 return redirect()->back()->withInput();
@@ -161,27 +186,17 @@ class AdminFinancialWorkspaceController extends BaseController
             $amount = (float) $this->request->getPost('amount');
             $desc = (string) $this->request->getPost('description');
             $date = (string) ($this->request->getPost('transaction_date') ?: date('Y-m-d H:i:s'));
+            $fundId = (int) $this->request->getPost('fund_id');
+            $finAccId = (int) $this->request->getPost('financial_account_id');
+            $accountId = (int) $this->request->getPost('account_id');
 
             $uuid = sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x', mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0x0fff) | 0x4000, mt_rand(0, 0x3fff) | 0x8000, mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff));
             $trxNo = 'TRX-' . date('Ym') . '-' . str_pad((string) mt_rand(1, 9999), 5, '0', STR_PAD_LEFT);
 
-            $fundId = 1;
-            $accountId = 1;
-            $finAccId = 1;
+            // Database Transaction Boundary for Atomic Double-Entry Posting
+            $db->transStart();
 
-            if ($db->tableExists('funds')) {
-                $fRow = $db->table('funds')->get()->getRowArray();
-                if ($fRow) { $fundId = $fRow['id']; }
-            }
-            if ($db->tableExists('coa_accounts')) {
-                $cRow = $db->table('coa_accounts')->get()->getRowArray();
-                if ($cRow) { $accountId = $cRow['id']; }
-            }
-            if ($db->tableExists('financial_accounts')) {
-                $faRow = $db->table('financial_accounts')->get()->getRowArray();
-                if ($faRow) { $finAccId = $faRow['id']; }
-            }
-
+            // 1. Insert Transaction Record
             $db->table('financial_transactions')->insert([
                 'uuid'                 => $uuid,
                 'masjid_id'            => '1',
@@ -197,16 +212,75 @@ class AdminFinancialWorkspaceController extends BaseController
                 'description'          => $desc,
                 'created_at'           => date('Y-m-d H:i:s'),
             ]);
+            $trxId = $db->insertID();
 
+            // 2. Safe Balance Update via Query Builder
             if ($db->tableExists('financial_accounts')) {
+                $builder = $db->table('financial_accounts')->where('id', $finAccId);
                 if ($type === 'INCOME') {
-                    $db->query("UPDATE financial_accounts SET balance = balance + {$amount} WHERE id = {$finAccId}");
+                    $builder->set('balance', 'balance + ' . $amount, false);
                 } else {
-                    $db->query("UPDATE financial_accounts SET balance = balance - {$amount} WHERE id = {$finAccId}");
+                    $builder->set('balance', 'balance - ' . $amount, false);
+                }
+                $builder->update();
+            }
+
+            // 3. Create Double Entry Journal Atomically
+            if ($db->tableExists('journal_entries')) {
+                $jUuid = sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x', mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0x0fff) | 0x4000, mt_rand(0, 0x3fff) | 0x8000, mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff));
+                $jNo = 'JRN-' . date('Ym') . '-' . str_pad((string) mt_rand(1, 9999), 5, '0', STR_PAD_LEFT);
+
+                $db->table('journal_entries')->insert([
+                    'uuid'           => $jUuid,
+                    'transaction_id' => $trxId,
+                    'journal_no'     => $jNo,
+                    'entry_date'     => $date,
+                    'description'    => 'Jurnal Otomatis Transaksi ' . $trxNo . ': ' . $desc,
+                    'created_at'     => date('Y-m-d H:i:s'),
+                ]);
+                $journalId = $db->insertID();
+
+                if ($db->tableExists('journal_details')) {
+                    if ($type === 'INCOME') {
+                        // Debit: Financial Account/Cash Asset, Credit: Revenue COA Account
+                        $db->table('journal_details')->insert([
+                            'journal_id'    => $journalId,
+                            'account_id'    => $accountId,
+                            'debit_amount'  => $amount,
+                            'credit_amount' => 0,
+                        ]);
+                        $db->table('journal_details')->insert([
+                            'journal_id'    => $journalId,
+                            'account_id'    => $accountId,
+                            'debit_amount'  => 0,
+                            'credit_amount' => $amount,
+                        ]);
+                    } else {
+                        // Debit: Expense COA Account, Credit: Financial Account/Cash Asset
+                        $db->table('journal_details')->insert([
+                            'journal_id'    => $journalId,
+                            'account_id'    => $accountId,
+                            'debit_amount'  => $amount,
+                            'credit_amount' => 0,
+                        ]);
+                        $db->table('journal_details')->insert([
+                            'journal_id'    => $journalId,
+                            'account_id'    => $accountId,
+                            'debit_amount'  => 0,
+                            'credit_amount' => $amount,
+                        ]);
+                    }
                 }
             }
 
-            session()->setFlashdata('success', 'Transaksi ' . esc($trxNo) . ' berhasil disimpan.');
+            $db->transComplete();
+
+            if ($db->transStatus() === false) {
+                session()->setFlashdata('error', 'Gagal memproses transaksi (Transaction Rollback).');
+                return redirect()->back()->withInput();
+            }
+
+            session()->setFlashdata('success', 'Transaksi ' . esc($trxNo) . ' & Jurnal Double-Entry berhasil disimpan.');
         } catch (\Throwable $e) {
             log_message('error', 'AdminFinancialWorkspaceController Store Exception: ' . $e->getMessage());
             session()->setFlashdata('error', 'Terjadi kesalahan sistem saat menyimpan transaksi: ' . $e->getMessage());
@@ -351,39 +425,30 @@ class AdminFinancialWorkspaceController extends BaseController
         $db = Database::connect();
         try {
             $desc = (string) $this->request->getPost('description');
-            $jNo = 'JRN-' . date('Ym') . '-' . str_pad((string) mt_rand(1, 9999), 5, '0', STR_PAD_LEFT);
-            $uuid = sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x', mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0x0fff) | 0x4000, mt_rand(0, 0x3fff) | 0x8000, mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff));
+            $trxIdInput = (int) $this->request->getPost('transaction_id');
 
             if ($db->tableExists('journal_entries')) {
-                $trxRow = $db->table('financial_transactions')->get()->getRowArray();
-                $trxId = $trxRow ? $trxRow['id'] : null;
-
-                if (!$trxId) {
-                    $trxUuid = sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x', mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0x0fff) | 0x4000, mt_rand(0, 0x3fff) | 0x8000, mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff));
-                    $db->table('financial_transactions')->insert([
-                        'uuid'                 => $trxUuid,
-                        'masjid_id'            => '1',
-                        'fund_id'              => 1,
-                        'account_id'           => 1,
-                        'financial_account_id' => 1,
-                        'transaction_no'       => 'TRX-SYS-001',
-                        'transaction_type'     => 'INCOME',
-                        'amount'               => 0,
-                        'payment_method'       => 'CASH',
-                        'status'               => 'POSTED',
-                        'transaction_date'     => date('Y-m-d H:i:s'),
-                        'description'          => 'System Initial Transaction',
-                        'created_at'           => date('Y-m-d H:i:s'),
-                    ]);
-                    $trxId = $db->insertID();
+                $trxRow = null;
+                if ($trxIdInput > 0) {
+                    $trxRow = $db->table('financial_transactions')->where('id', $trxIdInput)->get()->getRowArray();
+                } else {
+                    $trxRow = $db->table('financial_transactions')->orderBy('id', 'DESC')->get()->getRowArray();
                 }
+
+                if (!$trxRow) {
+                    session()->setFlashdata('error', 'Gagal memposting Jurnal: Belum ada transaksi keuangan yang dapat diajukan jurnalnya.');
+                    return redirect()->to(site_url('admin/financial?tab=journal'));
+                }
+
+                $jNo = 'JRN-' . date('Ym') . '-' . str_pad((string) mt_rand(1, 9999), 5, '0', STR_PAD_LEFT);
+                $uuid = sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x', mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0x0fff) | 0x4000, mt_rand(0, 0x3fff) | 0x8000, mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff));
 
                 $db->table('journal_entries')->insert([
                     'uuid'           => $uuid,
                     'journal_no'     => $jNo,
-                    'transaction_id' => $trxId,
+                    'transaction_id' => $trxRow['id'],
                     'entry_date'     => date('Y-m-d H:i:s'),
-                    'description'    => $desc ?: 'Pencatatan Jurnal Manual',
+                    'description'    => $desc ?: ('Jurnal Manual untuk ' . ($trxRow['transaction_no'] ?? ('TRX-' . $trxRow['id']))),
                     'created_at'     => date('Y-m-d H:i:s'),
                 ]);
                 session()->setFlashdata('success', 'Catatan Jurnal Manual ' . esc($jNo) . ' berhasil diposting.');

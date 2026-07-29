@@ -355,10 +355,10 @@ class AdminCmsWorkspaceController extends BaseController
         return redirect()->to(site_url('admin/cms?tab=' . $tab));
     }
 
-    public function edit(string $type, string $id): string
+    public function edit(string $type, string $id)
     {
         $db = Database::connect();
-        $allowedTables = ['posts', 'kajian', 'pages', 'gallery', 'program' => 'program_kegiatan', 'layanan' => 'layanan_masjid'];
+        $allowedTables = ['posts' => 'posts', 'kajian' => 'kajian', 'pages' => 'pages', 'gallery' => 'gallery', 'program' => 'program_kegiatan', 'layanan' => 'layanan_masjid'];
         $tableName = $allowedTables[$type] ?? $type;
         $item = null;
 

@@ -71,9 +71,51 @@
             <textarea name="description" rows="3" required placeholder="Penerimaan donasi infaq jumat jamaah..." style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: var(--radius-md); font-size: 14px;"></textarea>
         </div>
 
+        <!-- Kantong Dana (Fund) -->
+        <div>
+            <label style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px;">Kantong Dana / Fund <span style="color: red;">*</span></label>
+            <select name="fund_id" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: var(--radius-md); font-size: 14px;">
+                <?php if (!empty($funds)): ?>
+                    <?php foreach ($funds as $f): ?>
+                        <option value="<?= $f['id'] ?>"><?= esc($f['name']) ?> (<?= esc($f['fund_code'] ?? 'FUND-' . $f['id']) ?> - <?= esc($f['fund_type'] ?? 'RESTRICTED') ?>)</option>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <option value="1">Kas Umum (Default Fund)</option>
+                <?php endif; ?>
+            </select>
+        </div>
+
+        <!-- Rekening Kas/Bank (Financial Account) -->
+        <div>
+            <label style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px;">Rekening Kas / Bank <span style="color: red;">*</span></label>
+            <select name="financial_account_id" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: var(--radius-md); font-size: 14px;">
+                <?php if (!empty($financialAccounts)): ?>
+                    <?php foreach ($financialAccounts as $fa): ?>
+                        <option value="<?= $fa['id'] ?>"><?= esc($fa['name']) ?> (<?= esc($fa['account_number'] ?? 'Kas Utama') ?>) — Saldo: Rp <?= number_format((float)($fa['balance'] ?? 0), 0, ',', '.') ?></option>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <option value="1">Kas Tunai Utama (Default Account)</option>
+                <?php endif; ?>
+            </select>
+        </div>
+
+        <!-- Kode Akun COA (COA Account) -->
+        <div>
+            <label style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px;">Kode Akun COA <span style="color: red;">*</span></label>
+            <select name="account_id" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: var(--radius-md); font-size: 14px;">
+                <?php if (!empty($coaAccounts)): ?>
+                    <?php foreach ($coaAccounts as $ca): ?>
+                        <option value="<?= $ca['id'] ?>"><?= esc($ca['account_code']) ?> — <?= esc($ca['name']) ?> (<?= esc($ca['account_type']) ?>)</option>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <option value="1">4001 — Infaq Jamaah (Pemasukan)</option>
+                <?php endif; ?>
+            </select>
+        </div>
+
         <div style="display: flex; justify-content: space-between; margin-top: 12px;">
-            <a href="/admin/financial" class="btn btn-secondary">Batal</a>
-            <button type="submit" class="btn btn-primary">💾 Simpan Transaksi</button>
+            <a href="<?= site_url('admin/financial') ?>" class="btn btn-secondary">Batal</a>
+            <button type="submit" class="btn btn-primary">💾 Simpan Transaksi & Buat Jurnal</button>
         </div>
     </form>
 </div>

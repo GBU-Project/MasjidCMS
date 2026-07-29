@@ -2,6 +2,15 @@
 
 All notable changes to the MasjidCMS platform are documented in this file. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] - 2026-07-29
+
+### Added
+- Added milestone documentation for dashboard functional stabilization and homepage UI/UX sprint 1.
+
+### Fixed & Improved
+- Stabilized admin dashboard and CMS/master-data edit/create workflows.
+- Refined the public homepage into a more portal-oriented experience with stronger hero hierarchy, financial transparency emphasis, donation CTA, and improved section rhythm.
+
 ## [v1.0.0-rc2] - 2026-07-28
 
 ### Added
