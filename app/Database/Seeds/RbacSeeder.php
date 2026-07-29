@@ -83,7 +83,42 @@ class RbacSeeder extends Seeder
             }
         }
 
-        // 3. Seed Role Permissions Mapping
+        // 3. Seed Default Super Admin User
+        $usersTable = $this->db->table('users');
+        $existingUser = $usersTable
+            ->groupStart()
+                ->where('username', 'superadmin')
+                ->orWhere('email', 'admin@masjidcms.org')
+            ->groupEnd()
+            ->get()
+            ->getRow();
+
+        if (!$existingUser) {
+            $usersTable->insert([
+                'id'            => 'u-super-admin-01',
+                'username'      => 'superadmin',
+                'email'         => 'admin@masjidcms.org',
+                'password_hash' => password_hash('SuperAdminSecretPassword2026!', PASSWORD_BCRYPT),
+                'status'        => 'ACTIVE',
+                'created_at'    => date('Y-m-d H:i:s'),
+            ]);
+        }
+
+        $userRolesTable = $this->db->table('user_roles');
+        $existingUserRole = $userRolesTable
+            ->where('user_id', 'u-super-admin-01')
+            ->where('role_id', 'r-super-admin-01')
+            ->get()
+            ->getRow();
+
+        if (!$existingUserRole) {
+            $userRolesTable->insert([
+                'user_id' => 'u-super-admin-01',
+                'role_id' => 'r-super-admin-01',
+            ]);
+        }
+
+        // 4. Seed Role Permissions Mapping
         $rolePerms = [
             // TASK-019A Hotfix (patch audit, 29 Juli 2026): SUPER_ADMIN
             // sebelumnya tidak diberi role_permissions sama sekali, murni

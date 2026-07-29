@@ -8,34 +8,40 @@ class AddFamilyFieldsToJamaahsTable extends Migration
 {
     public function up(): void
     {
-        $fields = [
-            'family_id' => [
-                'type'       => 'VARCHAR',
-                'constraint' => 36,
-                'null'       => true,
-                'after'      => 'marital_status',
-            ],
-            'family_relation_type' => [
-                'type'       => 'VARCHAR',
-                'constraint' => 20,
-                'null'       => true,
-                'after'      => 'family_id',
-            ],
-        ];
+        if (!$this->db->tableExists('jamaahs')) {
+            return;
+        }
 
-        // Ensure columns do not already exist before adding
-        if ($this->db->tableExists('jamaahs')) {
-            if (!$this->db->fieldExists('family_id', 'jamaahs')) {
-                $this->forge->addColumn('jamaahs', $fields);
-            }
+        if (!$this->db->fieldExists('family_id', 'jamaahs')) {
+            $this->forge->addColumn('jamaahs', [
+                'family_id' => [
+                    'type'       => 'VARCHAR',
+                    'constraint' => 36,
+                    'null'       => true,
+                ],
+            ]);
+        }
+
+        if (!$this->db->fieldExists('family_relation_type', 'jamaahs')) {
+            $this->forge->addColumn('jamaahs', [
+                'family_relation_type' => [
+                    'type'       => 'VARCHAR',
+                    'constraint' => 20,
+                    'null'       => true,
+                ],
+            ]);
         }
     }
 
     public function down(): void
     {
-        if ($this->db->tableExists('jamaahs')) {
-            if ($this->db->fieldExists('family_id', 'jamaahs')) {
-                $this->forge->dropColumn('jamaahs', ['family_id', 'family_relation_type']);
+        if (!$this->db->tableExists('jamaahs')) {
+            return;
+        }
+
+        foreach (['family_relation_type', 'family_id'] as $column) {
+            if ($this->db->fieldExists($column, 'jamaahs')) {
+                $this->forge->dropColumn('jamaahs', $column);
             }
         }
     }

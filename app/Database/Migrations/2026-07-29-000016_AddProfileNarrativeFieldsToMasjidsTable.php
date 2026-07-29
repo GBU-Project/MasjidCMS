@@ -26,7 +26,6 @@ class AddProfileNarrativeFieldsToMasjidsTable extends Migration
             $fields['history_text'] = [
                 'type' => 'TEXT',
                 'null' => true,
-                'after' => 'status',
             ];
         }
 
@@ -34,7 +33,6 @@ class AddProfileNarrativeFieldsToMasjidsTable extends Migration
             $fields['vision_text'] = [
                 'type' => 'TEXT',
                 'null' => true,
-                'after' => 'status',
             ];
         }
 
@@ -42,7 +40,6 @@ class AddProfileNarrativeFieldsToMasjidsTable extends Migration
             $fields['mission_text'] = [
                 'type' => 'TEXT',
                 'null' => true,
-                'after' => 'status',
             ];
         }
 

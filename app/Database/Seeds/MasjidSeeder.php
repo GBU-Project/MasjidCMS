@@ -31,9 +31,15 @@ class MasjidSeeder extends Seeder
             'created_by'    => 1,
         ];
 
-        // Ensure clean insert or ignore on duplicate code
         $builder = $this->db->table('masjids');
-        $existing = $builder->where('code', $data['code'])->get()->getRow();
+        $existing = $builder
+            ->groupStart()
+                ->where('code', $data['code'])
+                ->orWhere('slug', $data['slug'])
+                ->orWhere('email', $data['email'])
+            ->groupEnd()
+            ->get()
+            ->getRow();
 
         if (!$existing) {
             $builder->insert($data);
