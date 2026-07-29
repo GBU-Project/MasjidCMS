@@ -54,8 +54,9 @@ Perbaikan yang dilakukan mencakup:
 
 - memperbaiki deklarasi method controller edit agar dapat mengembalikan response yang sesuai;
 - memastikan redirect pada kondisi data tidak ditemukan berjalan aman dan konsisten;
+- memperbaiki logika jurnal keuangan agar debit dan kredit menggunakan akun yang berbeda sesuai mapping double-entry;
 - memverifikasi endpoint admin melalui browser dan HTTP request;
-- menambahkan pengujian regresi dasar untuk memastikan alur edit tidak kembali error.
+- menambahkan pengujian regresi dasar untuk memastikan alur edit tidak kembali error serta jurnal keuangan tetap seimbang.
 
 ## Daftar File yang Diubah
 

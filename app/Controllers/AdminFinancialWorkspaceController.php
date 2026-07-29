@@ -7,6 +7,33 @@ use Config\Database;
 
 class AdminFinancialWorkspaceController extends BaseController
 {
+    private function resolveDoubleEntryAccounts(string $type, int $financialAccountId, int $coaAccountId): array
+    {
+        if ($type === 'INCOME') {
+            return [$financialAccountId, $coaAccountId];
+        }
+
+        return [$coaAccountId, $financialAccountId];
+    }
+
+    private function buildJournalDetailRows(string $type, float $amount, int $financialAccountId, int $coaAccountId): array
+    {
+        [$debitAccountId, $creditAccountId] = $this->resolveDoubleEntryAccounts($type, $financialAccountId, $coaAccountId);
+
+        return [
+            [
+                'account_id'    => $debitAccountId,
+                'debit_amount'  => $amount,
+                'credit_amount' => 0.0,
+            ],
+            [
+                'account_id'    => $creditAccountId,
+                'debit_amount'  => 0.0,
+                'credit_amount' => $amount,
+            ],
+        ];
+    }
+
     public function index(): string
     {
         $db = Database::connect();
@@ -241,33 +268,13 @@ class AdminFinancialWorkspaceController extends BaseController
                 $journalId = $db->insertID();
 
                 if ($db->tableExists('journal_details')) {
-                    if ($type === 'INCOME') {
-                        // Debit: Financial Account/Cash Asset, Credit: Revenue COA Account
+                    $journalDetailRows = $this->buildJournalDetailRows($type, $amount, $finAccId, $accountId);
+                    foreach ($journalDetailRows as $row) {
                         $db->table('journal_details')->insert([
                             'journal_id'    => $journalId,
-                            'account_id'    => $accountId,
-                            'debit_amount'  => $amount,
-                            'credit_amount' => 0,
-                        ]);
-                        $db->table('journal_details')->insert([
-                            'journal_id'    => $journalId,
-                            'account_id'    => $accountId,
-                            'debit_amount'  => 0,
-                            'credit_amount' => $amount,
-                        ]);
-                    } else {
-                        // Debit: Expense COA Account, Credit: Financial Account/Cash Asset
-                        $db->table('journal_details')->insert([
-                            'journal_id'    => $journalId,
-                            'account_id'    => $accountId,
-                            'debit_amount'  => $amount,
-                            'credit_amount' => 0,
-                        ]);
-                        $db->table('journal_details')->insert([
-                            'journal_id'    => $journalId,
-                            'account_id'    => $accountId,
-                            'debit_amount'  => 0,
-                            'credit_amount' => $amount,
+                            'account_id'    => $row['account_id'],
+                            'debit_amount'  => $row['debit_amount'],
+                            'credit_amount' => $row['credit_amount'],
                         ]);
                     }
                 }
