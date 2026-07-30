@@ -29,7 +29,7 @@ class PublicPortalController extends BaseController
             }
         }
 
-        $defaultOrder = ['hero', 'prayer', 'profile', 'program', 'layanan', 'bidang', 'pengurus', 'kajian', 'gallery', 'donation'];
+        $defaultOrder = ['hero', 'prayer', 'profile', 'program', 'layanan', 'pengurus', 'bidang', 'kajian', 'gallery', 'donation'];
         $sectionOrder = $defaultOrder;
         if (!empty($settings['homepage_section_order'])) {
             $decoded = json_decode($settings['homepage_section_order'], true);
@@ -43,8 +43,8 @@ class PublicPortalController extends BaseController
             'profile'  => 'show_profile_section',
             'program'  => 'show_program_section',
             'layanan'  => 'show_layanan_section',
-            'bidang'   => 'show_bidang_section',
             'pengurus' => 'show_pengurus_section',
+            'bidang'   => 'show_bidang_section',
             'kajian'   => 'show_kajian_section',
             'agenda'   => 'show_agenda_section',
             'gallery'  => 'show_gallery_section',
@@ -111,6 +111,17 @@ class PublicPortalController extends BaseController
                 $builder->where('pengurus.homepage_visible', 1);
             }
             $pengurusList = $builder->orderBy('pengurus.urutan', 'ASC')->limit($limitPengurus)->get()->getResultArray();
+        }
+
+        $limitBidang = (int) ($settings['limit_bidang'] ?? 6);
+        $bidangList = [];
+        if ($db->tableExists('bidang')) {
+            $bidangList = $db->table('bidang')
+                ->where('status', 'ACTIVE')
+                ->where('deleted_at', null)
+                ->orderBy('sort_order', 'ASC')
+                ->limit($limitBidang)
+                ->get()->getResultArray();
         }
 
         if ($db->tableExists('posts')) {

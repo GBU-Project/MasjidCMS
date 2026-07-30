@@ -24,6 +24,7 @@ $sectionRenderers = [
     'layanan'  => fn () => view('public/components/layanan_section', ['layananList' => $activeServices, 'settings' => $settings ?? []]),
     'bidang'   => fn () => view('public/components/bidang_section', ['bidangList' => $bidangList, 'settings' => $settings ?? []]),
     'pengurus' => fn () => view('public/components/pengurus_section', ['pengurusList' => $pengurusList, 'settings' => $settings ?? []]),
+    'bidang'   => fn () => view('public/components/bidang_section', ['bidangList' => $bidangList ?? [], 'settings' => $settings ?? []]),
     'kajian'   => fn () => view('public/components/kajian_section', ['kajianList' => $kajianList, 'settings' => $settings ?? []]),
     'agenda'   => fn () => view('public/components/agenda_section', ['agendaList' => $agendaList, 'settings' => $settings ?? []]),
     'donation' => fn () => view('public/components/donation_section', ['donationSettings' => $donationSettings, 'masjid' => $masjid, 'settings' => $settings ?? []]),

@@ -378,6 +378,71 @@ input:checked + .slider:before {
         </div>
     </div>
 
+    <!-- 3b. BIDANG / DEPARTEMEN CARD (TASK-022 finding E) -->
+    <?php $biStat = $sectionStats['bidang'] ?? []; ?>
+    <div class="biz-card">
+        <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 28px;">🏛️</span>
+                    <div>
+                        <h3 style="font-size: 16px; font-weight: 800; color: var(--text-primary);">Bidang / Departemen</h3>
+                        <span style="font-size: 12px; color: var(--text-tertiary);">Struktur Bidang DKM</span>
+                    </div>
+                </div>
+                <?php if ($biStat['is_visible'] ?? true): ?>
+                    <span class="badge badge-green">🟢 Ditampilkan</span>
+                <?php else: ?>
+                    <span class="badge badge-red" style="background: #fef2f2; color: #991b1b; border: 1px solid #fca5a5;">⚪ Disembunyikan</span>
+                <?php endif; ?>
+            </div>
+
+            <div class="stat-mini-grid">
+                <div class="stat-mini-box">
+                    <div class="stat-mini-val"><?= $biStat['total'] ?? 0 ?></div>
+                    <div class="stat-mini-lbl">Total</div>
+                </div>
+                <div class="stat-mini-box">
+                    <div class="stat-mini-val" style="color: var(--primary-600);"><?= $biStat['active'] ?? 0 ?></div>
+                    <div class="stat-mini-lbl">Aktif</div>
+                </div>
+                <div class="stat-mini-box">
+                    <div class="stat-mini-val" style="color: #d97706;"><?= $biStat['hidden'] ?? 0 ?></div>
+                    <div class="stat-mini-lbl">Hidden</div>
+                </div>
+                <div class="stat-mini-box">
+                    <div class="stat-mini-val" style="color: #2563eb;"><?= $biStat['featured'] ?? 0 ?></div>
+                    <div class="stat-mini-lbl">Featured</div>
+                </div>
+            </div>
+
+            <form action="<?= site_url('admin/homepage-manager/save-settings') ?>" method="POST" style="margin-top: 12px;">
+                <?= csrf_field() ?>
+                <div class="switch-container" style="margin-bottom: 12px;">
+                    <span class="switch-label">Tampilkan di Homepage</span>
+                    <label class="switch">
+                        <input type="hidden" name="show_bidang_section" value="0">
+                        <input type="checkbox" name="show_bidang_section" value="1" <?= (($settings['show_bidang_section'] ?? '1') === '1') ? 'checked' : '' ?> onchange="this.form.submit()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Jumlah Tampil Maksimal:</span>
+                    <div style="display: flex; gap: 6px;">
+                        <input type="number" name="limit_bidang" min="1" max="100" value="<?= esc($settings['limit_bidang'] ?? 6) ?>" style="width: 70px; padding: 4px 8px; border: 1px solid var(--border-light); border-radius: 6px; font-size: 13px; font-weight: 700; text-align: center;">
+                        <button type="submit" class="btn btn-secondary" style="padding: 4px 10px; font-size: 12px;">Simpan</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div style="display: flex; gap: 8px; margin-top: 16px; border-top: 1px solid var(--border-light); padding-top: 12px;">
+            <a href="<?= site_url('admin/master/create?tab=bidang') ?>" class="btn btn-primary" style="flex: 1; text-align: center; padding: 6px; font-size: 12px;">+ Tambah Bidang</a>
+            <a href="<?= site_url('admin/master?tab=bidang') ?>" class="btn btn-secondary" style="flex: 1; text-align: center; padding: 6px; font-size: 12px;">⚙️ Kelola</a>
+        </div>
+    </div>
+
     <!-- 4. KAJIAN & BERITA CARD -->
     <?php $kStat = $sectionStats['kajian'] ?? []; ?>
     <div class="biz-card">
