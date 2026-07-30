@@ -37,6 +37,22 @@ class PublicPortalController extends BaseController
             }
         }
 
+        // Homepage Manager is the single source of truth for section visibility.
+        $sectionVisibilityKeys = [
+            'profile'  => 'show_profile_section',
+            'program'  => 'show_program_section',
+            'layanan'  => 'show_layanan_section',
+            'pengurus' => 'show_pengurus_section',
+            'kajian'   => 'show_kajian_section',
+            'agenda'   => 'show_agenda_section',
+            'gallery'  => 'show_gallery_section',
+            'donation' => 'show_donation_section',
+        ];
+        $sectionVisibility = [];
+        foreach ($sectionVisibilityKeys as $sectionKey => $settingKey) {
+            $sectionVisibility[$sectionKey] = ($settings[$settingKey] ?? '1') === '1';
+        }
+
         $limitProgram = (int) ($settings['limit_program'] ?? 6);
         $limitLayanan = (int) ($settings['limit_layanan'] ?? 4);
         $limitPengurus = (int) ($settings['limit_pengurus'] ?? 3);
@@ -95,6 +111,12 @@ class PublicPortalController extends BaseController
             $kajianList = $db->table('kajian')->orderBy('schedule_date', 'DESC')->limit(6)->get()->getResultArray();
         }
 
+        $limitAgenda = (int) ($settings['limit_agenda'] ?? 5);
+        $agendaList = [];
+        if ($db->tableExists('agenda')) {
+            $agendaList = $db->table('agenda')->where('status', 'UPCOMING')->orderBy('event_date', 'ASC')->limit($limitAgenda)->get()->getResultArray();
+        }
+
         $financialSummary = [
             'total_balance' => 0,
             'total_income'  => 0,
@@ -119,11 +141,13 @@ class PublicPortalController extends BaseController
             'masjidName'       => $masjidName,
             'masjid'           => $masjid,
             'sectionOrder'     => $sectionOrder,
+            'sectionVisibility' => $sectionVisibility,
             'activePrograms'   => $activePrograms,
             'activeServices'   => $activeServices,
             'pengurusList'     => $pengurusList,
             'latestPosts'      => $latestPosts,
             'kajianList'       => $kajianList,
+            'agendaList'       => $agendaList,
             'financialSummary' => $financialSummary,
             'settings'         => $settings,
             'donationSettings' => $settings,

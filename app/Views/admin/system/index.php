@@ -1,8 +1,48 @@
 <?= $this->extend('layouts/admin') ?>
 
-<?= $this->section('title') ?>Pengaturan System & Security<?= $this->endSection() ?>
+<?= $this->section('title') ?><?= $activeTab === 'theme' ? 'Theme & Tampilan' : 'Pengaturan System & Security' ?><?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
+<?php if ($activeTab === 'theme'): ?>
+    <div class="workspace-header">
+        <div>
+            <div style="font-size: 12px; font-weight: 500; color: var(--text-tertiary); margin-bottom: 4px;">
+                <a href="<?= site_url('admin/dashboard') ?>" style="color: var(--primary-600); text-decoration: none;">Dashboard</a> / Theme
+            </div>
+            <h1 class="page-title">Theme & Tampilan</h1>
+            <p class="page-subtitle">Pilihan tema, warna, layout, dan tampilan portal. Untuk identitas masjid (logo, favicon, kontak, sosial media), lihat <a href="<?= site_url('admin/master?tab=profil') ?>">Website Settings</a>.</p>
+        </div>
+    </div>
+
+    <div class="panel-card" style="max-width: 700px; padding: 24px;">
+        <form action="<?= site_url('admin/theme/store') ?>" method="POST">
+            <?= csrf_field() ?>
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 6px;">🎨 Warna Utama (Primary Color)</label>
+                <input type="color" name="theme_color_primary" value="<?= esc($themeSettings['theme_color_primary'] ?? '#16a34a') ?>" style="width: 100px; height: 40px; border: 1px solid var(--border-light); border-radius: 6px; padding: 2px;">
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 6px;">📐 Layout</label>
+                <select name="theme_layout" style="width: 100%; max-width: 300px; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;">
+                    <?php $currentLayout = $themeSettings['theme_layout'] ?? 'default'; ?>
+                    <option value="default" <?= $currentLayout === 'default' ? 'selected' : '' ?>>Default</option>
+                    <option value="compact" <?= $currentLayout === 'compact' ? 'selected' : '' ?>>Compact</option>
+                    <option value="wide" <?= $currentLayout === 'wide' ? 'selected' : '' ?>>Wide</option>
+                </select>
+            </div>
+            <div style="margin-bottom: 24px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 6px;">🌓 Mode Tampilan</label>
+                <select name="theme_appearance_mode" style="width: 100%; max-width: 300px; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;">
+                    <?php $currentMode = $themeSettings['theme_appearance_mode'] ?? 'light'; ?>
+                    <option value="light" <?= $currentMode === 'light' ? 'selected' : '' ?>>Light</option>
+                    <option value="dark" <?= $currentMode === 'dark' ? 'selected' : '' ?>>Dark</option>
+                    <option value="auto" <?= $currentMode === 'auto' ? 'selected' : '' ?>>Auto (Mengikuti Sistem)</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">💾 Simpan Pengaturan Tema</button>
+        </form>
+    </div>
+<?php else: ?>
 <div class="workspace-header">
     <div>
         <div style="font-size: 12px; font-weight: 500; color: var(--text-tertiary); margin-bottom: 4px;">
@@ -12,6 +52,7 @@
         <p class="page-subtitle">Kelola konfigurasi platform, menu navigasi, media asset, notifikasi, dan audit log.</p>
     </div>
 </div>
+
 
 <!-- Tab Navigation Bar -->
 <div style="display: flex; border-bottom: 1px solid var(--border-light); margin-bottom: 20px; gap: 20px; flex-wrap: wrap;">
@@ -36,63 +77,12 @@
 <?php endif; ?>
 
 <?php if ($activeTab === 'settings'): ?>
-    <!-- Homepage Visibility & Ordering Section Manager Panel -->
-    <div class="panel-card" style="padding: 20px; margin-bottom: 24px; max-width: 900px; border-left: 4px solid var(--primary-600);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-            <div>
-                <h3 style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">🌐 Homepage Section Visibility & Manager</h3>
-                <p style="font-size: 13px; color: var(--text-muted);">Kontrol visibilitas publik per-section dan urutan modul pada Halaman Utama Portal.</p>
-            </div>
-            <a href="<?= site_url('/') ?>" target="_blank" class="btn btn-secondary" style="padding: 8px 14px; font-size: 13px;">👁️ Homepage Preview ›</a>
-        </div>
-
-        <form action="<?= site_url('admin/settings/store') ?>" method="POST" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; background-color: var(--bg-surface); padding: 16px; border-radius: 8px; margin-bottom: 16px;">
-            <?= csrf_field() ?>
-            <div>
-                <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 4px;">🏛️ Section Bidang</label>
-                <input type="hidden" name="setting_key" value="show_bidang_section">
-                <input type="hidden" name="setting_group" value="homepage">
-                <select name="setting_value" onchange="this.form.submit()" style="width: 100%; padding: 6px 10px; border: 1px solid var(--border-light); border-radius: 6px; font-size: 13px;">
-                    <option value="1">✅ Tampilkan Section</option>
-                    <option value="0">❌ Sembunyikan Section</option>
-                </select>
-            </div>
-        </form>
-
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
-            <form action="<?= site_url('admin/settings/store') ?>" method="POST" style="background: white; padding: 12px; border: 1px solid var(--border-light); border-radius: 8px;">
-                <?= csrf_field() ?>
-                <input type="hidden" name="setting_key" value="show_pengurus_section">
-                <input type="hidden" name="setting_group" value="homepage">
-                <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px;">👔 Section Pengurus DKM</label>
-                <select name="setting_value" onchange="this.form.submit()" style="width: 100%; padding: 6px 10px; border: 1px solid var(--border-light); border-radius: 6px; font-size: 13px;">
-                    <option value="1">✅ Tampilkan Section</option>
-                    <option value="0">❌ Sembunyikan Section</option>
-                </select>
-            </form>
-
-            <form action="<?= site_url('admin/settings/store') ?>" method="POST" style="background: white; padding: 12px; border: 1px solid var(--border-light); border-radius: 8px;">
-                <?= csrf_field() ?>
-                <input type="hidden" name="setting_key" value="show_program_section">
-                <input type="hidden" name="setting_group" value="homepage">
-                <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px;">🚩 Section Program & Kegiatan</label>
-                <select name="setting_value" onchange="this.form.submit()" style="width: 100%; padding: 6px 10px; border: 1px solid var(--border-light); border-radius: 6px; font-size: 13px;">
-                    <option value="1">✅ Tampilkan Section</option>
-                    <option value="0">❌ Sembunyikan Section</option>
-                </select>
-            </form>
-
-            <form action="<?= site_url('admin/settings/store') ?>" method="POST" style="background: white; padding: 12px; border: 1px solid var(--border-light); border-radius: 8px;">
-                <?= csrf_field() ?>
-                <input type="hidden" name="setting_key" value="show_layanan_section">
-                <input type="hidden" name="setting_group" value="homepage">
-                <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px;">🤝 Section Layanan Masjid</label>
-                <select name="setting_value" onchange="this.form.submit()" style="width: 100%; padding: 6px 10px; border: 1px solid var(--border-light); border-radius: 6px; font-size: 13px;">
-                    <option value="1">✅ Tampilkan Section</option>
-                    <option value="0">❌ Sembunyikan Section</option>
-                </select>
-            </form>
-        </div>
+    <!-- Homepage section visibility & ordering has moved to Homepage Manager (single source of truth). -->
+    <div class="panel-card" style="padding: 16px 20px; margin-bottom: 24px; max-width: 900px; border-left: 4px solid var(--primary-600);">
+        <p style="font-size: 13px; color: var(--text-muted); margin: 0;">
+            🌐 Kontrol visibilitas & urutan section Homepage kini dikelola sepenuhnya di
+            <a href="<?= site_url('homepage-manager') ?>">Homepage Manager &amp; Section Control</a>.
+        </p>
     </div>
 
     <!-- Add / Update Setting Form -->
@@ -210,4 +200,5 @@
         </tbody>
     </table>
 </div>
+<?php endif; ?>
 <?= $this->endSection() ?>

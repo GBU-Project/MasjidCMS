@@ -13,28 +13,37 @@
 <!-- 3. Quick Access Toolbar -->
 <?= view('public/components/quick_access') ?>
 
-<!-- 4. Highlight Kajian & Agenda Taklim -->
-<?= view('public/components/kajian_section', ['kajianList' => $kajianList, 'settings' => $settings ?? []]) ?>
+<?php
+// Sections managed by Homepage Manager & Section Control (single source of truth
+// for visibility + ordering). 'hero'/'prayer' are rendered above as part of the
+// hero block and are not independently toggleable; 'profile' has no dedicated
+// public block yet, so it is intentionally skipped here.
+$visibility = $sectionVisibility ?? [];
+$sectionRenderers = [
+    'program'  => fn () => view('public/components/program_section', ['programList' => $activePrograms, 'settings' => $settings ?? []]),
+    'layanan'  => fn () => view('public/components/layanan_section', ['layananList' => $activeServices, 'settings' => $settings ?? []]),
+    'pengurus' => fn () => view('public/components/pengurus_section', ['pengurusList' => $pengurusList, 'settings' => $settings ?? []]),
+    'kajian'   => fn () => view('public/components/kajian_section', ['kajianList' => $kajianList, 'settings' => $settings ?? []]),
+    'agenda'   => fn () => view('public/components/agenda_section', ['agendaList' => $agendaList, 'settings' => $settings ?? []]),
+    'donation' => fn () => view('public/components/donation_section', ['donationSettings' => $donationSettings, 'masjid' => $masjid, 'settings' => $settings ?? []]),
+];
 
-<!-- 5. Program Unggulan DKM -->
-<?= view('public/components/program_section', ['programList' => $activePrograms, 'settings' => $settings ?? []]) ?>
+foreach ($sectionOrder as $sectionKey) {
+    if (!isset($sectionRenderers[$sectionKey])) {
+        continue; // 'hero', 'prayer', 'profile', 'gallery' (no public block yet), or unknown keys
+    }
+    if (($visibility[$sectionKey] ?? true) === false) {
+        continue; // Hidden via Homepage Manager
+    }
+    echo $sectionRenderers[$sectionKey]();
+}
+?>
 
-<!-- 6. Layanan Masjid & Jamaah -->
-<?= view('public/components/layanan_section', ['layananList' => $activeServices, 'settings' => $settings ?? []]) ?>
-
-<!-- 7. Pengurus & Tokoh DKM -->
-<?= view('public/components/pengurus_section', ['pengurusList' => $pengurusList, 'settings' => $settings ?? []]) ?>
-
-<!-- 8. Berita & Warta Jamaah -->
+<!-- Berita & Transparansi Keuangan are always shown; not yet part of Homepage Manager's section list -->
 <?= view('public/components/berita_section', ['postsList' => $latestPosts, 'settings' => $settings ?? []]) ?>
-
-<!-- 9. Transparansi Keuangan Realtime -->
 <?= view('public/components/financial_section', ['financialSummary' => $financialSummary, 'programCount' => count($activePrograms), 'settings' => $settings ?? []]) ?>
 
-<!-- 10. Donasi & Infaq CTA Banner -->
-<?= view('public/components/donation_section', ['donationSettings' => $donationSettings, 'masjid' => $masjid, 'settings' => $settings ?? []]) ?>
-
-<!-- 11. Rich Footer -->
+<!-- Rich Footer -->
 <?= view('public/components/footer', ['masjid' => $masjid]) ?>
 
 <?= $this->endSection() ?>
