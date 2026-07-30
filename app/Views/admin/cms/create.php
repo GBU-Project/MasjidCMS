@@ -77,6 +77,30 @@
                 <input type="text" name="location" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;" value="Ruang Utama Masjid">
             </div>
 
+        <?php elseif ($tab === 'agenda'): ?>
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 6px;">Judul Agenda *</label>
+                <input type="text" name="title" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;" placeholder="Contoh: Gotong Royong Bersih Masjid">
+            </div>
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 6px;">Deskripsi</label>
+                <textarea name="description" rows="3" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;" placeholder="Detail kegiatan..."></textarea>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 6px;">Tanggal *</label>
+                    <input type="date" name="event_date" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;">
+                </div>
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 6px;">Jam</label>
+                    <input type="time" name="event_time" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;">
+                </div>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 6px;">Lokasi</label>
+                <input type="text" name="location" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;" value="Halaman Masjid">
+            </div>
+
         <?php elseif ($tab === 'program'): ?>
             <div style="margin-bottom: 16px;">
                 <label style="display: block; font-weight: 600; margin-bottom: 6px;">Nama Program / Kegiatan *</label>
@@ -152,8 +176,12 @@
                 <input type="text" name="caption" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;" placeholder="Contoh: Dokumentasi Pelaksanaan Shalat Idul Adha">
             </div>
             <div style="margin-bottom: 20px;">
-                <label style="display: block; font-weight: 600; margin-bottom: 6px;">URL / Path File Gambar *</label>
-                <input type="text" name="filepath" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;" value="/assets/img/gallery-default.jpg" placeholder="/assets/img/foto.jpg">
+                <label style="display: block; font-weight: 600; margin-bottom: 6px;">Gambar *</label>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <img data-preview-for="gallery_media_id" src="" style="width:64px; height:64px; object-fit:cover; border-radius:8px; border:1px solid var(--border-light); display:none;">
+                    <input type="hidden" name="media_id" id="gallery_media_id" data-picker-value="id" required style="display:none;">
+                    <button type="button" class="btn btn-secondary" onclick="selectFromMediaLibrary('gallery_media_id')" style="padding: 8px 14px; font-size: 13px;">🖼️ Pilih dari Media Library</button>
+                </div>
             </div>
         <?php endif; ?>
 

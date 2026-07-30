@@ -78,6 +78,30 @@
                 <input type="text" name="location" required value="<?= esc(old('location', $item['location'] ?? '')) ?>" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;">
             </div>
 
+        <?php elseif ($tab === 'agenda'): ?>
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 6px;">Judul Agenda *</label>
+                <input type="text" name="title" required value="<?= esc(old('title', $item['title'] ?? '')) ?>" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;">
+            </div>
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 6px;">Deskripsi</label>
+                <textarea name="description" rows="3" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;"><?= esc(old('description', $item['description'] ?? '')) ?></textarea>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 6px;">Tanggal *</label>
+                    <input type="date" name="event_date" required value="<?= esc(old('event_date', $item['event_date'] ?? '')) ?>" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;">
+                </div>
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 6px;">Jam</label>
+                    <input type="time" name="event_time" value="<?= esc(old('event_time', substr($item['event_time'] ?? '', 0, 5))) ?>" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;">
+                </div>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 6px;">Lokasi</label>
+                <input type="text" name="location" value="<?= esc(old('location', $item['location'] ?? '')) ?>" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;">
+            </div>
+
         <?php elseif ($tab === 'program'): ?>
             <div style="margin-bottom: 16px;">
                 <label style="display: block; font-weight: 600; margin-bottom: 6px;">Nama Program / Kegiatan *</label>
@@ -154,8 +178,13 @@
                 <input type="text" name="caption" required value="<?= esc(old('caption', $item['caption'] ?? '')) ?>" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;">
             </div>
             <div style="margin-bottom: 20px;">
-                <label style="display: block; font-weight: 600; margin-bottom: 6px;">URL / Path File Gambar *</label>
-                <input type="text" name="filepath" required value="<?= esc(old('filepath', $item['filepath'] ?? '/assets/img/gallery-default.jpg')) ?>" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 6px;">Gambar *</label>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <?php $currentUrl = !empty($item['filepath']) ? (str_starts_with($item['filepath'], 'http') ? $item['filepath'] : base_url($item['filepath'])) : ''; ?>
+                    <img data-preview-for="gallery_media_id" src="<?= esc($currentUrl) ?>" style="width:64px; height:64px; object-fit:cover; border-radius:8px; border:1px solid var(--border-light); <?= empty($currentUrl) ? 'display:none;' : '' ?>">
+                    <input type="hidden" name="media_id" id="gallery_media_id" data-picker-value="id" value="<?= esc($item['media_id'] ?? '') ?>">
+                    <button type="button" class="btn btn-secondary" onclick="selectFromMediaLibrary('gallery_media_id')" style="padding: 8px 14px; font-size: 13px;">🖼️ Ganti dari Media Library</button>
+                </div>
             </div>
         <?php endif; ?>
 

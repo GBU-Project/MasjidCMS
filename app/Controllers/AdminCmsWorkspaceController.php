@@ -18,6 +18,8 @@ class AdminCmsWorkspaceController extends BaseController
             $defaultTab = 'layanan';
         } elseif (str_contains($path, 'kajian')) {
             $defaultTab = 'kajian';
+        } elseif (str_contains($path, 'agenda')) {
+            $defaultTab = 'agenda';
         } elseif (str_contains($path, 'pages')) {
             $defaultTab = 'pages';
         } elseif (str_contains($path, 'gallery')) {
@@ -61,6 +63,23 @@ class AdminCmsWorkspaceController extends BaseController
                             '<div style="display:flex; gap:4px;">' .
                             '<a href="/admin/cms/edit/kajian/' . $k['id'] . '" class="btn btn-secondary" style="padding: 2px 8px; font-size: 12px;">Edit</a>' .
                             '<a href="/admin/cms/delete/kajian/' . $k['id'] . '" class="btn btn-secondary" onclick="return confirm(\'Hapus kajian ini?\')" style="padding: 2px 8px; font-size: 12px; color: var(--status-danger-text);">Hapus</a>' .
+                            '</div>',
+                        ]
+                    ];
+                }
+            } elseif ($tab === 'agenda' && $db->tableExists('agenda')) {
+                $headers = ['Judul Agenda', 'Tanggal & Jam', 'Lokasi', 'Status', 'Aksi'];
+                $data = $db->table('agenda')->orderBy('event_date', 'ASC')->get()->getResultArray();
+                foreach ($data as $a) {
+                    $rows[] = [
+                        'columns' => [
+                            '<strong>' . esc($a['title']) . '</strong>',
+                            '<span class="stat-mono">' . esc($a['event_date']) . ' (' . esc(substr($a['event_time'] ?? '', 0, 5)) . ' WIB)</span>',
+                            esc($a['location'] ?? '-'),
+                            '<span class="badge badge-green">' . esc($a['status']) . '</span>',
+                            '<div style="display:flex; gap:4px;">' .
+                            '<a href="/admin/cms/edit/agenda/' . $a['id'] . '" class="btn btn-secondary" style="padding: 2px 8px; font-size: 12px;">Edit</a>' .
+                            '<a href="/admin/cms/delete/agenda/' . $a['id'] . '" class="btn btn-secondary" onclick="return confirm(\'Hapus agenda ini?\')" style="padding: 2px 8px; font-size: 12px; color: var(--status-danger-text);">Hapus</a>' .
                             '</div>',
                         ]
                     ];
@@ -147,6 +166,7 @@ class AdminCmsWorkspaceController extends BaseController
         $moduleLabels = [
             'posts'   => 'Berita & Artikel Warta Masjid',
             'kajian'  => 'Jadwal Kajian Rutin & Tematik',
+            'agenda'  => 'Agenda & Jadwal Kegiatan Masjid',
             'program' => 'Program & Kegiatan Masjid',
             'layanan' => 'Katalog Layanan Masjid',
             'pages'   => 'Halaman Statis CMS Portal',
@@ -247,6 +267,38 @@ class AdminCmsWorkspaceController extends BaseController
 
                 session()->setFlashdata('success', 'Jadwal Kajian "' . esc($topic) . '" berhasil ditambahkan.');
 
+            } elseif ($tab === 'agenda') {
+                $rules = [
+                    'title'      => 'required',
+                    'event_date' => 'required',
+                ];
+                if (!$this->validate($rules)) {
+                    session()->setFlashdata('error', 'Gagal menyimpan Agenda: ' . implode(', ', $this->validator->getErrors()));
+                    return redirect()->back()->withInput();
+                }
+
+                $title = (string) $this->request->getPost('title');
+                $description = (string) $this->request->getPost('description');
+                $eventDate = (string) $this->request->getPost('event_date');
+                $eventTime = (string) ($this->request->getPost('event_time') ?: null);
+                $location = (string) $this->request->getPost('location');
+
+                $uuid = sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x', mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0x0fff) | 0x4000, mt_rand(0, 0x3fff) | 0x8000, mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff));
+
+                $db->table('agenda')->insert([
+                    'uuid'        => $uuid,
+                    'masjid_id'   => '1',
+                    'title'       => $title,
+                    'description' => $description,
+                    'event_date'  => $eventDate,
+                    'event_time'  => $eventTime,
+                    'location'    => $location,
+                    'status'      => 'UPCOMING',
+                    'created_at'  => date('Y-m-d H:i:s'),
+                ]);
+
+                session()->setFlashdata('success', 'Agenda "' . esc($title) . '" berhasil ditambahkan.');
+
             } elseif ($tab === 'pages') {
                 $rules = [
                     'title'   => 'required|min_length[3]',
@@ -320,24 +372,22 @@ class AdminCmsWorkspaceController extends BaseController
 
             } elseif ($tab === 'gallery') {
                 $rules = [
-                    'caption' => 'required',
+                    'caption'  => 'required',
+                    'media_id' => 'required|numeric',
                 ];
                 if (!$this->validate($rules)) {
-                    session()->setFlashdata('error', 'Gagal menyimpan Galeri Foto: ' . implode(', ', $this->validator->getErrors()));
+                    session()->setFlashdata('error', 'Gagal menyimpan Galeri Foto: pilih gambar dari Media Library terlebih dahulu.');
                     return redirect()->back()->withInput();
                 }
 
                 $caption = (string) $this->request->getPost('caption');
-                $filepath = (string) ($this->request->getPost('filepath') ?: '/assets/img/gallery-placeholder.jpg');
+                $mediaId = (int) $this->request->getPost('media_id');
 
-                $db->table('media')->insert([
-                    'filename'   => basename($filepath),
-                    'filepath'   => $filepath,
-                    'mime_type'  => 'image/jpeg',
-                    'filesize'   => 102400,
-                    'created_at' => date('Y-m-d H:i:s'),
-                ]);
-                $mediaId = $db->insertID();
+                $mediaExists = $db->table('media')->where('id', $mediaId)->countAllResults() > 0;
+                if (!$mediaExists) {
+                    session()->setFlashdata('error', 'Media yang dipilih tidak ditemukan di Media Library.');
+                    return redirect()->back()->withInput();
+                }
 
                 $db->table('gallery')->insert([
                     'media_id' => $mediaId,
@@ -358,7 +408,7 @@ class AdminCmsWorkspaceController extends BaseController
     public function edit(string $type, string $id)
     {
         $db = Database::connect();
-        $allowedTables = ['posts' => 'posts', 'kajian' => 'kajian', 'pages' => 'pages', 'gallery' => 'gallery', 'program' => 'program_kegiatan', 'layanan' => 'layanan_masjid'];
+        $allowedTables = ['posts' => 'posts', 'kajian' => 'kajian', 'agenda' => 'agenda', 'pages' => 'pages', 'gallery' => 'gallery', 'program' => 'program_kegiatan', 'layanan' => 'layanan_masjid'];
         $tableName = $allowedTables[$type] ?? $type;
         $item = null;
 
@@ -429,6 +479,22 @@ class AdminCmsWorkspaceController extends BaseController
                 ]);
                 session()->setFlashdata('success', 'Jadwal Kajian berhasil diperbarui.');
 
+            } elseif ($tab === 'agenda') {
+                $rules = ['title' => 'required', 'event_date' => 'required'];
+                if (!$this->validate($rules)) {
+                    session()->setFlashdata('error', 'Gagal memperbarui Agenda: ' . implode(', ', $this->validator->getErrors()));
+                    return redirect()->back()->withInput();
+                }
+
+                $db->table('agenda')->where('id', $id)->update([
+                    'title'       => (string) $this->request->getPost('title'),
+                    'description' => (string) $this->request->getPost('description'),
+                    'event_date'  => (string) $this->request->getPost('event_date'),
+                    'event_time'  => (string) ($this->request->getPost('event_time') ?: null),
+                    'location'    => (string) $this->request->getPost('location'),
+                ]);
+                session()->setFlashdata('success', 'Agenda berhasil diperbarui.');
+
             } elseif ($tab === 'program') {
                 $db->table('program_kegiatan')->where('id', $id)->update([
                     'nama'             => (string) $this->request->getPost('nama'),
@@ -477,17 +543,19 @@ class AdminCmsWorkspaceController extends BaseController
                 }
 
                 $caption = (string) $this->request->getPost('caption');
-                $filepath = (string) ($this->request->getPost('filepath') ?: '/assets/img/gallery-placeholder.jpg');
+                $newMediaId = (int) $this->request->getPost('media_id');
 
                 $gRow = $db->table('gallery')->where('id', $id)->get()->getRowArray();
                 if ($gRow) {
-                    $db->table('gallery')->where('id', $id)->update(['caption' => $caption]);
-                    if (!empty($gRow['media_id'])) {
-                        $db->table('media')->where('id', $gRow['media_id'])->update([
-                            'filename' => basename($filepath),
-                            'filepath' => $filepath,
-                        ]);
+                    $updateData = ['caption' => $caption];
+                    // Only swap the underlying media if the user picked a
+                    // different item from the library; never edit the media
+                    // row's filepath directly (that row may be reused by
+                    // Logo/Favicon/other galleries too).
+                    if ($newMediaId > 0 && $db->table('media')->where('id', $newMediaId)->countAllResults() > 0) {
+                        $updateData['media_id'] = $newMediaId;
                     }
+                    $db->table('gallery')->where('id', $id)->update($updateData);
                 }
                 session()->setFlashdata('success', 'Foto Galeri berhasil diperbarui.');
             }
@@ -504,7 +572,7 @@ class AdminCmsWorkspaceController extends BaseController
     {
         $db = Database::connect();
         try {
-            $tableMap = ['posts' => 'posts', 'kajian' => 'kajian', 'pages' => 'pages', 'gallery' => 'gallery', 'program' => 'program_kegiatan', 'layanan' => 'layanan_masjid'];
+            $tableMap = ['posts' => 'posts', 'kajian' => 'kajian', 'agenda' => 'agenda', 'pages' => 'pages', 'gallery' => 'gallery', 'program' => 'program_kegiatan', 'layanan' => 'layanan_masjid'];
             $tableName = $tableMap[$type] ?? $type;
             if ($db->tableExists($tableName)) {
                 $db->table($tableName)->where('id', $id)->delete();
