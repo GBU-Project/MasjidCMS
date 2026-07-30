@@ -31,6 +31,44 @@ class DatabaseInstaller
         }
     }
 
+    /**
+     * Root-cause fix for RC0 login failure: importSchema() below runs the
+     * legacy database/schema.sql + database/seed.sql, which predate the
+     * `CreateRbacTables` migration (no role_code/permission_code/module_name
+     * columns) and are missing dozens of newer tables entirely (agenda,
+     * homepage_manager_settings, mosque business modules, etc.).
+     * PermissionRepository::findByUserId() joins on `role_permissions
+     * .permission_code`, which does not exist under the old schema — so
+     * every login fails with a DB error on any install that went through
+     * this wizard.
+     *
+     * This method builds the schema the CORRECT way: via CodeIgniter's own
+     * migrations (the real source of truth already used everywhere else in
+     * this app), then seeds the RBAC catalog (roles + permissions) via the
+     * existing, already-correct RbacSeeder. It must be called on a request
+     * AFTER the .env file has been written (see EnvironmentWriter), because
+     * PHP only reads .env once at framework bootstrap — calling this in the
+     * same request that writes .env would still use the old/blank DB config.
+     */
+    public function migrateAndSeedCore(): array
+    {
+        try {
+            $runner = \Config\Services::migrations();
+            $runner->setNamespace('App')->latest();
+
+            $seeder = \Config\Database::seeder();
+            $seeder->call('RbacSeeder');
+
+            return ['success' => true, 'message' => 'Skema database (migrations) & katalog RBAC berhasil disiapkan.'];
+        } catch (\Throwable $e) {
+            return ['success' => false, 'message' => 'Gagal menjalankan migrations/seeder: ' . $e->getMessage()];
+        }
+    }
+
+    /**
+     * @deprecated Kept for reference only — no longer called by
+     * InstallerController. See migrateAndSeedCore() above for why.
+     */
     public function importSchema(string $host, string $user, string $password, string $database, int $port = 3306): array
     {
         try {

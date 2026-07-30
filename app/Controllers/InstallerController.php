@@ -74,22 +74,21 @@ class InstallerController extends BaseController
         if ($this->isPostRequest()) {
             $result = $this->dbInstaller->testConnection($host, $user, $pass, $name, $port);
             if ($result['success']) {
-                $importResult = $this->dbInstaller->importSchema($host, $user, $pass, $name, $port);
-                if (!$importResult['success']) {
-                    $result = $importResult;
-                } else {
-                    // Store DB credentials in session for EnvironmentWriter
-                    session()->set([
-                        'db_host' => $host,
-                        'db_port' => $port,
-                        'db_name' => $name,
-                        'db_user' => $user,
-                        'db_pass' => $pass,
-                    ]);
+                // Schema is no longer built here via legacy schema.sql/seed.sql
+                // (that caused RC0's login failure — see DatabaseInstaller::
+                // migrateAndSeedCore() for the full explanation). It's now
+                // built via real migrations in admin(), on the request AFTER
+                // .env has actually been written with these credentials.
+                session()->set([
+                    'db_host' => $host,
+                    'db_port' => $port,
+                    'db_name' => $name,
+                    'db_user' => $user,
+                    'db_pass' => $pass,
+                ]);
 
-                    if ($action === 'save' || $action === 'test') {
-                        return redirect()->to('install/application');
-                    }
+                if ($action === 'save' || $action === 'test') {
+                    return redirect()->to('install/application');
                 }
             }
         }
@@ -132,8 +131,20 @@ class InstallerController extends BaseController
 
         $message = '';
         if ($this->isPostRequest()) {
+            // This is the first request since .env was written in
+            // application() — safe point to build the real schema.
+            $migrateResult = $this->dbInstaller->migrateAndSeedCore();
+            if (!$migrateResult['success']) {
+                return view('installer/admin', ['message' => $migrateResult['message']]);
+            }
+
             $result = $this->adminSeeder->createAdmin($this->request->getPost());
             if ($result['success']) {
+                $persistResult = $this->persistAdminUser($result['user']);
+                if (!$persistResult['success']) {
+                    return view('installer/admin', ['message' => $persistResult['message']]);
+                }
+
                 $this->lock->createLock();
                 return redirect()->to('install/finish');
             }
@@ -141,6 +152,46 @@ class InstallerController extends BaseController
         }
 
         return view('installer/admin', ['message' => $message]);
+    }
+
+    /**
+     * Fix for RC0 login failure (bug #2): AdminSeeder::createAdmin() only
+     * validated input and generated a password hash — the resulting user was
+     * never actually written to the database, so the account the wizard
+     * promised to create simply didn't exist after finishing install.
+     */
+    private function persistAdminUser(array $user): array
+    {
+        try {
+            $db = \Config\Database::connect();
+
+            $existing = $db->table('users')->where('username', $user['username'])->get()->getRow();
+            if ($existing) {
+                return ['success' => false, 'message' => 'Username sudah digunakan, silakan pilih username lain.'];
+            }
+
+            $userId = 'u-' . bin2hex(random_bytes(8));
+            $db->table('users')->insert([
+                'id'            => $userId,
+                'username'      => $user['username'],
+                'email'         => $user['email'],
+                'password_hash' => $user['hash'],
+                'status'        => 'ACTIVE',
+                'created_at'    => date('Y-m-d H:i:s'),
+            ]);
+
+            $superAdminRole = $db->table('roles')->where('role_code', 'SUPER_ADMIN')->get()->getRow();
+            if ($superAdminRole) {
+                $db->table('user_roles')->insert([
+                    'user_id' => $userId,
+                    'role_id' => $superAdminRole->id,
+                ]);
+            }
+
+            return ['success' => true, 'message' => 'Admin berhasil dibuat.'];
+        } catch (\Throwable $e) {
+            return ['success' => false, 'message' => 'Gagal menyimpan akun admin: ' . $e->getMessage()];
+        }
     }
 
     public function finish(): string|ResponseInterface
