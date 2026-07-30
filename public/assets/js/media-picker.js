@@ -12,6 +12,16 @@
     var isMultiSelectMode = false;
     var cachedMediaData = [];
 
+    // TASK-022 finding C root cause: this file used hardcoded absolute paths
+    // ('/admin/media/api', '/admin/media/upload'), which 404 on any install
+    // not at the domain root (e.g. XAMPP subfolder installs). Build URLs
+    // from the app-base-url <meta> tag instead, mirroring PHP's base_url().
+    function appUrl(path) {
+        var meta = document.querySelector('meta[name="app-base-url"]');
+        var base = meta ? meta.content : '';
+        return base + '/' + path.replace(/^\/+/, '');
+    }
+
     // --- 1. TinyMCE Initializer Profiles ---
     function registerMediaLibraryButton() {
         if (typeof window.tinymce === 'undefined' || !window.tinymce.PluginManager) return;
@@ -32,40 +42,24 @@
 
         registerMediaLibraryButton();
 
-        // A. Full Editor Profile (Berita/Posts, Pages)
+        // TASK-022 finding F: this used to initialize three different TinyMCE
+        // profiles (.tinymce-full 420px, .tinymce-medium 300px, .tinymce-simple
+        // 200px, each with a different toolbar) -- plus Agenda's description
+        // field wasn't wired to TinyMCE at all (a plain 3-row textarea). That
+        // produced visibly inconsistent editor heights/styling/toolbars across
+        // Berita, Kajian, Agenda, Program, Layanan, Pages, etc.
+        //
+        // Single Standard Description Editor Profile, reused identically by
+        // every module (Agenda, Layanan, Program, Berita, Pages, ...): one
+        // height, one toolbar, one component.
         window.tinymce.init({
-            selector: '.tinymce-full',
-            height: 420,
+            selector: '.tinymce-standard',
+            height: 320,
             plugins: 'medialibrary',
-            toolbar: 'undo redo | bold italic underline | h1 h2 h3 | numlist bullist | link medialibrary code preview',
+            toolbar: 'undo redo | bold italic underline | h2 h3 | numlist bullist | link medialibrary code preview',
             setup: function(editor) {
                 editor.on('init', function() {
-                    console.log('TinyMCE Full Editor initialized on #' + editor.id);
-                });
-            }
-        });
-
-        // B. Medium Editor Profile (Kajian, Program)
-        window.tinymce.init({
-            selector: '.tinymce-medium',
-            height: 300,
-            plugins: 'medialibrary',
-            toolbar: 'undo redo | bold italic | h2 h3 | numlist bullist | link medialibrary',
-            setup: function(editor) {
-                editor.on('init', function() {
-                    console.log('TinyMCE Medium Editor initialized on #' + editor.id);
-                });
-            }
-        });
-
-        // C. Simple Editor Profile (Layanan, Homepage CTA)
-        window.tinymce.init({
-            selector: '.tinymce-simple',
-            height: 200,
-            toolbar: 'bold italic underline | numlist bullist | link',
-            setup: function(editor) {
-                editor.on('init', function() {
-                    console.log('TinyMCE Simple Editor initialized on #' + editor.id);
+                    console.log('Standard Description Editor initialized on #' + editor.id);
                 });
             }
         });
@@ -111,8 +105,7 @@
 
         grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #64748b;">⏳ Memuat Media Library...</div>';
 
-        var apiUrl = window.MEDIA_API_URL || '/admin/media/api?type=image';
-        fetch(apiUrl)
+        fetch(appUrl('admin/media/api?type=image'))
             .then(function(res) { return res.json(); })
             .then(function(data) {
                 if (data.status === 'success' && Array.isArray(data.data)) {
@@ -296,8 +289,7 @@
         if (progressBox) progressBox.style.display = 'block';
         if (progressBar) progressBar.style.width = '30%';
 
-        var uploadUrl = window.MEDIA_UPLOAD_URL || '/admin/media/upload';
-        fetch(uploadUrl, {
+        fetch(appUrl('admin/media/upload'), {
             method: 'POST',
             body: formData,
             headers: {

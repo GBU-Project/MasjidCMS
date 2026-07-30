@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token-name" content="<?= csrf_token() ?>">
     <meta name="csrf-token-value" content="<?= csrf_hash() ?>">
+    <!-- TASK-022 finding C: media-picker.js previously called fetch('/admin/media/api')
+         and fetch('/admin/media/upload') with hardcoded absolute paths, which 404'd
+         ("Failed loading media. Please ensure server is running.") on any install NOT
+         at the domain root (e.g. XAMPP subfolder installs like /masjidgbu/). Expose
+         base_url() so JS builds these paths correctly, same as PHP-side site_url(). -->
+    <meta name="app-base-url" content="<?= rtrim(base_url(), '/') ?>">
     <title><?= $this->renderSection('title') ?> — MasjidCMS Admin</title>
     <link rel="stylesheet" href="<?= base_url('assets/css/app-theme.css') ?>">
     <link rel="stylesheet" href="<?= base_url('assets/css/admin-dashboard.css') ?>">
