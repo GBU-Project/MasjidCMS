@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token-name" content="<?= csrf_token() ?>">
+    <meta name="csrf-token-value" content="<?= csrf_hash() ?>">
     <title><?= $this->renderSection('title') ?> — MasjidCMS Admin</title>
     <link rel="stylesheet" href="<?= base_url('assets/css/app-theme.css') ?>">
     <link rel="stylesheet" href="<?= base_url('assets/css/admin-dashboard.css') ?>">

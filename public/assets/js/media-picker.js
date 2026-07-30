@@ -13,13 +13,30 @@
     var cachedMediaData = [];
 
     // --- 1. TinyMCE Initializer Profiles ---
+    function registerMediaLibraryButton() {
+        if (typeof window.tinymce === 'undefined' || !window.tinymce.PluginManager) return;
+
+        window.tinymce.PluginManager.add('medialibrary', function(editor) {
+            editor.ui.registry.addButton('medialibrary', {
+                icon: 'image',
+                tooltip: 'Sisipkan dari Media Library',
+                onAction: function() {
+                    window.openMediaPickerForTinyMCE(editor);
+                }
+            });
+        });
+    }
+
     function initTinyMCE() {
         if (typeof window.tinymce === 'undefined') return;
+
+        registerMediaLibraryButton();
 
         // A. Full Editor Profile (Berita/Posts, Pages)
         window.tinymce.init({
             selector: '.tinymce-full',
             height: 420,
+            plugins: 'medialibrary',
             toolbar: 'undo redo | bold italic underline | h1 h2 h3 | numlist bullist | link medialibrary code preview',
             setup: function(editor) {
                 editor.on('init', function() {
@@ -32,6 +49,7 @@
         window.tinymce.init({
             selector: '.tinymce-medium',
             height: 300,
+            plugins: 'medialibrary',
             toolbar: 'undo redo | bold italic | h2 h3 | numlist bullist | link medialibrary',
             setup: function(editor) {
                 editor.on('init', function() {
@@ -231,9 +249,22 @@
         } else if (currentTargetInputId) {
             var targetInput = document.getElementById(currentTargetInputId);
             if (targetInput) {
-                targetInput.value = selectedMediaItems[0].url;
-                // Dispatch change event
+                var item = selectedMediaItems[0];
+                // Fields that store a Media Library reference (e.g.
+                // logo_media_id, favicon_media_id) declare
+                // data-picker-value="id" so we store the numeric media ID
+                // instead of the public URL. Default stays "url" so
+                // existing plain-path fields (e.g. Gallery) keep working.
+                var pickMode = targetInput.dataset.pickerValue || 'url';
+                targetInput.value = (pickMode === 'id') ? item.id : item.url;
                 targetInput.dispatchEvent(new Event('change'));
+
+                // Optional live preview: <img data-preview-for="targetInputId">
+                var previewEl = document.querySelector('[data-preview-for="' + currentTargetInputId + '"]');
+                if (previewEl) {
+                    previewEl.src = item.url;
+                    previewEl.style.display = 'inline-block';
+                }
             }
         }
 
@@ -247,6 +278,16 @@
         var formData = new FormData();
         for (var i = 0; i < files.length; i++) {
             formData.append('files[]', files[i]);
+        }
+
+        // CI4's global CSRF filter protects every non-'api/*' POST route,
+        // including admin/media/upload. Without this token the request was
+        // silently rejected (403 HTML body), which fetch().then(res=>res.json())
+        // failed to parse, surfacing as a generic "Gagal mengunggah file."
+        var csrfNameMeta = document.querySelector('meta[name="csrf-token-name"]');
+        var csrfValueMeta = document.querySelector('meta[name="csrf-token-value"]');
+        if (csrfNameMeta && csrfValueMeta) {
+            formData.append(csrfNameMeta.content, csrfValueMeta.content);
         }
 
         var progressBox = document.getElementById('modalUploadProgress');
@@ -270,6 +311,13 @@
             }, 500);
 
             if (data.status === 'success') {
+                // CSRF token regenerates on every request (Config/Security.php
+                // regenerate = true); refresh the meta tags with the new hash
+                // returned by the server so the NEXT upload in this same
+                // modal session doesn't fail with a stale token.
+                if (data.csrf_token_value && csrfValueMeta) {
+                    csrfValueMeta.content = data.csrf_token_value;
+                }
                 loadMediaPickerData();
             } else {
                 alert('Upload gagal: ' + (data.errors ? data.errors.join('\n') : 'Terjadi kesalahan.'));
