@@ -64,6 +64,11 @@ $routes->group('admin', ['filter' => ['auth', 'rbac']], static function (RouteCo
     $routes->post('media/bulk-delete', '\App\Controllers\AdminMediaController::bulkDelete');
     $routes->post('media/rename', '\App\Controllers\AdminMediaController::rename');
 
+    // My Profile / Change Password Routes (TASK-022 finding B)
+    $routes->get('profile', '\App\Controllers\AdminProfileController::index');
+    $routes->get('profile/password', '\App\Controllers\AdminProfileController::password');
+    $routes->post('profile/password', '\App\Controllers\AdminProfileController::updatePassword');
+
     // Admin Workspace Routes
     $routes->get('dashboard', '\App\Controllers\AdminDashboardController::index');
 

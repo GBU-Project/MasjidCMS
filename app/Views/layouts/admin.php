@@ -26,34 +26,40 @@
         <div class="search-bar-header">
             <input type="text" placeholder="Cari Jamaah, Transaksi, atau Dokumen... (Press '/' to search)" aria-label="Global Search">
         </div>
-
-        <div class="user-nav-profile" style="position: relative;">
+        <?php
+            // TASK-022 finding B: header previously had a hardcoded avatar
+            // ("AD" / "Administrator DKM") with no link to the actual logged
+            // in user, no dropdown, and no logout entry point from the
+            // avatar. SecurityContext::user() is populated by
+            // AuthenticationFilter before every admin:: route, so it's
+            // reliably available here for any page using this layout.
+            $currentUser = \App\Core\Security\SecurityContext::user();
+            $profileName = $currentUser ? $currentUser->displayName() : 'Guest';
+            $profileRole = $currentUser && !empty($currentUser->roles) ? $currentUser->roles[0] : '-';
+            $profileInitials = $currentUser
+                ? strtoupper(substr($profileName, 0, 1) . substr($profileName, strpos($profileName, ' ') !== false ? strpos($profileName, ' ') + 1 : 1, 1))
+                : 'GU';
+        ?>
+        <div class="user-nav-profile">
             <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">🔔 Notifikasi</button>
-            <div class="avatar-circle" id="userProfileTrigger" style="cursor: pointer; position: relative;" title="<?= esc(session()->get('auth_user')['displayName'] ?? 'Administrator') ?>">
-                <?php
-                    $displayName = session()->get('auth_user')['displayName'] ?? 'Administrator';
-                    $initials = '';
-                    $words = explode(' ', $displayName);
-                    foreach ($words as $w) { if (!empty(trim($w))) $initials .= strtoupper(substr(trim($w), 0, 1)); }
-                    echo esc(substr($initials, 0, 2));
-                ?>
-            </div>
-            <!-- Profile Dropdown -->
-            <div id="userProfileDropdown" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 8px; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); min-width: 220px; z-index: 9999; padding: 8px 0;">
-                <div style="padding: 12px 16px; border-bottom: 1px solid #f1f5f9;">
-                    <div style="font-weight: 700; font-size: 14px; color: #0f172a;"><?= esc($displayName) ?></div>
-                    <div style="font-size: 12px; color: #64748b;"><?= esc(session()->get('auth_user')['username'] ?? '') ?></div>
-                    <?php
-                        $roles = session()->get('auth_user')['roles'] ?? [];
-                        if (!empty($roles)) {
-                            echo '<div style="font-size: 11px; color: #16a34a; margin-top: 2px;">' . esc(implode(', ', $roles)) . '</div>';
-                        }
-                    ?>
+            <div class="user-profile-dropdown" style="position: relative;">
+                <button type="button" class="user-profile-trigger" onclick="toggleUserProfileMenu()" style="display: flex; align-items: center; gap: 8px; background: none; border: none; cursor: pointer; padding: 4px;" aria-haspopup="true" aria-expanded="false" id="userProfileTrigger">
+                    <div class="avatar-circle" title="<?= esc($profileName) ?>"><?= esc($profileInitials) ?></div>
+                    <span style="font-size: 12px; text-align: left; line-height: 1.3;">
+                        <strong style="display: block;"><?= esc($profileName) ?></strong>
+                        <span style="color: var(--text-tertiary);"><?= esc($profileRole) ?></span>
+                    </span>
+                    <span style="font-size: 10px;">▼</span>
+                </button>
+                <div id="userProfileMenu" class="user-profile-menu" style="display: none; position: absolute; right: 0; top: calc(100% + 8px); min-width: 200px; background: #fff; border: 1px solid var(--border-light); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); overflow: hidden; z-index: 1000;">
+                    <div style="padding: 10px 14px; border-bottom: 1px solid var(--border-light);">
+                        <strong style="display: block; font-size: 13px;"><?= esc($profileName) ?></strong>
+                        <span style="font-size: 11px; color: var(--text-tertiary);"><?= esc($currentUser->email ?? '') ?></span>
+                    </div>
+                    <a href="<?= site_url('admin/profile') ?>" style="display: block; padding: 10px 14px; font-size: 13px; text-decoration: none; color: inherit;">👤 My Profile</a>
+                    <a href="<?= site_url('admin/profile/password') ?>" style="display: block; padding: 10px 14px; font-size: 13px; text-decoration: none; color: inherit;">🔒 Change Password</a>
+                    <a href="<?= site_url('logout') ?>" style="display: block; padding: 10px 14px; font-size: 13px; text-decoration: none; color: #dc2626; border-top: 1px solid var(--border-light);">🚪 Logout</a>
                 </div>
-                <a href="<?= site_url('admin/settings?tab=profile') ?>" style="display: block; padding: 10px 16px; font-size: 13px; color: #334155; text-decoration: none; transition: background 0.1s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">👤 My Profile</a>
-                <a href="<?= site_url('admin/settings?tab=password') ?>" style="display: block; padding: 10px 16px; font-size: 13px; color: #334155; text-decoration: none; transition: background 0.1s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">🔑 Change Password</a>
-                <div style="border-top: 1px solid #f1f5f9; margin: 4px 0;"></div>
-                <a href="<?= site_url('logout') ?>" style="display: block; padding: 10px 16px; font-size: 13px; color: #ef4444; text-decoration: none; transition: background 0.1s;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='transparent'">🚪 Logout</a>
             </div>
         </div>
         <script>
@@ -75,6 +81,24 @@
         });
         </script>
     </header>
+
+    <script>
+        function toggleUserProfileMenu() {
+            var menu = document.getElementById('userProfileMenu');
+            var trigger = document.getElementById('userProfileTrigger');
+            if (!menu) return;
+            var isOpen = menu.style.display === 'block';
+            menu.style.display = isOpen ? 'none' : 'block';
+            if (trigger) trigger.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
+        }
+        document.addEventListener('click', function (event) {
+            var dropdown = document.querySelector('.user-profile-dropdown');
+            var menu = document.getElementById('userProfileMenu');
+            if (menu && dropdown && !dropdown.contains(event.target)) {
+                menu.style.display = 'none';
+            }
+        });
+    </script>
 
     <!-- Collapsible Sidebar Nav Bar -->
     <aside class="app-sidebar">
