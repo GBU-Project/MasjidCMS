@@ -18,18 +18,32 @@ class SeederIntegrityTest extends TestCase
         $this->assertStringContainsString("->orWhere('email'", $content);
     }
 
-    public function testRbacSeederCreatesDocumentedSuperAdminLogin(): void
+    /**
+     * TASK-022 (finding A): RbacSeeder used to auto-create a hardcoded
+     * 'superadmin' / 'admin@masjidcms.org' user with a hardcoded password.
+     * That account was created on every fresh install before the installer
+     * wizard ran, so a user who picked "superadmin" as their own username
+     * collided with it and could not complete installation — and it shipped
+     * a publicly-known default credential as a standing security risk.
+     *
+     * RbacSeeder must now seed roles/permissions only. The installer wizard
+     * (AdminSeeder::createAdmin + InstallerController::persistAdminUser) is
+     * the sole source of the initial admin account.
+     */
+    public function testRbacSeederDoesNotCreateHardcodedSuperAdminLogin(): void
     {
         $seederPath = APPPATH . 'Database/Seeds/RbacSeeder.php';
         $this->assertFileExists($seederPath);
 
         $content = file_get_contents($seederPath);
 
-        $this->assertStringContainsString("'username'      => 'superadmin'", $content);
-        $this->assertStringContainsString("'email'         => 'admin@masjidcms.org'", $content);
-        $this->assertStringContainsString("password_hash('SuperAdminSecretPassword2026!'", $content);
-        $this->assertStringContainsString("'user_id' => 'u-super-admin-01'", $content);
-        $this->assertStringContainsString("'role_id' => 'r-super-admin-01'", $content);
+        $this->assertStringNotContainsString("'username'      => 'superadmin'", $content);
+        $this->assertStringNotContainsString("'email'         => 'admin@masjidcms.org'", $content);
+        $this->assertStringNotContainsString('SuperAdminSecretPassword2026!', $content);
+        $this->assertStringNotContainsString("'user_id' => 'u-super-admin-01'", $content);
+
+        // Roles/permissions seeding must remain intact.
+        $this->assertStringContainsString("'role_code'   => 'SUPER_ADMIN'", $content);
     }
 
     public function testSeedFileExistsAndContainsInitialData(): void

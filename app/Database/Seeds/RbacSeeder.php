@@ -83,40 +83,20 @@ class RbacSeeder extends Seeder
             }
         }
 
-        // 3. Seed Default Super Admin User
-        $usersTable = $this->db->table('users');
-        $existingUser = $usersTable
-            ->groupStart()
-                ->where('username', 'superadmin')
-                ->orWhere('email', 'admin@masjidcms.org')
-            ->groupEnd()
-            ->get()
-            ->getRow();
-
-        if (!$existingUser) {
-            $usersTable->insert([
-                'id'            => 'u-super-admin-01',
-                'username'      => 'superadmin',
-                'email'         => 'admin@masjidcms.org',
-                'password_hash' => password_hash('SuperAdminSecretPassword2026!', PASSWORD_BCRYPT),
-                'status'        => 'ACTIVE',
-                'created_at'    => date('Y-m-d H:i:s'),
-            ]);
-        }
-
-        $userRolesTable = $this->db->table('user_roles');
-        $existingUserRole = $userRolesTable
-            ->where('user_id', 'u-super-admin-01')
-            ->where('role_id', 'r-super-admin-01')
-            ->get()
-            ->getRow();
-
-        if (!$existingUserRole) {
-            $userRolesTable->insert([
-                'user_id' => 'u-super-admin-01',
-                'role_id' => 'r-super-admin-01',
-            ]);
-        }
+        // 3. NOTE (TASK-022, finding A): RbacSeeder previously auto-created a
+        // hardcoded 'superadmin' / 'admin@masjidcms.org' user here (with a
+        // hardcoded password baked into source control). That account was
+        // created on every fresh install BEFORE the installer wizard's own
+        // admin() step ran, so a user who chose the username "superadmin" in
+        // the wizard collided with this ghost account and installation
+        // could not proceed (and it was a standing security problem: a
+        // shipped, publicly-known default credential).
+        //
+        // The installer wizard (InstallerController::admin() ->
+        // AdminSeeder::createAdmin() -> persistAdminUser()) is now the sole
+        // source of the initial admin user and already assigns the
+        // SUPER_ADMIN role by role_code, so no default account is seeded
+        // here. RbacSeeder is responsible only for roles/permissions.
 
         // 4. Seed Role Permissions Mapping
         $rolePerms = [
