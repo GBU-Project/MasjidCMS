@@ -28,7 +28,7 @@
         <p style="font-size: 14px; color: var(--text-muted);">Informasi lengkap transaksi, jurnal double-entry, log persetujuan, dan audit trail.</p>
     </div>
     <div style="display: flex; gap: 8px;">
-        <a href="/admin/financial" class="btn btn-secondary">← Kembali</a>
+        <a href="<?= site_url('admin/financial') ?>" class="btn btn-secondary">← Kembali</a>
     </div>
 </div>
 

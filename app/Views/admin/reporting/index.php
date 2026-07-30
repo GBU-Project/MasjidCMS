@@ -22,9 +22,9 @@
 
 <!-- Workspace Tab Navigation -->
 <div style="border-bottom: 1px solid var(--border-light); margin-bottom: 20px; display: flex; gap: 8px;">
-    <a href="/admin/reporting?tab=catalog" class="nav-item-link <?= ($activeTab === 'catalog') ? 'active' : '' ?>">📊 Katalog Laporan</a>
-    <a href="/admin/reporting?tab=preview" class="nav-item-link <?= ($activeTab === 'preview') ? 'active' : '' ?>">👁️ Preview Laporan</a>
-    <a href="/admin/reporting?tab=history" class="nav-item-link <?= ($activeTab === 'history') ? 'active' : '' ?>">📜 Riwayat Generate</a>
+    <a href="<?= site_url('admin/reporting?tab=catalog') ?>" class="nav-item-link <?= ($activeTab === 'catalog') ? 'active' : '' ?>">📊 Katalog Laporan</a>
+    <a href="<?= site_url('admin/reporting?tab=preview') ?>" class="nav-item-link <?= ($activeTab === 'preview') ? 'active' : '' ?>">👁️ Preview Laporan</a>
+    <a href="<?= site_url('admin/reporting?tab=history') ?>" class="nav-item-link <?= ($activeTab === 'history') ? 'active' : '' ?>">📜 Riwayat Generate</a>
 </div>
 
 <?php if ($activeTab === 'history'): ?>
@@ -61,7 +61,7 @@
             <span>Filter Parameter Laporan</span>
             <span class="badge badge-green">Read-Only Engine</span>
         </div>
-        <form action="/admin/reporting/preview" method="GET" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+        <form action="<?= site_url('admin/reporting/preview') ?>" method="GET" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
             <div>
                 <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px;">Tanggal Awal</label>
                 <input type="date" name="startDate" value="<?= date('Y-m-01') ?>" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: var(--radius-md); font-size: 14px;">
@@ -90,7 +90,7 @@
                 </select>
             </div>
             <div style="grid-column: 1 / -1; display: flex; gap: 8px; justify-content: flex-end;">
-                <a href="/admin/reporting" class="btn btn-secondary">Clear Filter</a>
+                <a href="<?= site_url('admin/reporting') ?>" class="btn btn-secondary">Clear Filter</a>
                 <button type="submit" class="btn btn-primary">Generate Preview Laporan ›</button>
             </div>
         </form>
@@ -103,42 +103,42 @@
             <div class="stat-card-top"><span class="stat-label">Keuangan</span><div class="stat-icon">💰</div></div>
             <div style="font-size: 16px; font-weight: 700; margin-bottom: 4px;">Buku Kas (Cash Book)</div>
             <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Rincian saldo awal, mutasi masuk/keluar, dan saldo akhir kas.</p>
-            <a href="/admin/reporting/preview?type=CASH_BOOK" class="btn btn-secondary" style="padding: 4px 10px; font-size: 12px;">Generate Preview</a>
+            <a href="<?= site_url('admin/reporting/preview?type=CASH_BOOK') ?>" class="btn btn-secondary" style="padding: 4px 10px; font-size: 12px;">Generate Preview</a>
         </div>
 
         <div class="stat-card">
             <div class="stat-card-top"><span class="stat-label">Keuangan</span><div class="stat-icon">📖</div></div>
             <div style="font-size: 16px; font-weight: 700; margin-bottom: 4px;">Buku Besar (General Ledger)</div>
             <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Penayangan mutasi jurnal per kode akun COA.</p>
-            <a href="/admin/reporting/preview?type=GENERAL_LEDGER" class="btn btn-secondary" style="padding: 4px 10px; font-size: 12px;">Generate Preview</a>
+            <a href="<?= site_url('admin/reporting/preview?type=GENERAL_LEDGER') ?>" class="btn btn-secondary" style="padding: 4px 10px; font-size: 12px;">Generate Preview</a>
         </div>
 
         <div class="stat-card">
             <div class="stat-card-top"><span class="stat-label">Keuangan</span><div class="stat-icon">⚖️</div></div>
             <div style="font-size: 16px; font-weight: 700; margin-bottom: 4px;">Neraca Saldo (Trial Balance)</div>
             <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Verifikasi keseimbangan Debit == Kredit seluruh akun.</p>
-            <a href="/admin/reporting/preview?type=TRIAL_BALANCE" class="btn btn-secondary" style="padding: 4px 10px; font-size: 12px;">Generate Preview</a>
+            <a href="<?= site_url('admin/reporting/preview?type=TRIAL_BALANCE') ?>" class="btn btn-secondary" style="padding: 4px 10px; font-size: 12px;">Generate Preview</a>
         </div>
 
         <div class="stat-card">
             <div class="stat-card-top"><span class="stat-label">Keuangan</span><div class="stat-icon">👜</div></div>
             <div style="font-size: 16px; font-weight: 700; margin-bottom: 4px;">Saldo Per Kantong Dana</div>
             <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Pemisahan saldo terikat Zakat/Wakaf & kas umum.</p>
-            <a href="/admin/reporting/preview?type=FUND_BALANCE" class="btn btn-secondary" style="padding: 4px 10px; font-size: 12px;">Generate Preview</a>
+            <a href="<?= site_url('admin/reporting/preview?type=FUND_BALANCE') ?>" class="btn btn-secondary" style="padding: 4px 10px; font-size: 12px;">Generate Preview</a>
         </div>
 
         <div class="stat-card">
             <div class="stat-card-top"><span class="stat-label">Operasional</span><div class="stat-icon">📈</div></div>
             <div style="font-size: 16px; font-weight: 700; margin-bottom: 4px;">Pendapatan & Beban</div>
             <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Laporan operasional surplus/defisit masjid.</p>
-            <a href="/admin/reporting/preview?type=INCOME_EXPENSE" class="btn btn-secondary" style="padding: 4px 10px; font-size: 12px;">Generate Preview</a>
+            <a href="<?= site_url('admin/reporting/preview?type=INCOME_EXPENSE') ?>" class="btn btn-secondary" style="padding: 4px 10px; font-size: 12px;">Generate Preview</a>
         </div>
 
         <div class="stat-card">
             <div class="stat-card-top"><span class="stat-label">Audit</span><div class="stat-icon">📜</div></div>
             <div style="font-size: 16px; font-weight: 700; margin-bottom: 4px;">Audit Log Activity</div>
             <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Rekapitulasi riwayat aktivitas user platform.</p>
-            <a href="/admin/reporting/preview?type=AUDIT_LOG" class="btn btn-secondary" style="padding: 4px 10px; font-size: 12px;">Generate Preview</a>
+            <a href="<?= site_url('admin/reporting/preview?type=AUDIT_LOG') ?>" class="btn btn-secondary" style="padding: 4px 10px; font-size: 12px;">Generate Preview</a>
         </div>
     </div>
 <?php endif; ?>

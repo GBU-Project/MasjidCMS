@@ -20,7 +20,7 @@
     </div>
     <div style="display: flex; gap: 8px;">
         <button class="btn btn-secondary" onclick="window.location.reload();">🔄 Refresh</button>
-        <a href="/admin/reporting" class="btn btn-secondary">Clear Filter</a>
+        <a href="<?= site_url('admin/reporting') ?>" class="btn btn-secondary">Clear Filter</a>
         <button class="btn btn-primary" title="Export Placeholder">📤 Export (Placeholder)</button>
     </div>
 </div>

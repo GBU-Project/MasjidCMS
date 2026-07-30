@@ -43,8 +43,8 @@ class AdminCmsWorkspaceController extends BaseController
                             '<span class="badge badge-green">' . ($p['is_published'] ? 'PUBLISHED' : 'DRAFT') . '</span>',
                             esc(substr($p['created_at'] ?? date('Y-m-d'), 0, 10)),
                             '<div style="display:flex; gap:4px;">' .
-                            '<a href="/admin/cms/edit/posts/' . $p['id'] . '" class="btn btn-secondary" style="padding: 2px 8px; font-size: 12px;">Edit</a>' .
-                            '<a href="/admin/cms/delete/posts/' . $p['id'] . '" class="btn btn-secondary" onclick="return confirm(\'Hapus berita ini?\')" style="padding: 2px 8px; font-size: 12px; color: var(--status-danger-text);">Hapus</a>' .
+                            '<a href="' . site_url('admin/cms/edit/posts/' . $p['id']) . '" class="btn btn-secondary" style="padding: 2px 8px; font-size: 12px;">Edit</a>' .
+                            '<a href="' . site_url('admin/cms/delete/posts/' . $p['id']) . '" class="btn btn-secondary" onclick="return confirm(\'Hapus berita ini?\')" style="padding: 2px 8px; font-size: 12px; color: var(--status-danger-text);">Hapus</a>' .
                             '</div>',
                         ]
                     ];
@@ -61,8 +61,8 @@ class AdminCmsWorkspaceController extends BaseController
                             esc($k['location']),
                             '<span class="badge badge-green">' . esc($k['status']) . '</span>',
                             '<div style="display:flex; gap:4px;">' .
-                            '<a href="/admin/cms/edit/kajian/' . $k['id'] . '" class="btn btn-secondary" style="padding: 2px 8px; font-size: 12px;">Edit</a>' .
-                            '<a href="/admin/cms/delete/kajian/' . $k['id'] . '" class="btn btn-secondary" onclick="return confirm(\'Hapus kajian ini?\')" style="padding: 2px 8px; font-size: 12px; color: var(--status-danger-text);">Hapus</a>' .
+                            '<a href="' . site_url('admin/cms/edit/kajian/' . $k['id']) . '" class="btn btn-secondary" style="padding: 2px 8px; font-size: 12px;">Edit</a>' .
+                            '<a href="' . site_url('admin/cms/delete/kajian/' . $k['id']) . '" class="btn btn-secondary" onclick="return confirm(\'Hapus kajian ini?\')" style="padding: 2px 8px; font-size: 12px; color: var(--status-danger-text);">Hapus</a>' .
                             '</div>',
                         ]
                     ];
@@ -78,8 +78,8 @@ class AdminCmsWorkspaceController extends BaseController
                             esc($a['location'] ?? '-'),
                             '<span class="badge badge-green">' . esc($a['status']) . '</span>',
                             '<div style="display:flex; gap:4px;">' .
-                            '<a href="/admin/cms/edit/agenda/' . $a['id'] . '" class="btn btn-secondary" style="padding: 2px 8px; font-size: 12px;">Edit</a>' .
-                            '<a href="/admin/cms/delete/agenda/' . $a['id'] . '" class="btn btn-secondary" onclick="return confirm(\'Hapus agenda ini?\')" style="padding: 2px 8px; font-size: 12px; color: var(--status-danger-text);">Hapus</a>' .
+                            '<a href="' . site_url('admin/cms/edit/agenda/' . $a['id']) . '" class="btn btn-secondary" style="padding: 2px 8px; font-size: 12px;">Edit</a>' .
+                            '<a href="' . site_url('admin/cms/delete/agenda/' . $a['id']) . '" class="btn btn-secondary" onclick="return confirm(\'Hapus agenda ini?\')" style="padding: 2px 8px; font-size: 12px; color: var(--status-danger-text);">Hapus</a>' .
                             '</div>',
                         ]
                     ];
@@ -95,8 +95,8 @@ class AdminCmsWorkspaceController extends BaseController
                             '<span class="badge badge-green">' . ($pg['is_published'] ? 'PUBLISHED' : 'DRAFT') . '</span>',
                             esc(substr($pg['created_at'] ?? date('Y-m-d'), 0, 10)),
                             '<div style="display:flex; gap:4px;">' .
-                            '<a href="/admin/cms/edit/pages/' . $pg['id'] . '" class="btn btn-secondary" style="padding: 2px 8px; font-size: 12px;">Edit</a>' .
-                            '<a href="/admin/cms/delete/pages/' . $pg['id'] . '" class="btn btn-secondary" onclick="return confirm(\'Hapus halaman ini?\')" style="padding: 2px 8px; font-size: 12px; color: var(--status-danger-text);">Hapus</a>' .
+                            '<a href="' . site_url('admin/cms/edit/pages/' . $pg['id']) . '" class="btn btn-secondary" style="padding: 2px 8px; font-size: 12px;">Edit</a>' .
+                            '<a href="' . site_url('admin/cms/delete/pages/' . $pg['id']) . '" class="btn btn-secondary" onclick="return confirm(\'Hapus halaman ini?\')" style="padding: 2px 8px; font-size: 12px; color: var(--status-danger-text);">Hapus</a>' .
                             '</div>',
                         ]
                     ];
