@@ -19,6 +19,8 @@ class AdminSystemWorkspaceController extends BaseController
             $defaultTab = 'media';
         } elseif (str_contains($path, 'notification')) {
             $defaultTab = 'notification';
+        } elseif (str_contains($path, 'theme')) {
+            $defaultTab = 'theme';
         }
 
         $tab = (string) ($this->request->getGet('tab') ?? $defaultTab);
@@ -29,7 +31,7 @@ class AdminSystemWorkspaceController extends BaseController
         try {
             if ($tab === 'settings' && $db->tableExists('settings')) {
                 $headers = ['Setting Key', 'Setting Value', 'Grup Konfigurasi', 'Aksi'];
-                $data = $db->table('settings')->get()->getResultArray();
+                $data = $db->table('settings')->where('setting_group !=', 'theme')->get()->getResultArray();
                 foreach ($data as $s) {
                     $rows[] = [
                         'columns' => [
@@ -40,17 +42,30 @@ class AdminSystemWorkspaceController extends BaseController
                         ]
                     ];
                 }
+            } elseif ($tab === 'theme' && $db->tableExists('settings')) {
+                // Theme owns ONLY appearance-related settings (color, layout,
+                // mode). Mosque identity/logo/favicon/social/contact live in
+                // Website Settings (admin/master?tab=profil) — see finding G.
+                $themeRows = $db->table('settings')->where('setting_group', 'theme')->get()->getResultArray();
+                $themeSettings = [];
+                foreach ($themeRows as $s) {
+                    $themeSettings[$s['setting_key']] = $s['setting_value'];
+                }
+                $data = $themeSettings;
             } elseif ($tab === 'menu' && $db->tableExists('menus')) {
                 $headers = ['Nama Menu', 'URL / Target', 'Urutan (Sort)', 'Status', 'Aksi'];
-                $data = $db->table('menus')->orderBy('sort_order', 'ASC')->get()->getResultArray();
+                $data = $db->table('menus')->orderBy('menu_order', 'ASC')->get()->getResultArray();
                 foreach ($data as $m) {
                     $rows[] = [
                         'columns' => [
                             '<strong>' . esc($m['title'] ?? $m['name'] ?? '-') . '</strong>',
                             '<span class="stat-mono">' . esc($m['url'] ?? $m['target'] ?? '#') . '</span>',
-                            '<span class="stat-mono">' . esc($m['sort_order'] ?? 0) . '</span>',
-                            '<span class="badge badge-green">' . (($m['is_active'] ?? 1) ? 'ACTIVE' : 'INACTIVE') . '</span>',
-                            '<a href="' . site_url('admin/menu/delete/' . $m['id']) . '" class="btn btn-secondary" onclick="return confirm(\'Hapus menu ini?\')" style="padding: 2px 8px; font-size: 12px; color: var(--status-danger-text);">Hapus</a>',
+                            '<span class="stat-mono">' . esc($m['menu_order'] ?? 0) . '</span>',
+                            '<span class="badge badge-green">ACTIVE</span>',
+                            '<div style="display:flex; gap:4px;">' .
+                            '<a href="' . site_url('admin/menu/edit/' . $m['id']) . '" class="btn btn-secondary" style="padding: 2px 8px; font-size: 12px;">Edit</a>' .
+                            '<a href="' . site_url('admin/menu/delete/' . $m['id']) . '" class="btn btn-secondary" onclick="return confirm(\'Hapus menu ini?\')" style="padding: 2px 8px; font-size: 12px; color: var(--status-danger-text);">Hapus</a>' .
+                            '</div>',
                         ]
                     ];
                 }
@@ -107,6 +122,7 @@ class AdminSystemWorkspaceController extends BaseController
             'media'        => 'Media & Asset Manager',
             'notification' => 'Notification & Gateway Manager',
             'audit'        => 'Audit Activity Log',
+            'theme'        => 'Theme & Tampilan',
         ];
 
         return view('admin/system/index', [
@@ -114,6 +130,7 @@ class AdminSystemWorkspaceController extends BaseController
             'activeModuleLabel' => $moduleLabels[$tab] ?? 'Pengaturan Platform System',
             'headers'           => $headers,
             'rows'              => $rows,
+            'themeSettings'     => $themeSettings ?? [],
         ]);
     }
 
@@ -139,6 +156,33 @@ class AdminSystemWorkspaceController extends BaseController
         }
 
         return redirect()->to(site_url('admin/settings?tab=settings'));
+    }
+
+    public function storeTheme()
+    {
+        $db = Database::connect();
+        try {
+            if ($db->tableExists('settings')) {
+                $fields = [
+                    'theme_color_primary'  => (string) ($this->request->getPost('theme_color_primary') ?: '#16a34a'),
+                    'theme_layout'         => (string) ($this->request->getPost('theme_layout') ?: 'default'),
+                    'theme_appearance_mode' => (string) ($this->request->getPost('theme_appearance_mode') ?: 'light'),
+                ];
+                foreach ($fields as $key => $val) {
+                    $db->table('settings')->upsert([
+                        'setting_key'   => $key,
+                        'setting_value' => $val,
+                        'setting_group' => 'theme',
+                    ]);
+                }
+                session()->setFlashdata('success', 'Pengaturan Tema berhasil disimpan.');
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'AdminSystemWorkspaceController StoreTheme Exception: ' . $e->getMessage());
+            session()->setFlashdata('error', 'Gagal menyimpan Tema: ' . $e->getMessage());
+        }
+
+        return redirect()->to(site_url('admin/theme'));
     }
 
     public function deleteSetting(string $key)
@@ -178,6 +222,51 @@ class AdminSystemWorkspaceController extends BaseController
         } catch (\Throwable $e) {
             log_message('error', 'AdminSystemWorkspaceController StoreMenu Exception: ' . $e->getMessage());
             session()->setFlashdata('error', 'Gagal menyimpan Menu: ' . $e->getMessage());
+        }
+
+        return redirect()->to(site_url('admin/menu?tab=menu'));
+    }
+
+    public function editMenu(string $id)
+    {
+        $db = Database::connect();
+        $item = null;
+        if ($db->tableExists('menus')) {
+            $item = $db->table('menus')->where('id', $id)->get()->getRowArray();
+        }
+
+        if (!$item) {
+            session()->setFlashdata('error', 'Menu tidak ditemukan di database.');
+            return redirect()->to(site_url('admin/menu?tab=menu'));
+        }
+
+        return view('admin/system/menu_edit', [
+            'id'   => $id,
+            'item' => $item,
+        ]);
+    }
+
+    public function updateMenu()
+    {
+        $db = Database::connect();
+        $id = (string) $this->request->getPost('id');
+
+        try {
+            $title = (string) $this->request->getPost('title');
+            $url = (string) $this->request->getPost('url');
+            $sort = (int) ($this->request->getPost('sort_order') ?: 1);
+
+            if (!empty($title) && $db->tableExists('menus')) {
+                $db->table('menus')->where('id', $id)->update([
+                    'title'      => $title,
+                    'url'        => $url,
+                    'menu_order' => $sort,
+                ]);
+                session()->setFlashdata('success', 'Menu ' . esc($title) . ' berhasil diperbarui.');
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'AdminSystemWorkspaceController UpdateMenu Exception: ' . $e->getMessage());
+            session()->setFlashdata('error', 'Gagal memperbarui Menu: ' . $e->getMessage());
         }
 
         return redirect()->to(site_url('admin/menu?tab=menu'));

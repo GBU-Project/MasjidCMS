@@ -152,6 +152,7 @@ class AdminMediaController extends BaseController
                 'media'    => $uploadedMedia,
                 'errors'   => $errors,
                 'message'  => count($uploadedMedia) . ' file berhasil diunggah.',
+                'csrf_token_value' => csrf_hash(),
             ]);
         }
 
@@ -203,6 +204,38 @@ class AdminMediaController extends BaseController
             session()->setFlashdata('success', count($rows) . ' item media berhasil dihapus secara massal.');
         }
 
+        return redirect()->to(site_url('admin/media'));
+    }
+
+    public function rename()
+    {
+        $db = Database::connect();
+        $id = (int) $this->request->getPost('id');
+        $newFilename = trim((string) $this->request->getPost('filename'));
+
+        if ($id <= 0 || $newFilename === '') {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'ID atau nama file baru tidak valid.']);
+        }
+
+        if (!$db->tableExists('media')) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Tabel media tidak tersedia.']);
+        }
+
+        $row = $db->table('media')->where('id', $id)->get()->getRowArray();
+        if (!$row) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Media tidak ditemukan.']);
+        }
+
+        // Only the display filename changes; the on-disk path/filepath stays
+        // the same so nothing that already references filepath (Website
+        // Identity, Gallery, homepage assets, etc.) breaks.
+        $db->table('media')->where('id', $id)->update(['filename' => $newFilename]);
+
+        if ($this->request->isAJAX() || $this->request->getHeaderLine('Accept') === 'application/json') {
+            return $this->response->setJSON(['status' => 'success', 'message' => 'Nama media berhasil diperbarui.']);
+        }
+
+        session()->setFlashdata('success', 'Nama media berhasil diperbarui.');
         return redirect()->to(site_url('admin/media'));
     }
 
