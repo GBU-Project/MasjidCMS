@@ -3,8 +3,8 @@
 <section class="section-wrapper" id="kajian" style="background: #fff;">
     <div class="container">
         <div class="section-header-center">
-            <span class="section-tag"><?= esc($sectionSettings['kajian_tag'] ?? 'AGENDA MASJID') ?></span>
-            <h2 class="section-title"><?= esc($sectionSettings['kajian_title'] ?? 'Highlight Kajian & Agenda Taklim') ?></h2>
+            <span class="section-tag"><?= esc($sectionSettings['kajian_tag'] ?? 'KAJIAN RUTIN') ?></span>
+            <h2 class="section-title"><?= esc($sectionSettings['kajian_title'] ?? 'Highlight Kajian & Jadwal Taklim') ?></h2>
             <p class="section-subtitle"><?= esc($sectionSettings['kajian_subtitle'] ?? 'Tingkatkan keilmuan dan ketakwaan melalui jadwal kajian rutin bersama ustadz dan ulama terpilih.') ?></p>
         </div>
 

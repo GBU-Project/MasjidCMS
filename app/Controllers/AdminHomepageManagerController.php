@@ -23,7 +23,7 @@ class AdminHomepageManagerController extends BaseController
         }
 
         // Default section order
-        $defaultOrder = ['hero', 'prayer', 'profile', 'program', 'layanan', 'pengurus', 'kajian', 'gallery', 'donation'];
+        $defaultOrder = ['hero', 'prayer', 'profile', 'program', 'layanan', 'pengurus', 'kajian', 'agenda', 'gallery', 'donation'];
         $sectionOrder = $defaultOrder;
         if (!empty($settings['homepage_section_order'])) {
             $decoded = json_decode($settings['homepage_section_order'], true);
@@ -41,6 +41,7 @@ class AdminHomepageManagerController extends BaseController
             'layanan' => ['name' => 'Katalog Layanan Masjid', 'icon' => '🤝', 'table' => 'layanan_masjid', 'setting_key' => 'show_layanan_section', 'limit_key' => 'limit_layanan'],
             'pengurus' => ['name' => 'Pengurus DKM Masjid', 'icon' => '👔', 'table' => 'pengurus', 'setting_key' => 'show_pengurus_section', 'limit_key' => 'limit_pengurus'],
             'kajian' => ['name' => 'Jadwal Warta & Kajian', 'icon' => '📖', 'table' => 'kajian', 'setting_key' => 'show_kajian_section', 'limit_key' => 'limit_kajian'],
+            'agenda' => ['name' => 'Agenda & Jadwal Kegiatan', 'icon' => '📅', 'table' => 'agenda', 'setting_key' => 'show_agenda_section', 'limit_key' => 'limit_agenda'],
             'gallery' => ['name' => 'Galeri Foto & Dokumentasi', 'icon' => '🖼️', 'table' => 'gallery', 'setting_key' => 'show_gallery_section', 'limit_key' => 'limit_gallery'],
             'donation' => ['name' => 'Donasi & Infaq Online', 'icon' => '💰', 'table' => 'financial_accounts', 'setting_key' => 'show_donation_section'],
         ];
@@ -161,13 +162,13 @@ class AdminHomepageManagerController extends BaseController
         $db = Database::connect();
 
         if ($action === 'show_all') {
-            $keys = ['show_pengurus_section', 'show_program_section', 'show_layanan_section', 'show_bidang_section', 'show_kajian_section', 'show_gallery_section', 'show_profile_section', 'show_donation_section'];
+            $keys = ['show_pengurus_section', 'show_program_section', 'show_layanan_section', 'show_bidang_section', 'show_kajian_section', 'show_agenda_section', 'show_gallery_section', 'show_profile_section', 'show_donation_section'];
             foreach ($keys as $k) {
                 $this->saveSettingKey($k, '1');
             }
             $this->logActivity('Homepage section shown', 'Semua section homepage di-set Tampil.');
         } elseif ($action === 'hide_all') {
-            $keys = ['show_pengurus_section', 'show_program_section', 'show_layanan_section', 'show_bidang_section', 'show_kajian_section', 'show_gallery_section', 'show_profile_section', 'show_donation_section'];
+            $keys = ['show_pengurus_section', 'show_program_section', 'show_layanan_section', 'show_bidang_section', 'show_kajian_section', 'show_agenda_section', 'show_gallery_section', 'show_profile_section', 'show_donation_section'];
             foreach ($keys as $k) {
                 $this->saveSettingKey($k, '0');
             }
@@ -196,7 +197,7 @@ class AdminHomepageManagerController extends BaseController
 
     public function resetDefault()
     {
-        $defaultOrder = ['hero', 'prayer', 'profile', 'program', 'layanan', 'pengurus', 'kajian', 'gallery', 'donation'];
+        $defaultOrder = ['hero', 'prayer', 'profile', 'program', 'layanan', 'pengurus', 'kajian', 'agenda', 'gallery', 'donation'];
         $this->saveSettingKey('homepage_section_order', json_encode($defaultOrder));
 
         $defaultLimits = [

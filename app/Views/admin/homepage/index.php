@@ -387,7 +387,7 @@ input:checked + .slider:before {
                     <span style="font-size: 28px;">📖</span>
                     <div>
                         <h3 style="font-size: 16px; font-weight: 800; color: var(--text-primary);">Warta & Jadwal Kajian</h3>
-                        <span style="font-size: 12px; color: var(--text-tertiary);">Artikel & Agenda Taklim</span>
+                        <span style="font-size: 12px; color: var(--text-tertiary);">Artikel & Jadwal Taklim</span>
                     </div>
                 </div>
                 <?php if ($kStat['is_visible'] ?? true): ?>
@@ -441,6 +441,71 @@ input:checked + .slider:before {
             <a href="<?= site_url('admin/cms/create?tab=posts') ?>" class="btn btn-primary" style="flex: 1; text-align: center; padding: 6px; font-size: 12px;">+ Tambah Berita</a>
             <a href="<?= site_url('admin/cms?tab=posts') ?>" class="btn btn-secondary" style="flex: 1; text-align: center; padding: 6px; font-size: 12px;">⚙️ Kelola</a>
         </div>
+    </div>
+</div>
+
+<!-- 4b. AGENDA CARD (finding H: separate module from Kajian) -->
+<?php $agStat = $sectionStats['agenda'] ?? []; ?>
+<div class="biz-card">
+    <div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 28px;">📅</span>
+                <div>
+                    <h3 style="font-size: 16px; font-weight: 800; color: var(--text-primary);">Agenda & Jadwal Kegiatan</h3>
+                    <span style="font-size: 12px; color: var(--text-tertiary);">Kegiatan & Acara Masjid</span>
+                </div>
+            </div>
+            <?php if ($agStat['is_visible'] ?? true): ?>
+                <span class="badge badge-green">🟢 Ditampilkan</span>
+            <?php else: ?>
+                <span class="badge badge-red" style="background: #fef2f2; color: #991b1b; border: 1px solid #fca5a5;">⚪ Disembunyikan</span>
+            <?php endif; ?>
+        </div>
+
+        <div class="stat-mini-grid">
+            <div class="stat-mini-box">
+                <div class="stat-mini-val"><?= $agStat['total'] ?? 0 ?></div>
+                <div class="stat-mini-lbl">Total</div>
+            </div>
+            <div class="stat-mini-box">
+                <div class="stat-mini-val" style="color: var(--primary-600);"><?= $agStat['active'] ?? 0 ?></div>
+                <div class="stat-mini-lbl">Aktif</div>
+            </div>
+            <div class="stat-mini-box">
+                <div class="stat-mini-val" style="color: #d97706;"><?= $agStat['hidden'] ?? 0 ?></div>
+                <div class="stat-mini-lbl">Hidden</div>
+            </div>
+            <div class="stat-mini-box">
+                <div class="stat-mini-val" style="color: #2563eb;"><?= $agStat['featured'] ?? 0 ?></div>
+                <div class="stat-mini-lbl">Featured</div>
+            </div>
+        </div>
+
+        <form action="<?= site_url('admin/homepage-manager/save-settings') ?>" method="POST" style="margin-top: 12px;">
+            <?= csrf_field() ?>
+            <div class="switch-container" style="margin-bottom: 12px;">
+                <span class="switch-label">Tampilkan di Homepage</span>
+                <label class="switch">
+                    <input type="hidden" name="show_agenda_section" value="0">
+                    <input type="checkbox" name="show_agenda_section" value="1" <?= (($settings['show_agenda_section'] ?? '1') === '1') ? 'checked' : '' ?> onchange="this.form.submit()">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Jumlah Tampil Maksimal:</span>
+                <div style="display: flex; gap: 6px;">
+                    <input type="number" name="limit_agenda" min="1" max="100" value="<?= esc($settings['limit_agenda'] ?? 5) ?>" style="width: 70px; padding: 4px 8px; border: 1px solid var(--border-light); border-radius: 6px; font-size: 13px; font-weight: 700; text-align: center;">
+                    <button type="submit" class="btn btn-secondary" style="padding: 4px 10px; font-size: 12px;">Simpan</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div style="display: flex; gap: 8px; margin-top: 16px; border-top: 1px solid var(--border-light); padding-top: 12px;">
+        <a href="<?= site_url('admin/cms/create?tab=agenda') ?>" class="btn btn-primary" style="flex: 1; text-align: center; padding: 6px; font-size: 12px;">+ Tambah Agenda</a>
+        <a href="<?= site_url('admin/cms?tab=agenda') ?>" class="btn btn-secondary" style="flex: 1; text-align: center; padding: 6px; font-size: 12px;">⚙️ Kelola</a>
     </div>
 </div>
 
