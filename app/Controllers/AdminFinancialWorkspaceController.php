@@ -34,6 +34,97 @@ class AdminFinancialWorkspaceController extends BaseController
         ];
     }
 
+    /**
+     * Inserts a single financial transaction + its auto double-entry journal.
+     * Extracted from store() so CSV Import (see importTransactions()) can
+     * reuse the exact same posting logic instead of duplicating it.
+     *
+     * @return array{success: bool, message: string, transaction_no?: string}
+     */
+    private function insertTransaction(array $data): array
+    {
+        $db = Database::connect();
+
+        $type      = (string) ($data['transaction_type'] ?: 'EXPENSE');
+        $amount    = (float) ($data['amount'] ?? 0);
+        $desc      = (string) ($data['description'] ?? '');
+        $date      = (string) ($data['transaction_date'] ?: date('Y-m-d H:i:s'));
+        $fundId    = (int) ($data['fund_id'] ?? 0);
+        $finAccId  = (int) ($data['financial_account_id'] ?? 0);
+        $accountId = (int) ($data['account_id'] ?? 0);
+
+        if ($amount <= 0 || $desc === '' || $fundId <= 0 || $finAccId <= 0 || $accountId <= 0) {
+            return ['success' => false, 'message' => 'Data tidak lengkap atau tidak valid.'];
+        }
+
+        $uuid = sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x', mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0x0fff) | 0x4000, mt_rand(0, 0x3fff) | 0x8000, mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff));
+        $trxNo = 'TRX-' . date('Ym') . '-' . str_pad((string) mt_rand(1, 9999), 5, '0', STR_PAD_LEFT);
+
+        $db->transStart();
+
+        $db->table('financial_transactions')->insert([
+            'uuid'                 => $uuid,
+            'masjid_id'            => '1',
+            'fund_id'              => $fundId,
+            'account_id'           => $accountId,
+            'financial_account_id' => $finAccId,
+            'transaction_no'       => $trxNo,
+            'transaction_type'     => $type,
+            'amount'               => $amount,
+            'payment_method'       => 'CASH',
+            'status'               => 'POSTED',
+            'transaction_date'     => $date,
+            'description'          => $desc,
+            'created_at'           => date('Y-m-d H:i:s'),
+        ]);
+        $trxId = $db->insertID();
+
+        if ($db->tableExists('financial_accounts')) {
+            $builder = $db->table('financial_accounts')->where('id', $finAccId);
+            if ($type === 'INCOME') {
+                $builder->set('balance', 'balance + ' . $amount, false);
+            } else {
+                $builder->set('balance', 'balance - ' . $amount, false);
+            }
+            $builder->update();
+        }
+
+        if ($db->tableExists('journal_entries')) {
+            $jUuid = sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x', mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0x0fff) | 0x4000, mt_rand(0, 0x3fff) | 0x8000, mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff));
+            $jNo = 'JRN-' . date('Ym') . '-' . str_pad((string) mt_rand(1, 9999), 5, '0', STR_PAD_LEFT);
+
+            $db->table('journal_entries')->insert([
+                'uuid'           => $jUuid,
+                'transaction_id' => $trxId,
+                'journal_no'     => $jNo,
+                'entry_date'     => $date,
+                'description'    => 'Jurnal Otomatis Transaksi ' . $trxNo . ': ' . $desc,
+                'created_at'     => date('Y-m-d H:i:s'),
+            ]);
+            $journalId = $db->insertID();
+
+            if ($db->tableExists('journal_details')) {
+                $journalDetailRows = $this->buildJournalDetailRows($type, $amount, $finAccId, $accountId);
+                foreach ($journalDetailRows as $row) {
+                    $db->table('journal_details')->insert([
+                        'journal_id'    => $journalId,
+                        'account_id'    => $row['account_id'],
+                        'debit_amount'  => $row['debit_amount'],
+                        'credit_amount' => $row['credit_amount'],
+                    ]);
+                }
+            }
+        }
+
+        $db->transComplete();
+
+        if ($db->transStatus() === false) {
+            return ['success' => false, 'message' => 'Transaksi gagal diproses (rollback).'];
+        }
+
+        return ['success' => true, 'message' => 'OK', 'transaction_no' => $trxNo];
+    }
+
     public function index(): string
     {
         $db = Database::connect();
@@ -56,7 +147,7 @@ class AdminFinancialWorkspaceController extends BaseController
                             '<span class="stat-mono">' . number_format((float)$t['amount'], 0, ',', '.') . '</span>',
                             '<span class="badge ' . ($t['status'] === 'POSTED' ? 'badge-green' : 'badge-amber') . '">' . esc($t['status']) . '</span>',
                             '<div style="display:flex; gap:4px;">' .
-                            '<a href="' . site_url('admin/financial/edit/' . $t['id']) . '" class="btn btn-secondary" style="padding: 2px 8px; font-size: 12px;">Edit</a>' .
+                            '<a href="' . site_url('admin/financial/detail/' . $t['id']) . '" class="btn btn-secondary" style="padding: 2px 8px; font-size: 12px;">Detail</a>' .
                             '<a href="' . site_url('admin/financial/delete/' . $t['id']) . '" class="btn btn-secondary" onclick="return confirm(\'Void/Hapus transaksi ini?\')" style="padding: 2px 8px; font-size: 12px; color: var(--status-danger-text);">Void</a>' .
                             '</div>',
                         ]
@@ -195,7 +286,6 @@ class AdminFinancialWorkspaceController extends BaseController
 
     public function store()
     {
-        $db = Database::connect();
         try {
             $rules = [
                 'amount'               => 'required|numeric|greater_than[0]',
@@ -209,89 +299,138 @@ class AdminFinancialWorkspaceController extends BaseController
                 return redirect()->back()->withInput();
             }
 
-            $type = (string) ($this->request->getPost('transaction_type') ?: 'EXPENSE');
-            $amount = (float) $this->request->getPost('amount');
-            $desc = (string) $this->request->getPost('description');
-            $date = (string) ($this->request->getPost('transaction_date') ?: date('Y-m-d H:i:s'));
-            $fundId = (int) $this->request->getPost('fund_id');
-            $finAccId = (int) $this->request->getPost('financial_account_id');
-            $accountId = (int) $this->request->getPost('account_id');
-
-            $uuid = sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x', mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0x0fff) | 0x4000, mt_rand(0, 0x3fff) | 0x8000, mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff));
-            $trxNo = 'TRX-' . date('Ym') . '-' . str_pad((string) mt_rand(1, 9999), 5, '0', STR_PAD_LEFT);
-
-            // Database Transaction Boundary for Atomic Double-Entry Posting
-            $db->transStart();
-
-            // 1. Insert Transaction Record
-            $db->table('financial_transactions')->insert([
-                'uuid'                 => $uuid,
-                'masjid_id'            => '1',
-                'fund_id'              => $fundId,
-                'account_id'           => $accountId,
-                'financial_account_id' => $finAccId,
-                'transaction_no'       => $trxNo,
-                'transaction_type'     => $type,
-                'amount'               => $amount,
-                'payment_method'       => 'CASH',
-                'status'               => 'POSTED',
-                'transaction_date'     => $date,
-                'description'          => $desc,
-                'created_at'           => date('Y-m-d H:i:s'),
+            $result = $this->insertTransaction([
+                'transaction_type'     => (string) ($this->request->getPost('transaction_type') ?: 'EXPENSE'),
+                'amount'               => (float) $this->request->getPost('amount'),
+                'description'          => (string) $this->request->getPost('description'),
+                'transaction_date'     => (string) ($this->request->getPost('transaction_date') ?: date('Y-m-d H:i:s')),
+                'fund_id'              => (int) $this->request->getPost('fund_id'),
+                'financial_account_id' => (int) $this->request->getPost('financial_account_id'),
+                'account_id'           => (int) $this->request->getPost('account_id'),
             ]);
-            $trxId = $db->insertID();
 
-            // 2. Safe Balance Update via Query Builder
-            if ($db->tableExists('financial_accounts')) {
-                $builder = $db->table('financial_accounts')->where('id', $finAccId);
-                if ($type === 'INCOME') {
-                    $builder->set('balance', 'balance + ' . $amount, false);
-                } else {
-                    $builder->set('balance', 'balance - ' . $amount, false);
-                }
-                $builder->update();
-            }
-
-            // 3. Create Double Entry Journal Atomically
-            if ($db->tableExists('journal_entries')) {
-                $jUuid = sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x', mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0x0fff) | 0x4000, mt_rand(0, 0x3fff) | 0x8000, mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff));
-                $jNo = 'JRN-' . date('Ym') . '-' . str_pad((string) mt_rand(1, 9999), 5, '0', STR_PAD_LEFT);
-
-                $db->table('journal_entries')->insert([
-                    'uuid'           => $jUuid,
-                    'transaction_id' => $trxId,
-                    'journal_no'     => $jNo,
-                    'entry_date'     => $date,
-                    'description'    => 'Jurnal Otomatis Transaksi ' . $trxNo . ': ' . $desc,
-                    'created_at'     => date('Y-m-d H:i:s'),
-                ]);
-                $journalId = $db->insertID();
-
-                if ($db->tableExists('journal_details')) {
-                    $journalDetailRows = $this->buildJournalDetailRows($type, $amount, $finAccId, $accountId);
-                    foreach ($journalDetailRows as $row) {
-                        $db->table('journal_details')->insert([
-                            'journal_id'    => $journalId,
-                            'account_id'    => $row['account_id'],
-                            'debit_amount'  => $row['debit_amount'],
-                            'credit_amount' => $row['credit_amount'],
-                        ]);
-                    }
-                }
-            }
-
-            $db->transComplete();
-
-            if ($db->transStatus() === false) {
-                session()->setFlashdata('error', 'Gagal memproses transaksi (Transaction Rollback).');
+            if (!$result['success']) {
+                session()->setFlashdata('error', 'Gagal menyimpan transaksi: ' . $result['message']);
                 return redirect()->back()->withInput();
             }
 
-            session()->setFlashdata('success', 'Transaksi ' . esc($trxNo) . ' & Jurnal Double-Entry berhasil disimpan.');
+            session()->setFlashdata('success', 'Transaksi ' . esc($result['transaction_no']) . ' & Jurnal Double-Entry berhasil disimpan.');
         } catch (\Throwable $e) {
             log_message('error', 'AdminFinancialWorkspaceController Store Exception: ' . $e->getMessage());
             session()->setFlashdata('error', 'Terjadi kesalahan sistem saat menyimpan transaksi: ' . $e->getMessage());
             return redirect()->back()->withInput();
+        }
+
+        return redirect()->to(site_url('admin/financial'));
+    }
+
+    /**
+     * Finding C (UAT RC0-001): Export button was missing entirely from the
+     * Financial Workspace. Streams all financial transactions as CSV.
+     */
+    public function export()
+    {
+        $db = Database::connect();
+        $rows = [];
+        if ($db->tableExists('financial_transactions')) {
+            $rows = $db->table('financial_transactions')->orderBy('created_at', 'DESC')->get()->getResultArray();
+        }
+
+        $filename = 'financial-transactions-' . date('Ymd-His') . '.csv';
+        $csv = fopen('php://temp', 'w+');
+        fputcsv($csv, ['transaction_no', 'transaction_date', 'transaction_type', 'amount', 'status', 'fund_id', 'financial_account_id', 'account_id', 'description']);
+        foreach ($rows as $r) {
+            fputcsv($csv, [
+                $r['transaction_no'] ?? '',
+                $r['transaction_date'] ?? '',
+                $r['transaction_type'] ?? '',
+                $r['amount'] ?? 0,
+                $r['status'] ?? '',
+                $r['fund_id'] ?? '',
+                $r['financial_account_id'] ?? '',
+                $r['account_id'] ?? '',
+                $r['description'] ?? '',
+            ]);
+        }
+        rewind($csv);
+        $content = stream_get_contents($csv);
+        fclose($csv);
+
+        return $this->response
+            ->setHeader('Content-Type', 'text/csv')
+            ->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"')
+            ->setBody($content);
+    }
+
+    /**
+     * Finding C (UAT RC0-001): Import button was missing entirely from the
+     * Financial Workspace. Accepts a CSV upload and creates transactions
+     * through the SAME posting path as the manual "Buat Transaksi" form
+     * (insertTransaction()), so RBAC, double-entry, and balance updates stay
+     * consistent with existing behaviour. Invalid rows are skipped and
+     * reported rather than aborting the whole batch.
+     */
+    public function import()
+    {
+        $file = $this->request->getFile('import_file');
+
+        if (!$file || !$file->isValid()) {
+            session()->setFlashdata('error', 'File import tidak valid atau tidak ditemukan.');
+            return redirect()->back();
+        }
+
+        $ext = strtolower($file->getClientExtension());
+        if ($ext !== 'csv') {
+            session()->setFlashdata('error', 'Format file harus CSV.');
+            return redirect()->back();
+        }
+
+        $handle = fopen($file->getTempName(), 'r');
+        if (!$handle) {
+            session()->setFlashdata('error', 'File CSV tidak dapat dibaca.');
+            return redirect()->back();
+        }
+
+        $header = fgetcsv($handle);
+        $header = array_map('trim', $header ?: []);
+
+        $imported = 0;
+        $failed = 0;
+        $errors = [];
+        $rowNum = 1;
+
+        while (($row = fgetcsv($handle)) !== false) {
+            $rowNum++;
+            $assoc = array_combine($header, array_pad($row, count($header), null));
+            if ($assoc === false) {
+                $failed++;
+                continue;
+            }
+
+            $result = $this->insertTransaction([
+                'transaction_type'     => $assoc['transaction_type'] ?? 'EXPENSE',
+                'amount'               => (float) ($assoc['amount'] ?? 0),
+                'description'          => (string) ($assoc['description'] ?? ''),
+                'transaction_date'     => (string) ($assoc['transaction_date'] ?? date('Y-m-d H:i:s')),
+                'fund_id'              => (int) ($assoc['fund_id'] ?? 0),
+                'financial_account_id' => (int) ($assoc['financial_account_id'] ?? 0),
+                'account_id'           => (int) ($assoc['account_id'] ?? 0),
+            ]);
+
+            if ($result['success']) {
+                $imported++;
+            } else {
+                $failed++;
+                $errors[] = "Baris {$rowNum}: {$result['message']}";
+            }
+        }
+        fclose($handle);
+
+        $message = "Import selesai: {$imported} transaksi berhasil, {$failed} gagal.";
+        if ($failed > 0) {
+            session()->setFlashdata('error', $message . ' Detail: ' . implode(' | ', array_slice($errors, 0, 5)));
+        } else {
+            session()->setFlashdata('success', $message);
         }
 
         return redirect()->to(site_url('admin/financial'));

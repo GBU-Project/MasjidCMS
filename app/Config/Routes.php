@@ -85,24 +85,18 @@ $routes->group('admin', ['filter' => ['auth', 'rbac']], static function (RouteCo
     $routes->get('financial', '\App\Controllers\AdminFinancialWorkspaceController::index');
     $routes->get('financial/create', '\App\Controllers\AdminFinancialWorkspaceController::create');
     $routes->post('financial/store', '\App\Controllers\AdminFinancialWorkspaceController::store', ['filter' => 'rbac:financial.manage']);
-    $routes->get('financial/edit/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::edit/$1');
-    $routes->post('financial/update', '\App\Controllers\AdminFinancialWorkspaceController::update', ['filter' => 'rbac:financial.manage']);
     $routes->get('financial/delete/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::delete/$1', ['filter' => 'rbac:financial.manage']);
     $routes->get('financial/detail/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::detail/$1');
+    $routes->get('financial/export', '\App\Controllers\AdminFinancialWorkspaceController::export');
+    $routes->post('financial/import', '\App\Controllers\AdminFinancialWorkspaceController::import', ['filter' => 'rbac:financial.manage']);
 
     $routes->post('financial/coa/store', '\App\Controllers\AdminFinancialWorkspaceController::storeCoa', ['filter' => 'rbac:financial.manage']);
-    $routes->get('financial/coa/edit/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::editCoa/$1');
-    $routes->post('financial/coa/update', '\App\Controllers\AdminFinancialWorkspaceController::updateCoa', ['filter' => 'rbac:financial.manage']);
     $routes->get('financial/coa/delete/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::deleteCoa/$1', ['filter' => 'rbac:financial.manage']);
 
     $routes->post('financial/budget/store', '\App\Controllers\AdminFinancialWorkspaceController::storeBudget', ['filter' => 'rbac:financial.manage']);
-    $routes->get('financial/budget/edit/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::editBudget/$1');
-    $routes->post('financial/budget/update', '\App\Controllers\AdminFinancialWorkspaceController::updateBudget', ['filter' => 'rbac:financial.manage']);
     $routes->get('financial/budget/delete/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::deleteBudget/$1', ['filter' => 'rbac:financial.manage']);
 
     $routes->post('financial/periods/store', '\App\Controllers\AdminFinancialWorkspaceController::storePeriod', ['filter' => 'rbac:financial.manage']);
-    $routes->get('financial/periods/edit/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::editPeriod/$1');
-    $routes->post('financial/periods/update', '\App\Controllers\AdminFinancialWorkspaceController::updatePeriod', ['filter' => 'rbac:financial.manage']);
     $routes->get('financial/periods/delete/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::deletePeriod/$1', ['filter' => 'rbac:financial.manage']);
 
     $routes->post('financial/journal/store', '\App\Controllers\AdminFinancialWorkspaceController::storeJournal', ['filter' => 'rbac:financial.manage']);
@@ -130,6 +124,7 @@ $routes->group('admin', ['filter' => ['auth', 'rbac']], static function (RouteCo
     $routes->post('homepage-manager/reset-default', '\App\Controllers\AdminHomepageManagerController::resetDefault', ['filter' => 'rbac:admin.manage']);
     $routes->post('homepage-manager/clear-cache', '\App\Controllers\AdminHomepageManagerController::clearCache', ['filter' => 'rbac:admin.manage']);
     $routes->get('theme', '\App\Controllers\AdminSystemWorkspaceController::index');
+    $routes->post('theme/store', '\App\Controllers\AdminSystemWorkspaceController::storeTheme', ['filter' => 'rbac:admin.manage']);
 
     $routes->get('settings', '\App\Controllers\AdminSystemWorkspaceController::index');
     $routes->post('settings/store', '\App\Controllers\AdminSystemWorkspaceController::store', ['filter' => 'rbac:admin.manage']);

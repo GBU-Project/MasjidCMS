@@ -177,8 +177,32 @@
     <?php if ($activeTab === 'transactions'): ?>
         <?= view('components/toolbar', [
             'createUrl' => site_url('admin/financial/create'),
-            'createLabel' => '+ Buat Transaksi Baru'
+            'createLabel' => '+ Buat Transaksi Baru',
+            'importUrl' => '#import-transactions',
+            'exportUrl' => site_url('admin/financial/export')
         ]) ?>
+
+        <div style="display:flex; gap:12px; align-items:center; margin: -8px 0 16px;">
+            <a href="<?= site_url('admin/reporting/preview?type=CASH_BOOK') ?>" class="btn btn-secondary" style="padding: 4px 10px; font-size: 12px;">📄 Generate Preview (Buku Kas)</a>
+        </div>
+
+        <div id="import-transactions" class="panel-card" style="padding: 16px; margin-bottom: 20px; max-width: 600px;">
+            <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 8px;">📥 Import Transaksi (CSV)</h4>
+            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">
+                Kolom CSV: transaction_type, amount, description, transaction_date, fund_id, financial_account_id, account_id
+            </p>
+            <form action="<?= site_url('admin/financial/import') ?>" method="POST" enctype="multipart/form-data" style="display:flex; gap:8px; align-items:center;">
+                <?= csrf_field() ?>
+                <input type="file" name="import_file" accept=".csv" required style="flex:1; font-size: 12px;">
+                <button type="submit" class="btn btn-primary" style="padding: 6px 14px; font-size: 12px;">Import</button>
+            </form>
+        </div>
+    <?php endif; ?>
+
+    <?php if ($activeTab === 'journal'): ?>
+        <div style="display:flex; gap:12px; align-items:center; margin-bottom: 16px;">
+            <a href="<?= site_url('admin/reporting/preview?type=GENERAL_LEDGER') ?>" class="btn btn-secondary" style="padding: 4px 10px; font-size: 12px;">📄 Generate Preview (Buku Besar)</a>
+        </div>
     <?php endif; ?>
 
     <?= view('components/search_filter', [
