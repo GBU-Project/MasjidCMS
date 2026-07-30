@@ -75,6 +75,49 @@
                 <textarea name="mission_text" rows="4" placeholder="Menyelenggarakan ibadah dan kegiatan syiar Islam...&#10;Mengelola dana ZISWAF secara transparan..." style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;"><?= esc(old('mission_text', $item['mission_text'] ?? '')) ?></textarea>
             </div>
 
+            <!-- Logo & Favicon: Unified Media Picker only — no manual path input (finding E) -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 6px;">Logo Website</label>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <img data-preview-for="logo_media_id" src="" style="width:48px; height:48px; object-fit:cover; border-radius:8px; border:1px solid var(--border-light); display:none;">
+                        <?php if (!empty($item['logo_media_id'])): ?>
+                            <span style="font-size: 12px; color: var(--text-muted);">Logo tersimpan (media #<?= esc($item['logo_media_id']) ?>)</span>
+                        <?php endif; ?>
+                        <input type="hidden" name="logo_media_id" id="logo_media_id" data-picker-value="id" value="<?= esc(old('logo_media_id', $item['logo_media_id'] ?? '')) ?>">
+                        <button type="button" class="btn btn-secondary" onclick="selectFromMediaLibrary('logo_media_id')" style="padding: 8px 14px; font-size: 13px;">🖼️ Pilih dari Media Library</button>
+                    </div>
+                </div>
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 6px;">Favicon</label>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <img data-preview-for="favicon_media_id" src="" style="width:32px; height:32px; object-fit:cover; border-radius:6px; border:1px solid var(--border-light); display:none;">
+                        <input type="hidden" name="favicon_media_id" id="favicon_media_id" data-picker-value="id" value="<?= esc(old('favicon_media_id', $item['favicon_media_id'] ?? '')) ?>">
+                        <button type="button" class="btn btn-secondary" onclick="selectFromMediaLibrary('favicon_media_id')" style="padding: 8px 14px; font-size: 13px;">🖼️ Pilih dari Media Library</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Social Media (finding G: belongs in Website Settings, not Theme) -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 6px;">Facebook URL</label>
+                    <input type="text" name="facebook_url" value="<?= esc(old('facebook_url', $item['facebook_url'] ?? '')) ?>" placeholder="https://facebook.com/..." style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;">
+                </div>
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 6px;">Instagram URL</label>
+                    <input type="text" name="instagram_url" value="<?= esc(old('instagram_url', $item['instagram_url'] ?? '')) ?>" placeholder="https://instagram.com/..." style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;">
+                </div>
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 6px;">YouTube URL</label>
+                    <input type="text" name="youtube_url" value="<?= esc(old('youtube_url', $item['youtube_url'] ?? '')) ?>" placeholder="https://youtube.com/..." style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;">
+                </div>
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 6px;">WhatsApp</label>
+                    <input type="text" name="whatsapp_number" value="<?= esc(old('whatsapp_number', $item['whatsapp_number'] ?? '')) ?>" placeholder="6281234567890" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;">
+                </div>
+            </div>
+
         <?php elseif ($tab === 'bidang'): ?>
             <div style="margin-bottom: 16px;">
                 <label style="display: block; font-weight: 600; margin-bottom: 6px;">Nama Bidang / Departemen *</label>

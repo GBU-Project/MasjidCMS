@@ -255,7 +255,7 @@ class AdminMasterDataController extends BaseController
                     return redirect()->back()->withInput();
                 }
 
-                $db->table('masjids')->insert([
+                $profileData = [
                     'code'          => (string) $this->request->getPost('code'),
                     'name'          => (string) $this->request->getPost('name'),
                     'slug'          => url_title((string) $this->request->getPost('name'), '-', true),
@@ -268,7 +268,27 @@ class AdminMasterDataController extends BaseController
                     'mission_text'  => (string) $this->request->getPost('mission_text'),
                     'status'        => 'active',
                     'created_at'    => date('Y-m-d H:i:s'),
-                ]);
+                ];
+
+                $logoMediaId = (int) $this->request->getPost('logo_media_id');
+                if ($logoMediaId > 0) {
+                    $profileData['logo_media_id'] = $logoMediaId;
+                }
+
+                if ($db->fieldExists('favicon_media_id', 'masjids')) {
+                    $faviconMediaId = (int) $this->request->getPost('favicon_media_id');
+                    if ($faviconMediaId > 0) {
+                        $profileData['favicon_media_id'] = $faviconMediaId;
+                    }
+                }
+
+                foreach (['facebook_url', 'instagram_url', 'youtube_url', 'whatsapp_number'] as $socialField) {
+                    if ($db->fieldExists($socialField, 'masjids')) {
+                        $profileData[$socialField] = (string) $this->request->getPost($socialField);
+                    }
+                }
+
+                $db->table('masjids')->insert($profileData);
                 session()->setFlashdata('success', 'Profil Masjid berhasil disimpan.');
 
             } elseif ($tab === 'jamaah') {
@@ -493,6 +513,26 @@ class AdminMasterDataController extends BaseController
                 foreach (['history_text', 'vision_text', 'mission_text'] as $narrativeField) {
                     if ($db->fieldExists($narrativeField, 'masjids')) {
                         $profileData[$narrativeField] = (string) $this->request->getPost($narrativeField);
+                    }
+                }
+
+                // Logo & Favicon are picked via the Unified Media Library
+                // (see admin/master/edit.php) — no manual path input.
+                $logoMediaId = (int) $this->request->getPost('logo_media_id');
+                if ($logoMediaId > 0) {
+                    $profileData['logo_media_id'] = $logoMediaId;
+                }
+
+                if ($db->fieldExists('favicon_media_id', 'masjids')) {
+                    $faviconMediaId = (int) $this->request->getPost('favicon_media_id');
+                    if ($faviconMediaId > 0) {
+                        $profileData['favicon_media_id'] = $faviconMediaId;
+                    }
+                }
+
+                foreach (['facebook_url', 'instagram_url', 'youtube_url', 'whatsapp_number'] as $socialField) {
+                    if ($db->fieldExists($socialField, 'masjids')) {
+                        $profileData[$socialField] = (string) $this->request->getPost($socialField);
                     }
                 }
 
