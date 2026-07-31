@@ -28,8 +28,12 @@
     <?php if ($showLayoutHeader): ?>
     <header class="public-header">
         <div class="brand-title">
-            <span>🕌</span>
-            <span>MasjidCMS Portal</span>
+            <?php if (!empty($masjid['logo_url'])): ?>
+                <img src="<?= esc($masjid['logo_url']) ?>" alt="<?= esc($masjid['name'] ?? 'Logo Masjid') ?>" style="height:32px; max-width:140px; width:auto; object-fit:contain; border-radius:6px;">
+            <?php else: ?>
+                <span>🕌</span>
+            <?php endif; ?>
+            <span><?= esc($masjid['name'] ?? 'MasjidCMS Portal') ?></span>
         </div>
 
         <ul class="public-nav-links">
