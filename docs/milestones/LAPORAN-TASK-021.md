@@ -4,7 +4,7 @@
 **Repository:** GBU-Project/MasjidCMS
 **Branch:** develop
 **Status:** Selesai
-**Versi:** 1.2.0 (diperbaiki + perbaikan kode)
+**Versi:** 1.3.0 (diperbaiki + perbaikan kode + clickable link)
 
 ---
 
@@ -235,14 +235,46 @@ Semua path file yang disebutkan dalam laporan telah diverifikasi keberadaannya d
 **File diubah:** 
 - `public/assets/images/hero-bg.svg` (dibuat)
 - `app/Views/public/components/hero.php` (diupdate)
+- `app/Views/public/components/donation_section.php` (diupdate)
 
 **Perubahan:** 
 1. Membuat SVG placeholder untuk hero background image
-2. Mengupdate referensi dari `hero-bg.jpg` ke `hero-bg.svg` di hero.php
+2. Mengupdate referensi dari `hero-bg.jpg` ke `hero-bg.svg` di hero.php dan donation_section.php
 
-**Dampak:** Hero section sekarang menampilkan background image (SVG placeholder dengan gradient green emerald).
+**Dampak:** Hero section dan donation section sekarang menampilkan background image (SVG placeholder dengan gradient green emerald).
 
-#### D. Debug: Prayer Times Widget Visibility
+#### D. Jadwal Sholat Clickable Link
+
+**Masalah:** Card "Jadwal Ibadah Hari Ini" di hero section tidak memiliki link untuk navigasi ke halaman jadwal sholat lengkap.
+
+**File diubah:** 
+- `app/Config/Routes.php` (menambahkan route publik)
+- `app/Controllers/PublicPortalController.php` (menambahkan method `prayerTimes()`)
+- `app/Views/public/components/hero.php` (membuat card clickable)
+- `app/Views/public/prayer_times.php` (view baru)
+
+**Perubahan:**
+1. Menambahkan route publik: `$routes->get('jadwal-sholat', '\App\Controllers\PublicPortalController::prayerTimes');`
+2. Menambahkan method `prayerTimes()` di PublicPortalController untuk fetch data dan render view
+3. Membuat card "Jadwal Ibadah Hari Ini" menjadi clickable dengan link ke `/jadwal-sholat`
+4. Membuat view `prayer_times.php` yang menampilkan jadwal sholat lengkap dengan waktu dan iqamah
+
+**Dampak:** User sekarang bisa klik card jadwal sholat di hero section untuk melihat halaman jadwal sholat lengkap.
+
+#### E. CSS untuk Clickable Prayer Times Card
+
+**Masalah:** Card jadwal sholat sudah clickable tapi tidak ada hover effect dan CSS styling untuk link.
+
+**File diubah:** `public/assets/css/portal-ui2.css`
+
+**Perubahan:** Menambahkan CSS untuk `.prayer-hero-card-link`:
+- Hover effect dengan transform translateY(-4px)
+- Box shadow enhancement saat hover
+- Border color change saat hover
+
+**Dampak:** Card jadwal sholat sekarang memiliki visual feedback yang jelas saat di-hover, meningkatkan UX.
+
+#### F. Debug: Prayer Times Widget Visibility
 
 **Masalah:** Setelah perbaikan, prayer times widget masih tidak terlihat di hero section.
 
