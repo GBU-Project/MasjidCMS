@@ -28,7 +28,6 @@ class AddFaviconAndSocialMediaFieldsToMasjidsTable extends Migration
                 'constraint' => 20,
                 'unsigned'   => true,
                 'null'       => true,
-                'after'      => 'logo_media_id',
             ];
         }
 
