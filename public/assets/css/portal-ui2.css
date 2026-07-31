@@ -417,6 +417,22 @@ a {
     box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
 }
 
+.prayer-hero-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: transform 0.2s ease;
+}
+
+.prayer-hero-card-link:hover {
+    transform: translateY(-4px);
+}
+
+.prayer-hero-card-link:hover .prayer-hero-card {
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
 /* --- Component: Quick Access Toolbar --- */
 .quick-access-section {
     margin-top: -48px;
