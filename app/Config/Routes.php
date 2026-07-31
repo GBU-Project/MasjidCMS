@@ -149,6 +149,12 @@ $routes->group('admin', ['filter' => ['auth', 'rbac']], static function (RouteCo
     $routes->get('notification', '\App\Controllers\AdminSystemWorkspaceController::index');
     $routes->post('notification/store', '\App\Controllers\AdminSystemWorkspaceController::storeNotification', ['filter' => 'rbac:admin.manage']);
     $routes->get('notification/delete/(:segment)', '\App\Controllers\AdminSystemWorkspaceController::deleteNotification/$1', ['filter' => 'rbac:admin.manage']);
+
+    // Prayer Time Routes
+    $routes->get('prayer-time', '\App\Controllers\AdminPrayerTimeController::index');
+    $routes->post('prayer-time/update', '\App\Controllers\AdminPrayerTimeController::update', ['filter' => 'rbac:admin.manage']);
+    $routes->post('prayer-time/reset-default', '\App\Controllers\AdminPrayerTimeController::resetDefault', ['filter' => 'rbac:admin.manage']);
+    $routes->get('prayer-time/api', '\App\Controllers\AdminPrayerTimeController::apiGetTimes');
 });
 
 // Web Installer Routes

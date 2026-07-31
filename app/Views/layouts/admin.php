@@ -21,10 +21,53 @@
             <input type="text" placeholder="Cari Jamaah, Transaksi, atau Dokumen... (Press '/' to search)" aria-label="Global Search">
         </div>
 
-        <div class="user-nav-profile">
+        <div class="user-nav-profile" style="position: relative;">
             <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">🔔 Notifikasi</button>
-            <div class="avatar-circle" title="Administrator DKM">AD</div>
+            <div class="avatar-circle" id="userProfileTrigger" style="cursor: pointer; position: relative;" title="<?= esc(session()->get('auth_user')['displayName'] ?? 'Administrator') ?>">
+                <?php
+                    $displayName = session()->get('auth_user')['displayName'] ?? 'Administrator';
+                    $initials = '';
+                    $words = explode(' ', $displayName);
+                    foreach ($words as $w) { if (!empty(trim($w))) $initials .= strtoupper(substr(trim($w), 0, 1)); }
+                    echo esc(substr($initials, 0, 2));
+                ?>
+            </div>
+            <!-- Profile Dropdown -->
+            <div id="userProfileDropdown" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 8px; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); min-width: 220px; z-index: 9999; padding: 8px 0;">
+                <div style="padding: 12px 16px; border-bottom: 1px solid #f1f5f9;">
+                    <div style="font-weight: 700; font-size: 14px; color: #0f172a;"><?= esc($displayName) ?></div>
+                    <div style="font-size: 12px; color: #64748b;"><?= esc(session()->get('auth_user')['username'] ?? '') ?></div>
+                    <?php
+                        $roles = session()->get('auth_user')['roles'] ?? [];
+                        if (!empty($roles)) {
+                            echo '<div style="font-size: 11px; color: #16a34a; margin-top: 2px;">' . esc(implode(', ', $roles)) . '</div>';
+                        }
+                    ?>
+                </div>
+                <a href="<?= site_url('admin/settings?tab=profile') ?>" style="display: block; padding: 10px 16px; font-size: 13px; color: #334155; text-decoration: none; transition: background 0.1s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">👤 My Profile</a>
+                <a href="<?= site_url('admin/settings?tab=password') ?>" style="display: block; padding: 10px 16px; font-size: 13px; color: #334155; text-decoration: none; transition: background 0.1s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">🔑 Change Password</a>
+                <div style="border-top: 1px solid #f1f5f9; margin: 4px 0;"></div>
+                <a href="<?= site_url('logout') ?>" style="display: block; padding: 10px 16px; font-size: 13px; color: #ef4444; text-decoration: none; transition: background 0.1s;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='transparent'">🚪 Logout</a>
+            </div>
         </div>
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var trigger = document.getElementById('userProfileTrigger');
+            var dropdown = document.getElementById('userProfileDropdown');
+            if (trigger && dropdown) {
+                trigger.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+                });
+                document.addEventListener('click', function() {
+                    dropdown.style.display = 'none';
+                });
+                dropdown.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            }
+        });
+        </script>
     </header>
 
     <!-- Collapsible Sidebar Nav Bar -->
@@ -197,6 +240,12 @@
                     <span class="nav-text">Notifikasi</span>
                 </a>
             </li>
+            <li>
+                <a href="<?= site_url('admin/prayer-time') ?>" class="nav-item-link">
+                    <span>⏰</span>
+                    <span class="nav-text">Jadwal Sholat</span>
+                </a>
+            </li>
         </ul>
     </aside>
 
@@ -209,7 +258,12 @@
     <?= $this->include('admin/media/picker_modal') ?>
 
     <!-- Self-Hosted TinyMCE Community & Unified Media Library JS Engine -->
+    <script>
+    window.MEDIA_API_URL = '<?= site_url('admin/media/api?type=image') ?>';
+    window.MEDIA_UPLOAD_URL = '<?= site_url('admin/media/upload') ?>';
+    </script>
     <script src="<?= base_url('assets/vendor/tinymce/tinymce.min.js') ?>"></script>
     <script src="<?= base_url('assets/js/media-picker.js') ?>"></script>
+    <script src="<?= base_url('assets/js/icon-picker.js') ?>"></script>
 </body>
 </html>

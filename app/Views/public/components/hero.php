@@ -30,40 +30,66 @@
             <div class="prayer-card-head">
                 <div>
                     <span class="prayer-card-label">Jadwal Ibadah Hari Ini</span>
-                    <h3>📍 <?= esc($masjid['city'] ?? 'Kota Masjid') ?></h3>
+                    <h3>📍 <?= esc($prayerCity ?? ($masjid['city'] ?? 'Kota Masjid')) ?></h3>
                 </div>
                 <div class="prayer-card-date">
                     <span><?= date('d M Y') ?></span>
                 </div>
             </div>
 
+            <?php
+            $prayerTimes = $prayerTimes ?? [];
+            $now = time();
+            $nextPrayer = null;
+            $nextPrayerTime = null;
+            $prayerIcons = [
+                'Subuh'   => '🌅',
+                'Dzuhur'  => '☀️',
+                'Ashar'   => '🌤️',
+                'Maghrib' => '🌇',
+                'Isya'    => '🌙',
+            ];
+
+            // Find next prayer
+            foreach ($prayerTimes as $pt) {
+                $ptTime = strtotime(substr($pt['prayer_time'] ?? '00:00:00', 0, 5));
+                if ($ptTime === false) continue;
+                // Adjust to today
+                $ptToday = strtotime(date('Y-m-d') . ' ' . substr($pt['prayer_time'] ?? '00:00:00', 0, 5));
+                if ($ptToday > $now) {
+                    $nextPrayer = $pt;
+                    $nextPrayerTime = $ptToday;
+                    break;
+                }
+            }
+            // If no next prayer found, first prayer tomorrow
+            if (!$nextPrayer && !empty($prayerTimes)) {
+                $nextPrayer = $prayerTimes[0];
+                $nextPrayerTime = strtotime('+1 day ' . date('Y-m-d') . ' ' . substr($prayerTimes[0]['prayer_time'] ?? '00:00:00', 0, 5));
+            }
+            ?>
+
+            <?php if ($nextPrayer): ?>
             <div class="prayer-card-highlight">
                 <span>Waktu Sholat Berikutnya</span>
-                <h2>ASHR — 15:20 WIB</h2>
-                <span class="prayer-card-note">-01:45:20 menuju Adzan</span>
+                <h2><?= esc($nextPrayer['prayer_name']) ?> — <?= esc(substr($nextPrayer['prayer_time'] ?? '00:00', 0, 5)) ?> WIB</h2>
+                <?php if ($nextPrayerTime): ?>
+                <span class="prayer-card-note">⏱ <?= gmdate('H:i:s', max(0, $nextPrayerTime - $now)) ?> menuju Adzan</span>
+                <?php endif; ?>
             </div>
+            <?php endif; ?>
 
             <div class="prayer-time-grid">
-                <div class="prayer-time-box">
-                    <div>Subuh</div>
-                    <div>04:38</div>
+                <?php foreach ($prayerTimes as $pt):
+                    $ptName = $pt['prayer_name'] ?? '';
+                    $ptTime = substr($pt['prayer_time'] ?? '00:00:00', 0, 5);
+                    $isActive = ($nextPrayer && $nextPrayer['prayer_name'] === $ptName);
+                ?>
+                <div class="prayer-time-box <?= $isActive ? 'active' : '' ?>">
+                    <div><?= esc($ptName) ?></div>
+                    <div><?= esc($ptTime) ?></div>
                 </div>
-                <div class="prayer-time-box">
-                    <div>Dzuhur</div>
-                    <div>12:05</div>
-                </div>
-                <div class="prayer-time-box active">
-                    <div>Ashar</div>
-                    <div>15:20</div>
-                </div>
-                <div class="prayer-time-box">
-                    <div>Maghrib</div>
-                    <div>18:02</div>
-                </div>
-                <div class="prayer-time-box">
-                    <div>Isya</div>
-                    <div>19:14</div>
-                </div>
+                <?php endforeach; ?>
             </div>
         </div>
     </div>

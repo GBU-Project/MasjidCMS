@@ -17,6 +17,7 @@ class PublicPortalController extends BaseController
         $masjidName = 'Masjid Agung Darussalam';
         $activePrograms = [];
         $activeServices = [];
+        $bidangList = [];
         $pengurusList = [];
         $latestPosts = [];
         $settings = [];
@@ -28,7 +29,7 @@ class PublicPortalController extends BaseController
             }
         }
 
-        $defaultOrder = ['hero', 'prayer', 'profile', 'program', 'layanan', 'pengurus', 'kajian', 'gallery', 'donation'];
+        $defaultOrder = ['hero', 'prayer', 'profile', 'program', 'layanan', 'bidang', 'pengurus', 'kajian', 'gallery', 'donation'];
         $sectionOrder = $defaultOrder;
         if (!empty($settings['homepage_section_order'])) {
             $decoded = json_decode($settings['homepage_section_order'], true);
@@ -42,6 +43,7 @@ class PublicPortalController extends BaseController
             'profile'  => 'show_profile_section',
             'program'  => 'show_program_section',
             'layanan'  => 'show_layanan_section',
+            'bidang'   => 'show_bidang_section',
             'pengurus' => 'show_pengurus_section',
             'kajian'   => 'show_kajian_section',
             'agenda'   => 'show_agenda_section',
@@ -55,6 +57,7 @@ class PublicPortalController extends BaseController
 
         $limitProgram = (int) ($settings['limit_program'] ?? 6);
         $limitLayanan = (int) ($settings['limit_layanan'] ?? 4);
+        $limitBidang = (int) ($settings['limit_bidang'] ?? 6);
         $limitPengurus = (int) ($settings['limit_pengurus'] ?? 3);
         $limitKajian = (int) ($settings['limit_kajian'] ?? 6);
 
@@ -64,6 +67,14 @@ class PublicPortalController extends BaseController
             if ($masjid) {
                 $masjidName = $masjid['name'];
             }
+        }
+
+        if ($db->tableExists('bidang')) {
+            $builder = $db->table('bidang')->where('deleted_at', null);
+            if ($db->fieldExists('homepage_visible', 'bidang')) {
+                $builder->where('homepage_visible', 1);
+            }
+            $bidangList = $builder->orderBy('sort_order', 'ASC')->limit($limitBidang)->get()->getResultArray();
         }
 
         if ($db->tableExists('program_kegiatan')) {
@@ -117,6 +128,18 @@ class PublicPortalController extends BaseController
             $agendaList = $db->table('agenda')->where('status', 'UPCOMING')->orderBy('event_date', 'ASC')->limit($limitAgenda)->get()->getResultArray();
         }
 
+        // Prayer Times
+        $prayerTimes = [];
+        $prayerCity = 'Kota Masjid';
+        if ($db->tableExists('prayer_times')) {
+            $prayerTimes = $db->table('prayer_times')
+                ->where('is_active', 1)
+                ->orderBy('sort_order', 'ASC')
+                ->get()
+                ->getResultArray();
+        }
+        $prayerCity = $settings['prayer_city'] ?? ($masjid['city'] ?? 'Kota Masjid');
+
         $financialSummary = [
             'total_balance' => 0,
             'total_income'  => 0,
@@ -144,6 +167,7 @@ class PublicPortalController extends BaseController
             'sectionVisibility' => $sectionVisibility,
             'activePrograms'   => $activePrograms,
             'activeServices'   => $activeServices,
+            'bidangList'       => $bidangList,
             'pengurusList'     => $pengurusList,
             'latestPosts'      => $latestPosts,
             'kajianList'       => $kajianList,

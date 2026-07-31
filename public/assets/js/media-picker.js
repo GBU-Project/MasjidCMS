@@ -111,7 +111,8 @@
 
         grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #64748b;">⏳ Memuat Media Library...</div>';
 
-        fetch('/admin/media/api?type=image')
+        var apiUrl = window.MEDIA_API_URL || '/admin/media/api?type=image';
+        fetch(apiUrl)
             .then(function(res) { return res.json(); })
             .then(function(data) {
                 if (data.status === 'success' && Array.isArray(data.data)) {
@@ -295,7 +296,8 @@
         if (progressBox) progressBox.style.display = 'block';
         if (progressBar) progressBar.style.width = '30%';
 
-        fetch('/admin/media/upload', {
+        var uploadUrl = window.MEDIA_UPLOAD_URL || '/admin/media/upload';
+        fetch(uploadUrl, {
             method: 'POST',
             body: formData,
             headers: {

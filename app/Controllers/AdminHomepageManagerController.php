@@ -23,7 +23,7 @@ class AdminHomepageManagerController extends BaseController
         }
 
         // Default section order
-        $defaultOrder = ['hero', 'prayer', 'profile', 'program', 'layanan', 'pengurus', 'kajian', 'agenda', 'gallery', 'donation'];
+        $defaultOrder = ['hero', 'prayer', 'profile', 'program', 'layanan', 'bidang', 'pengurus', 'kajian', 'agenda', 'gallery', 'donation'];
         $sectionOrder = $defaultOrder;
         if (!empty($settings['homepage_section_order'])) {
             $decoded = json_decode($settings['homepage_section_order'], true);
@@ -39,6 +39,7 @@ class AdminHomepageManagerController extends BaseController
             'profile' => ['name' => 'Profil & Identitas Masjid', 'icon' => '🏛️', 'table' => 'masjids', 'setting_key' => 'show_profile_section'],
             'program' => ['name' => 'Program & Kegiatan Masjid', 'icon' => '🚩', 'table' => 'program_kegiatan', 'setting_key' => 'show_program_section', 'limit_key' => 'limit_program'],
             'layanan' => ['name' => 'Katalog Layanan Masjid', 'icon' => '🤝', 'table' => 'layanan_masjid', 'setting_key' => 'show_layanan_section', 'limit_key' => 'limit_layanan'],
+            'bidang' => ['name' => 'Bidang Masjid', 'icon' => '🏛️', 'table' => 'bidang', 'setting_key' => 'show_bidang_section', 'limit_key' => 'limit_bidang'],
             'pengurus' => ['name' => 'Pengurus DKM Masjid', 'icon' => '👔', 'table' => 'pengurus', 'setting_key' => 'show_pengurus_section', 'limit_key' => 'limit_pengurus'],
             'kajian' => ['name' => 'Jadwal Warta & Kajian', 'icon' => '📖', 'table' => 'kajian', 'setting_key' => 'show_kajian_section', 'limit_key' => 'limit_kajian'],
             'agenda' => ['name' => 'Agenda & Jadwal Kegiatan', 'icon' => '📅', 'table' => 'agenda', 'setting_key' => 'show_agenda_section', 'limit_key' => 'limit_agenda'],
@@ -197,7 +198,7 @@ class AdminHomepageManagerController extends BaseController
 
     public function resetDefault()
     {
-        $defaultOrder = ['hero', 'prayer', 'profile', 'program', 'layanan', 'pengurus', 'kajian', 'agenda', 'gallery', 'donation'];
+        $defaultOrder = ['hero', 'prayer', 'profile', 'program', 'layanan', 'bidang', 'pengurus', 'kajian', 'agenda', 'gallery', 'donation'];
         $this->saveSettingKey('homepage_section_order', json_encode($defaultOrder));
 
         $defaultLimits = [
@@ -207,6 +208,7 @@ class AdminHomepageManagerController extends BaseController
             'show_bidang_section'   => '1',
             'limit_pengurus'        => '3',
             'limit_program'         => '6',
+            'limit_bidang'          => '6',
             'limit_kajian'          => '6',
             'limit_gallery'         => '8',
             'limit_layanan'         => '4',

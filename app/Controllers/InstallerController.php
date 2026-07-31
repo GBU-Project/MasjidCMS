@@ -138,6 +138,24 @@ class InstallerController extends BaseController
                 return view('installer/admin', ['message' => $migrateResult['message']]);
             }
 
+            // RC0 UAT: Check duplicate username BEFORE calling AdminSeeder
+            $username = trim((string) $this->request->getPost('username'));
+            if ($username !== '') {
+                try {
+                    $db = \Config\Database::connect();
+                    if ($db->tableExists('users')) {
+                        $existing = $db->table('users')->where('username', $username)->get()->getRow();
+                        if ($existing) {
+                            return view('installer/admin', [
+                                'message' => 'Username "' . esc($username) . '" sudah terdaftar. Silakan pilih username lain.',
+                            ]);
+                        }
+                    }
+                } catch (\Throwable $e) {
+                    // If DB not ready yet, let AdminSeeder handle it
+                }
+            }
+
             $result = $this->adminSeeder->createAdmin($this->request->getPost());
             if ($result['success']) {
                 $persistResult = $this->persistAdminUser($result['user']);
