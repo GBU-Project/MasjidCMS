@@ -175,6 +175,8 @@ class PublicPortalController extends BaseController
             'financialSummary' => $financialSummary,
             'settings'         => $settings,
             'donationSettings' => $settings,
+            'prayerTimes'      => $prayerTimes,
+            'prayerCity'       => $prayerCity,
         ]);
     }
 

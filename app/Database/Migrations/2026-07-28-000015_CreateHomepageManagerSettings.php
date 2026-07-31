@@ -11,7 +11,7 @@ class CreateHomepageManagerSettings extends Migration
         if ($this->db->tableExists('settings')) {
             $defaultSettings = [
                 'homepage_section_order' => json_encode([
-                    'hero', 'prayer', 'profile', 'program', 'layanan', 'pengurus', 'kajian', 'gallery', 'donation'
+                    'hero', 'prayer', 'profile', 'program', 'layanan', 'bidang', 'pengurus', 'kajian', 'agenda', 'gallery', 'donation'
                 ]),
                 'show_pengurus_section'  => '1',
                 'show_program_section'   => '1',
@@ -29,6 +29,7 @@ class CreateHomepageManagerSettings extends Migration
                 'donation_bg_image'      => '',
                 'limit_pengurus'         => '3',
                 'limit_program'          => '6',
+                'limit_bidang'           => '6',
                 'limit_kajian'           => '6',
                 'limit_gallery'          => '8',
                 'limit_layanan'          => '4',

@@ -1,7 +1,7 @@
 <!-- Hero Banner Section UI 2.0 -->
 <?php $sectionSettings = $settings ?? []; ?>
 <section class="hero-banner-section">
-    <div class="hero-bg-overlay" style="background-image: url('<?= !empty($donationSettings['donation_bg_image']) ? esc($donationSettings['donation_bg_image']) : base_url('assets/images/hero-bg.jpg') ?>');"></div>
+    <div class="hero-bg-overlay" style="background-image: url('<?= !empty($donationSettings['donation_bg_image']) ? esc($donationSettings['donation_bg_image']) : base_url('assets/images/hero-bg.svg') ?>');"></div>
     <div class="container hero-grid">
         <div class="hero-copy">
             <div class="hero-pill">
@@ -26,7 +26,12 @@
             </div>
         </div>
 
-        <div class="prayer-hero-card">
+        <div class="prayer-hero-card" id="sholat">
+            <?php if (empty($prayerTimes)): ?>
+            <div style="background: red; color: white; padding: 10px; margin-bottom: 10px;">
+                DEBUG: prayerTimes is empty! Count: <?= count($prayerTimes ?? []) ?>
+            </div>
+            <?php endif; ?>
             <div class="prayer-card-head">
                 <div>
                     <span class="prayer-card-label">Jadwal Ibadah Hari Ini</span>
