@@ -1,3 +1,4 @@
+
 <!-- Hero Banner Section UI 2.0 -->
 <?php $sectionSettings = $settings ?? []; ?>
 <section class="hero-banner-section">
@@ -26,6 +27,7 @@
             </div>
         </div>
 
+        <a href="<?= site_url('jadwal-sholat') ?>" class="prayer-hero-card-link">
         <div class="prayer-hero-card" id="sholat">
             <?php if (empty($prayerTimes)): ?>
             <div style="background: red; color: white; padding: 10px; margin-bottom: 10px;">
@@ -97,5 +99,6 @@
                 <?php endforeach; ?>
             </div>
         </div>
+        </a>
     </div>
 </section>

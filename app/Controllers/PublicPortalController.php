@@ -349,4 +349,36 @@ class PublicPortalController extends BaseController
             'totalExpense' => $totalExpense,
         ]);
     }
+
+    public function prayerTimes(): string
+    {
+        $db = Database::connect();
+        $prayerTimes = [];
+        $prayerCity = 'Kota Masjid';
+        $settings = [];
+
+        if ($db->tableExists('settings')) {
+            $rawSettings = $db->table('settings')->get()->getResultArray();
+            foreach ($rawSettings as $s) {
+                $settings[$s['setting_key']] = $s['setting_value'];
+            }
+        }
+
+        $prayerCity = $settings['prayer_city'] ?? 'Kota Masjid';
+
+        if ($db->tableExists('prayer_times')) {
+            $prayerTimes = $db->table('prayer_times')
+                ->where('is_active', 1)
+                ->orderBy('sort_order', 'ASC')
+                ->get()
+                ->getResultArray();
+        }
+
+        return view('public/prayer_times', [
+            'activePage'   => 'prayer-times',
+            'prayerTimes'  => $prayerTimes,
+            'prayerCity'   => $prayerCity,
+            'settings'     => $settings,
+        ]);
+    }
 }
