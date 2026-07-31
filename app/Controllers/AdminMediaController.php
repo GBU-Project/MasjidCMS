@@ -103,7 +103,11 @@ class AdminMediaController extends BaseController
             $fileList = [$files['file']];
         }
 
-        $allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml', 'application/pdf'];
+        // .ico is included so classic favicon.ico uploads work, not just
+        // modern PNG/SVG favicons -- browsers report this mime type
+        // inconsistently (image/x-icon vs image/vnd.microsoft.icon), so
+        // both are whitelisted.
+        $allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml', 'image/x-icon', 'image/vnd.microsoft.icon', 'application/pdf'];
         $maxSize = 10 * 1024 * 1024; // 10MB
 
         foreach ($fileList as $file) {
