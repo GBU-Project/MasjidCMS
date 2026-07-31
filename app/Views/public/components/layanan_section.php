@@ -10,7 +10,7 @@
 
         <?php if (!empty($layananList)): ?>
             <div class="card-grid-ui2 card-grid-services">
-                <?php foreach (array_slice($layananList, 0, 4) as $l): ?>
+                <?php foreach ($layananList as $l): ?>
                     <div class="card-ui2 card-service">
                         <div class="service-icon"><?= render_icon($l['icon'] ?? null, '🚑') ?></div>
                         <h3><?= esc($l['nama'] ?? 'Layanan Masjid') ?></h3>

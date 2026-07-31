@@ -775,6 +775,53 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
+<!-- UAT TASK-022 finding #3: every section template below already reads its
+     Tag/Title/Subtitle from settings (see e.g. layanan_section.php,
+     program_section.php) -- the hardcoded strings shown were only the
+     *fallback* used when no setting exists. This panel is what was
+     missing: an actual place to set them, submitting to the same
+     save-settings endpoint (now widened to accept *_tag/*_title/*_subtitle
+     keys; see AdminHomepageManagerController::saveSettings()). -->
+<div class="panel-card" style="padding: 24px; margin-bottom: 32px;">
+    <div style="margin-bottom: 16px;">
+        <h2 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">✏️ Judul &amp; Teks Section Beranda</h2>
+        <p style="font-size: 13px; color: var(--text-muted);">Ubah tag, judul, dan subjudul tiap section homepage. Kosongkan untuk memakai teks bawaan.</p>
+    </div>
+    <form action="<?= site_url('admin/homepage-manager/save-settings') ?>" method="POST">
+        <?= csrf_field() ?>
+        <?php
+            $sectionTextGroups = [
+                'hero'     => ['label' => '🕌 Hero / Banner Utama', 'badge' => 'Portal Digital Masjid', 'title' => 'Pusat Ibadah, Dakwah & Pemberdayaan Umat', 'subtitle' => ''],
+                'program'  => ['label' => '🚩 Program & Kegiatan', 'tag' => 'PROGRAM DKM', 'title' => 'Program Sosial & Keumatan', 'subtitle' => "Berbagai inisiatif kemakmuran masjid dalam bidang sosial, pendidikan al-qur'an, dan ekonomi keumatan."],
+                'layanan'  => ['label' => '🤝 Layanan Masjid', 'tag' => 'PELAYANAN JAMAAH', 'title' => 'Layanan Utama Masjid', 'subtitle' => 'Kemudahan akses fasilitas dan pelayanan ibadah bagi seluruh jamaah dan warga sekitar masjid.'],
+                'pengurus' => ['label' => '👔 Pengurus DKM', 'tag' => 'STRUKTUR DKM', 'title' => 'Pengurus & Tokoh Masjid', 'subtitle' => 'Struktur kepengurusan DKM yang amanah dan berdedikasi mengabdi untuk kemakmuran masjid.'],
+                'bidang'   => ['label' => '🏛️ Bidang / Departemen', 'tag' => 'STRUKTUR ORGANISASI', 'title' => 'Bidang & Departemen', 'subtitle' => 'Bidang-bidang yang menjalankan program dan pelayanan masjid sehari-hari.'],
+                'kajian'   => ['label' => '📖 Kajian & Taklim', 'tag' => 'KAJIAN RUTIN', 'title' => 'Highlight Kajian & Jadwal Taklim', 'subtitle' => 'Tingkatkan keilmuan dan ketakwaan melalui jadwal kajian rutin bersama ustadz dan ulama terpilih.'],
+                'agenda'   => ['label' => '📅 Agenda & Jadwal', 'tag' => 'AGENDA MASJID', 'title' => 'Agenda & Jadwal Kegiatan', 'subtitle' => 'Ikuti berbagai kegiatan dan acara masjid, mulai dari gotong royong, rapat DKM, hingga peringatan hari besar Islam.'],
+            ];
+        ?>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+            <?php foreach ($sectionTextGroups as $secKey => $group): ?>
+                <div style="border: 1px solid var(--border-light); border-radius: 10px; padding: 14px;">
+                    <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 10px;"><?= esc($group['label']) ?></h4>
+                    <?php if ($secKey === 'hero'): ?>
+                        <label style="display:block; font-size:11px; font-weight:600; color:var(--text-muted); margin-bottom:3px;">Badge</label>
+                        <input type="text" name="hero_badge" value="<?= esc($settings['hero_badge'] ?? '') ?>" placeholder="<?= esc($group['badge']) ?>" style="width:100%; margin-bottom:8px; padding:6px 10px; border:1px solid var(--border-light); border-radius:6px; font-size:12px;">
+                    <?php else: ?>
+                        <label style="display:block; font-size:11px; font-weight:600; color:var(--text-muted); margin-bottom:3px;">Tag</label>
+                        <input type="text" name="<?= esc($secKey) ?>_tag" value="<?= esc($settings[$secKey . '_tag'] ?? '') ?>" placeholder="<?= esc($group['tag']) ?>" style="width:100%; margin-bottom:8px; padding:6px 10px; border:1px solid var(--border-light); border-radius:6px; font-size:12px;">
+                    <?php endif; ?>
+                    <label style="display:block; font-size:11px; font-weight:600; color:var(--text-muted); margin-bottom:3px;">Judul</label>
+                    <input type="text" name="<?= esc($secKey) ?>_title" value="<?= esc($settings[$secKey . '_title'] ?? '') ?>" placeholder="<?= esc($group['title']) ?>" style="width:100%; margin-bottom:8px; padding:6px 10px; border:1px solid var(--border-light); border-radius:6px; font-size:12px;">
+                    <label style="display:block; font-size:11px; font-weight:600; color:var(--text-muted); margin-bottom:3px;">Subjudul</label>
+                    <textarea name="<?= esc($secKey) ?>_subtitle" rows="2" placeholder="<?= esc($group['subtitle']) ?>" style="width:100%; padding:6px 10px; border:1px solid var(--border-light); border-radius:6px; font-size:12px;"><?= esc($settings[$secKey . '_subtitle'] ?? '') ?></textarea>
+                </div>
+            <?php endforeach; ?>
+        </div>
+        <button type="submit" class="btn btn-primary" style="margin-top: 16px;">💾 Simpan Semua Judul & Teks</button>
+    </form>
+</div>
+
 <!-- FEATURE 6 & 1: DRAG & DROP SECTION ORDERING -->
 <div class="panel-card" style="padding: 24px; margin-bottom: 32px;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">

@@ -146,7 +146,18 @@ class AdminHomepageManagerController extends BaseController
                     return redirect()->back()->with('error', 'Limit item harus antara 1 dan 100.');
                 }
             }
-            if (str_starts_with($key, 'show_') || str_starts_with($key, 'limit_') || str_starts_with($key, 'donation_')) {
+            // UAT TASK-022 finding #3: every public section template
+            // (hero.php, program_section.php, layanan_section.php,
+            // pengurus_section.php, bidang_section.php, kajian_section.php,
+            // agenda_section.php, donation_section.php) already reads its
+            // Tag/Title/Subtitle/Badge text from $sectionSettings with a
+            // hardcoded fallback -- e.g. layanan_title falls back to
+            // "Layanan Utama Masjid" only when no admin-set value exists.
+            // Those keys were never being saved because this handler only
+            // accepted the show_/limit_/donation_ prefixes, so the "manual
+            // edit" path silently did nothing even once a form existed.
+            $isSectionText = (bool) preg_match('/_(tag|title|subtitle|badge)$/', $key);
+            if (str_starts_with($key, 'show_') || str_starts_with($key, 'limit_') || str_starts_with($key, 'donation_') || $isSectionText) {
                 $this->saveSettingKey($key, (string) $value);
             }
         }

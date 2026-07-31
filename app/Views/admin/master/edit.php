@@ -166,6 +166,8 @@
                     </select>
                 </div>
             </div>
+
+        <?php elseif ($tab === 'bidang'): ?>
             <div style="margin-bottom: 16px;">
                 <label style="display: block; font-weight: 600; margin-bottom: 6px;">Nama Bidang / Departemen *</label>
                 <input type="text" name="name" required value="<?= esc(old('name', $item['name'] ?? '')) ?>" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;">

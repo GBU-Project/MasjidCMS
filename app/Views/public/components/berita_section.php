@@ -10,7 +10,7 @@
 
         <?php if (!empty($postsList)): ?>
             <div class="card-grid-ui2 card-grid-news">
-                <?php foreach (array_slice($postsList, 0, 3) as $post): ?>
+                <?php foreach ($postsList as $post): ?>
                     <article class="card-ui2 card-news">
                         <div class="news-thumb">
                             <span>📰</span>

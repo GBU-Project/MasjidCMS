@@ -10,7 +10,7 @@
 
         <?php if (!empty($kajianList)): ?>
             <div class="card-grid-ui2 card-grid-events">
-                <?php foreach (array_slice($kajianList, 0, 3) as $k): ?>
+                <?php foreach ($kajianList as $k): ?>
                     <div class="card-ui2 card-event">
                         <div class="card-body">
                             <div class="event-head">

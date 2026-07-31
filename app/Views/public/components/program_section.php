@@ -10,7 +10,7 @@
 
         <?php if (!empty($programList)): ?>
             <div class="card-grid-ui2 card-grid-featured">
-                <?php foreach (array_slice($programList, 0, 3) as $p): ?>
+                <?php foreach ($programList as $p): ?>
                     <div class="card-ui2 card-featured">
                         <div class="card-body">
                             <span class="card-chip">🤝 Program Aktif</span>

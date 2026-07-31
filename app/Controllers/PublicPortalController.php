@@ -9,6 +9,43 @@ class PublicPortalController extends BaseController
 {
     protected $helpers = ['form', 'url'];
 
+    /**
+     * UAT TASK-022 finding #1: admin correctly saved logo_media_id /
+     * favicon_media_id (Profil Masjid -> Unified Media Picker), but no
+     * public-facing view ever joined those IDs to the media table or
+     * rendered the resulting URL anywhere -- header.php used a hardcoded
+     * emoji icon, and layouts/public.php had no <link rel="icon"> at all.
+     * This is the single place that resolves both into ready-to-use URLs
+     * so every controller action can pass a consistent $masjid array.
+     */
+    private function resolveMasjidProfile(): ?array
+    {
+        $db = Database::connect();
+        if (!$db->tableExists('masjids')) {
+            return null;
+        }
+
+        $masjid = $db->table('masjids')->get()->getRowArray();
+        if (!$masjid) {
+            return null;
+        }
+
+        if ($db->tableExists('media')) {
+            foreach (['logo_media_id' => 'logo_url', 'favicon_media_id' => 'favicon_url'] as $idField => $urlField) {
+                if (!empty($masjid[$idField])) {
+                    $media = $db->table('media')->where('id', $masjid[$idField])->get()->getRowArray();
+                    if ($media && !empty($media['filepath'])) {
+                        $masjid[$urlField] = str_starts_with($media['filepath'], 'http')
+                            ? $media['filepath']
+                            : base_url($media['filepath']);
+                    }
+                }
+            }
+        }
+
+        return $masjid;
+    }
+
     public function index(): string
     {
         helper(['form', 'url']);
@@ -61,12 +98,9 @@ class PublicPortalController extends BaseController
         $limitPengurus = (int) ($settings['limit_pengurus'] ?? 3);
         $limitKajian = (int) ($settings['limit_kajian'] ?? 6);
 
-        $masjid = null;
-        if ($db->tableExists('masjids')) {
-            $masjid = $db->table('masjids')->get()->getRowArray();
-            if ($masjid) {
-                $masjidName = $masjid['name'];
-            }
+        $masjid = $this->resolveMasjidProfile();
+        if ($masjid) {
+            $masjidName = $masjid['name'];
         }
 
         if ($db->tableExists('bidang')) {
@@ -205,10 +239,7 @@ class PublicPortalController extends BaseController
     public function prayerSchedule(): string
     {
         $db = Database::connect();
-        $masjid = null;
-        if ($db->tableExists('masjids')) {
-            $masjid = $db->table('masjids')->get()->getRowArray();
-        }
+        $masjid = $this->resolveMasjidProfile();
 
         $month = (int) (($this->request->getGet('month')) ?: date('n'));
         $year = (int) (($this->request->getGet('year')) ?: date('Y'));
@@ -271,10 +302,7 @@ class PublicPortalController extends BaseController
     public function profile(): string
     {
         $db = Database::connect();
-        $masjid = null;
-        if ($db->tableExists('masjids')) {
-            $masjid = $db->table('masjids')->get()->getRowArray();
-        }
+        $masjid = $this->resolveMasjidProfile();
         return view('public/profile', [
             'activePage' => 'profile',
             'masjid'     => $masjid,
@@ -302,6 +330,7 @@ class PublicPortalController extends BaseController
 
         return view('public/org_structure', [
             'activePage'   => 'org_structure',
+            'masjid'       => $this->resolveMasjidProfile(),
             'pengurusList' => $pengurusList,
             'bidangList'   => $bidangList,
         ]);
@@ -322,6 +351,7 @@ class PublicPortalController extends BaseController
 
         return view('public/news', [
             'activePage' => 'news',
+            'masjid'     => $this->resolveMasjidProfile(),
             'posts'      => $posts,
             'kajianList' => $kajianList,
         ]);
@@ -343,6 +373,7 @@ class PublicPortalController extends BaseController
 
         return view('public/programs', [
             'activePage' => 'programs',
+            'masjid'     => $this->resolveMasjidProfile(),
             'programs'   => $programs,
         ]);
     }
@@ -358,6 +389,7 @@ class PublicPortalController extends BaseController
 
         return view('public/services', [
             'activePage' => 'services',
+            'masjid'     => $this->resolveMasjidProfile(),
             'services'   => $services,
         ]);
     }
@@ -373,13 +405,14 @@ class PublicPortalController extends BaseController
 
         return view('public/donation', [
             'activePage' => 'donation',
+            'masjid'     => $this->resolveMasjidProfile(),
             'accounts'   => $accounts,
         ]);
     }
 
     public function contact(): string
     {
-        return view('public/contact', ['activePage' => 'contact']);
+        return view('public/contact', ['activePage' => 'contact', 'masjid' => $this->resolveMasjidProfile()]);
     }
 
     public function gallery(): string
@@ -401,6 +434,7 @@ class PublicPortalController extends BaseController
 
         return view('public/gallery', [
             'activePage' => 'gallery',
+            'masjid'     => $this->resolveMasjidProfile(),
             'gallery'    => $gallery,
         ]);
     }
@@ -432,6 +466,7 @@ class PublicPortalController extends BaseController
 
         return view('public/transparency', [
             'activePage'   => 'transparency',
+            'masjid'       => $this->resolveMasjidProfile(),
             'transactions' => $transactions,
             'totalIncome'  => $totalIncome,
             'totalExpense' => $totalExpense,

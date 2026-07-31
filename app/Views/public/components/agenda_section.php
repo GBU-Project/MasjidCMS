@@ -10,7 +10,7 @@
 
         <?php if (!empty($agendaList)): ?>
             <div class="card-grid-ui2 card-grid-events">
-                <?php foreach (array_slice($agendaList, 0, 3) as $a): ?>
+                <?php foreach ($agendaList as $a): ?>
                     <div class="card-ui2 card-event">
                         <div class="card-body">
                             <div class="event-head">

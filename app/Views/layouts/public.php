@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $this->renderSection('title') ?> — Portal MasjidCMS</title>
+    <?php if (!empty($masjid['favicon_url'])): ?>
+        <link rel="icon" href="<?= esc($masjid['favicon_url']) ?>">
+    <?php endif; ?>
     <!-- TASK-022 finding D: same rationale as the admin layout -- renders
          icon-class values (FontAwesome / Bootstrap Icons) picked for
          Bidang / Layanan on the public site. -->

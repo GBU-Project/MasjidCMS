@@ -3,7 +3,11 @@
 <header class="site-header">
     <div class="container header-inner">
         <a href="<?= site_url('/') ?>" class="site-logo">
-            <div class="site-logo-icon">🕌</div>
+            <?php if (!empty($masjid['logo_url'])): ?>
+                <img src="<?= esc($masjid['logo_url']) ?>" alt="<?= esc($masjid['name'] ?? 'Logo Masjid') ?>" class="site-logo-img" style="height:40px; max-width:160px; width:auto; object-fit:contain; border-radius:6px;">
+            <?php else: ?>
+                <div class="site-logo-icon">🕌</div>
+            <?php endif; ?>
             <span class="site-logo-text"><?= esc($masjid['name'] ?? 'MasjidCMS') ?></span>
         </a>
 

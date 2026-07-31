@@ -10,7 +10,7 @@
 
         <?php if (!empty($pengurusList)): ?>
             <div class="card-grid-ui2 card-grid-profiles">
-                <?php foreach (array_slice($pengurusList, 0, 4) as $peng): ?>
+                <?php foreach ($pengurusList as $peng): ?>
                     <div class="card-ui2 card-profile">
                         <div class="profile-avatar">👔</div>
                         <h4><?= esc($peng['nama'] ?? 'Pengurus DKM') ?></h4>
