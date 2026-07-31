@@ -44,7 +44,7 @@
             </div>
             <div style="margin-bottom: 16px;">
                 <label style="display: block; font-weight: 600; margin-bottom: 6px;">Isi Berita / Konten *</label>
-                <textarea name="content" class="tinymce-full" rows="6"><?= esc(old('content', $item['content'] ?? '')) ?></textarea>
+                <textarea name="content" class="tinymce-standard" rows="5"><?= esc(old('content', $item['content'] ?? '')) ?></textarea>
             </div>
             <div style="margin-bottom: 20px;">
                 <label style="display: block; font-weight: 600; margin-bottom: 6px;">Status Publikasi</label>
@@ -85,7 +85,7 @@
             </div>
             <div style="margin-bottom: 16px;">
                 <label style="display: block; font-weight: 600; margin-bottom: 6px;">Deskripsi</label>
-                <textarea name="description" rows="3" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;"><?= esc(old('description', $item['description'] ?? '')) ?></textarea>
+                <textarea name="description" class="tinymce-standard" rows="5"><?= esc(old('description', $item['description'] ?? '')) ?></textarea>
             </div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
                 <div>
@@ -123,7 +123,7 @@
             </div>
             <div style="margin-bottom: 20px;">
                 <label style="display: block; font-weight: 600; margin-bottom: 6px;">Deskripsi Lengkap Program</label>
-                <textarea name="deskripsi" class="tinymce-medium" rows="4"><?= esc(old('deskripsi', $item['deskripsi'] ?? '')) ?></textarea>
+                <textarea name="deskripsi" class="tinymce-standard" rows="5"><?= esc(old('deskripsi', $item['deskripsi'] ?? '')) ?></textarea>
             </div>
 
         <?php elseif ($tab === 'layanan'): ?>
@@ -147,7 +147,7 @@
             </div>
             <div style="margin-bottom: 20px;">
                 <label style="display: block; font-weight: 600; margin-bottom: 6px;">Deskripsi & Persyaratan</label>
-                <textarea name="deskripsi" class="tinymce-simple" rows="3"><?= esc(old('deskripsi', $item['deskripsi'] ?? '')) ?></textarea>
+                <textarea name="deskripsi" class="tinymce-standard" rows="5"><?= esc(old('deskripsi', $item['deskripsi'] ?? '')) ?></textarea>
             </div>
 
         <?php elseif ($tab === 'pages'): ?>
@@ -161,7 +161,7 @@
             </div>
             <div style="margin-bottom: 16px;">
                 <label style="display: block; font-weight: 600; margin-bottom: 6px;">Isi Halaman *</label>
-                <textarea name="content" class="tinymce-full" rows="8"><?= esc(old('content', $item['content'] ?? '')) ?></textarea>
+                <textarea name="content" class="tinymce-standard" rows="5"><?= esc(old('content', $item['content'] ?? '')) ?></textarea>
             </div>
             </div>
             <div style="margin-bottom: 20px;">
