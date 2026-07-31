@@ -12,6 +12,15 @@
          base_url() so JS builds these paths correctly, same as PHP-side site_url(). -->
     <meta name="app-base-url" content="<?= rtrim(base_url(), '/') ?>">
     <title><?= $this->renderSection('title') ?> — MasjidCMS Admin</title>
+    <!-- TASK-022 finding D (Icon Picker): FontAwesome & Bootstrap Icons are
+         referenced via CDN (not vendored locally, unlike TinyMCE) so that
+         icon-class values chosen in the picker actually render. This is a
+         deliberate trade-off: the admin dashboard already requires network
+         access for other things, but a fully offline install will show the
+         emoji/text fallback instead of the icon glyph until these are
+         self-hosted -- flagged here for a future pass if that matters. -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="<?= base_url('assets/css/app-theme.css') ?>">
     <link rel="stylesheet" href="<?= base_url('assets/css/admin-dashboard.css') ?>">
 </head>

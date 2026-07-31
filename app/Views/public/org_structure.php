@@ -1,5 +1,6 @@
 <?= $this->extend('layouts/public') ?>
 
+<?php helper('icon'); ?>
 <?= $this->section('title') ?>Struktur Organisasi & Pengurus Masjid<?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
@@ -16,7 +17,7 @@
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 48px;">
         <?php foreach ($bidangList as $b): ?>
             <div class="panel-card" style="padding: 20px; border-radius: 12px; border-left: 4px solid var(--primary-600);">
-                <div style="font-size: 28px; margin-bottom: 8px;"><?= esc($b['icon'] ?? '🏛️') ?></div>
+                <div style="font-size: 28px; margin-bottom: 8px;"><?= render_icon($b['icon'] ?? null, '🏛️') ?></div>
                 <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 6px; color: var(--text-primary);"><?= esc($b['name']) ?></h3>
                 <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.5;"><?= esc($b['description'] ?? 'Bidang operasional masjid.') ?></p>
             </div>

@@ -1,5 +1,6 @@
 <?= $this->extend('layouts/public') ?>
 
+<?php helper('icon'); ?>
 <?= $this->section('title') ?>Katalog Layanan Masjid<?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
@@ -15,7 +16,7 @@
         <?php foreach ($services as $s): ?>
             <div class="panel-card" style="padding: 28px; border-radius: 12px; transition: transform 0.2s;">
                 <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
-                    <div style="font-size: 36px; padding: 12px; background-color: var(--primary-50); border-radius: 12px;"><?= esc($s['icon'] ?? '🤝') ?></div>
+                    <div style="font-size: 36px; padding: 12px; background-color: var(--primary-50); border-radius: 12px;"><?= render_icon($s['icon'] ?? null, '🤝') ?></div>
                     <div>
                         <h3 style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;"><?= esc($s['nama']) ?></h3>
                         <span class="badge badge-green" style="font-size: 11px;">Aktif Melayani</span>

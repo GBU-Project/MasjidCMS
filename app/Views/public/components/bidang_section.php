@@ -1,5 +1,5 @@
 <!-- Bidang / Departemen Section UI 2.0 -->
-<?php $sectionSettings = $settings ?? []; ?>
+<?php helper('icon'); $sectionSettings = $settings ?? []; ?>
 <section class="section-wrapper" id="bidang">
     <div class="container">
         <div class="section-header-center">
@@ -12,7 +12,7 @@
             <div class="card-grid-ui2 card-grid-profiles">
                 <?php foreach ($bidangList as $bid): ?>
                     <div class="card-ui2 card-profile">
-                        <div class="profile-avatar"><?= esc($bid['icon'] ?? '🏛️') ?></div>
+                        <div class="profile-avatar"><?= render_icon($bid['icon'] ?? null, '🏛️') ?></div>
                         <h4><?= esc($bid['name'] ?? 'Bidang') ?></h4>
                         <?php if (!empty($bid['description'])): ?>
                             <span class="profile-role"><?= esc($bid['description']) ?></span>

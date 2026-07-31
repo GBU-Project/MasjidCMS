@@ -133,8 +133,13 @@
             </div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
                 <div>
-                    <label style="display: block; font-weight: 600; margin-bottom: 6px;">Icon Emoji</label>
-                    <input type="text" name="icon" value="<?= esc(old('icon', $item['icon'] ?? '🤝')) ?>" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 6px;">Icon</label>
+                    <?php helper('icon'); $layananIconVal = old('icon', $item['icon'] ?? '🤝'); ?>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span id="icon_preview_layanan_edit" style="font-size: 22px; width: 36px; text-align: center;"><?= render_icon($layananIconVal) ?></span>
+                        <input type="text" name="icon" id="icon_input_layanan_edit" value="<?= esc($layananIconVal) ?>" style="flex:1; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;">
+                        <button type="button" class="btn btn-secondary" onclick="selectIconFor('icon_input_layanan_edit', '#icon_preview_layanan_edit')" style="padding: 8px 12px; font-size: 12px;">🎨 Pilih Icon</button>
+                    </div>
                 </div>
                 <div>
                     <label style="display: block; font-weight: 600; margin-bottom: 6px;">Kontak / WhatsApp</label>
