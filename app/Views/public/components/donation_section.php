@@ -1,7 +1,7 @@
 <!-- Donation CTA Banner Section UI 2.0 -->
 <?php $sectionSettings = $settings ?? []; ?>
 <section class="section-wrapper donation-cta-section" id="donasi">
-    <div class="donation-overlay" style="background-image: url('<?= !empty($donationSettings['donation_bg_image']) ? esc($donationSettings['donation_bg_image']) : base_url('assets/images/hero-bg.jpg') ?>');"></div>
+    <div class="donation-overlay" style="background-image: url('<?= !empty($donationSettings['donation_bg_image']) ? esc($donationSettings['donation_bg_image']) : base_url('assets/images/hero-bg.svg') ?>');"></div>
     <div class="container donation-cta-shell">
         <span class="section-tag donation-tag">
             💳 <?= esc($donationSettings['donation_subtitle'] ?? ($sectionSettings['donation_tag'] ?? 'Infaq & Sedekah Online')) ?>
