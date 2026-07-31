@@ -32,30 +32,31 @@ class JamaahDomainTest extends CIUnitTestCase
     public function testEntityInstantiation(): void
     {
         $data = [
-            'id'     => 1,
-            'code'   => 'Jamaah-TEST-01',
-            'name'   => 'Test Jamaah',
-            'slug'   => 'test-jamaah',
-            'status' => 'active',
+            'id'        => '1',
+            'member_no' => 'JM-TEST-01',
+            'nik'       => '3201010101010001',
+            'full_name' => 'Test Jamaah',
+            'status'    => 'active',
         ];
 
         $entity = Jamaah::fromArray($data);
-        $this->assertSame(1, $entity->id);
-        $this->assertSame('Jamaah-TEST-01', $entity->code);
+        $this->assertSame('1', $entity->id);
+        $this->assertSame('JM-TEST-01', $entity->member_no);
+        $this->assertSame('Test Jamaah', $entity->full_name);
         $this->assertTrue($entity->isActive());
     }
 
     public function testCreateAndUpdateDTO(): void
     {
         $createInput = [
-            'code' => '  Jamaah-DTO-01  ',
-            'name' => '  Sample Jamaah  ',
-            'slug' => '  sample-jamaah  ',
+            'member_no' => '  JM-DTO-01  ',
+            'nik'       => '  3201010101010002  ',
+            'full_name' => '  Sample Jamaah  ',
         ];
 
         $createDTO = CreateJamaahDTO::fromArray($createInput);
-        $this->assertSame('Jamaah-DTO-01', $createDTO->code);
-        $this->assertSame('Sample Jamaah', $createDTO->name);
+        $this->assertSame('JM-DTO-01', $createDTO->member_no);
+        $this->assertSame('Sample Jamaah', $createDTO->full_name);
     }
 
     public function testServiceCrudLifecycle(): void
@@ -98,17 +99,17 @@ class JamaahDomainTest extends CIUnitTestCase
         $service = new JamaahService($mockRepo, $mockDispatcher, $mockTxManager);
 
         $newId = $service->create([
-            'code' => 'Jamaah-CRUD-01',
-            'name' => 'Jamaah CRUD Test',
-            'slug' => 'jamaah-crud-test',
+            'member_no' => 'JM-CRUD-01',
+            'nik'       => '3201010101010003',
+            'full_name' => 'Jamaah CRUD Test',
         ]);
         $this->assertSame(1, $newId);
 
         $found = $service->find($newId);
         $this->assertNotNull($found);
 
-        $updated = $service->update($newId, ['name' => 'Updated Jamaah']);
-        $this->assertSame('Updated Jamaah', $updated['name']);
+        $updated = $service->update($newId, ['full_name' => 'Updated Jamaah']);
+        $this->assertSame('Updated Jamaah', $updated['full_name']);
 
         $deleted = $service->delete($newId);
         $this->assertTrue($deleted);
@@ -137,9 +138,9 @@ class JamaahDomainTest extends CIUnitTestCase
 
         try {
             $service->create([
-                'code' => 'FAIL',
-                'name' => 'Fail',
-                'slug' => 'fail',
+                'member_no' => 'JM-FAIL-01',
+                'nik'       => '3201010101010004',
+                'full_name' => 'Fail Jamaah',
             ]);
             $this->fail('Expected Exception was not thrown.');
         } catch (\RuntimeException $e) {
