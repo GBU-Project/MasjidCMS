@@ -17,6 +17,7 @@ $routes->get('kontak', '\App\Controllers\PublicPortalController::contact');
 $routes->get('galeri', '\App\Controllers\PublicPortalController::gallery');
 $routes->get('transparansi', '\App\Controllers\PublicPortalController::transparency');
 $routes->get('jadwal-sholat', '\App\Controllers\PublicPortalController::prayerTimes');
+$routes->get('jadwal-shalat', '\App\Controllers\PublicPortalController::prayerSchedule');
 
 // ---------------------------------------------------------------------
 // Authentication Routes (Browser-facing, session based)

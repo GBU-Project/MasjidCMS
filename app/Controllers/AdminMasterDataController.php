@@ -536,6 +536,26 @@ class AdminMasterDataController extends BaseController
                     }
                 }
 
+                // Prayer Time Configuration (TASK-022 finding G): Master
+                // Data -> Profil Masjid -> Prayer Time. latitude/longitude/
+                // timezone already existed in the schema but were never
+                // exposed in this form; the calc/asr/high-lat-rule columns
+                // are added by AddPrayerTimeConfigToMasjidsTable.
+                if ($this->request->getPost('latitude') !== null && $this->request->getPost('latitude') !== '') {
+                    $profileData['latitude'] = (float) $this->request->getPost('latitude');
+                }
+                if ($this->request->getPost('longitude') !== null && $this->request->getPost('longitude') !== '') {
+                    $profileData['longitude'] = (float) $this->request->getPost('longitude');
+                }
+                if ($this->request->getPost('timezone')) {
+                    $profileData['timezone'] = (string) $this->request->getPost('timezone');
+                }
+                foreach (['prayer_calc_method', 'prayer_asr_method', 'prayer_high_lat_rule'] as $prayerField) {
+                    if ($db->fieldExists($prayerField, 'masjids') && $this->request->getPost($prayerField)) {
+                        $profileData[$prayerField] = (string) $this->request->getPost($prayerField);
+                    }
+                }
+
                 $db->table('masjids')->where('id', $id)->update($profileData);
                 session()->setFlashdata('success', 'Profil Masjid berhasil diperbarui.');
 

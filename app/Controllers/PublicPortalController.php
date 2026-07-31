@@ -170,10 +170,13 @@ class PublicPortalController extends BaseController
             }
         }
 
+        $prayerTimes = $this->computePrayerTimesForMasjid($masjid, date('Y-m-d'));
+
         return view('public/index', [
             'activePage'       => 'home',
             'masjidName'       => $masjidName,
             'masjid'           => $masjid,
+            'prayerTimes'      => $prayerTimes,
             'sectionOrder'     => $sectionOrder,
             'sectionVisibility' => $sectionVisibility,
             'activePrograms'   => $activePrograms,
@@ -189,6 +192,80 @@ class PublicPortalController extends BaseController
             'prayerTimes'      => $prayerTimes,
             'prayerCity'       => $prayerCity,
         ]);
+    }
+
+    /**
+     * TASK-022 finding G follow-up: the hero prayer widget had nowhere to
+     * link to -- there was no dedicated "Jadwal Sholat" page at all, so it
+     * couldn't be made clickable. This adds that page: today's times plus
+     * the full month, computed the same way as the homepage widget
+     * (PrayerTimeCalculator, using Master Data -> Profil Masjid -> Prayer
+     * Time configuration).
+     */
+    public function prayerSchedule(): string
+    {
+        $db = Database::connect();
+        $masjid = null;
+        if ($db->tableExists('masjids')) {
+            $masjid = $db->table('masjids')->get()->getRowArray();
+        }
+
+        $month = (int) (($this->request->getGet('month')) ?: date('n'));
+        $year = (int) (($this->request->getGet('year')) ?: date('Y'));
+        $month = max(1, min(12, $month));
+
+        $daysInMonth = (int) date('t', mktime(0, 0, 0, $month, 1, $year));
+        $monthlySchedule = [];
+        for ($day = 1; $day <= $daysInMonth; $day++) {
+            $date = sprintf('%04d-%02d-%02d', $year, $month, $day);
+            $monthlySchedule[] = ['date' => $date] + $this->computePrayerTimesForMasjid($masjid, $date);
+        }
+
+        $prevMonth = $month - 1;
+        $prevYear = $year;
+        if ($prevMonth < 1) {
+            $prevMonth = 12;
+            $prevYear--;
+        }
+        $nextMonth = $month + 1;
+        $nextYear = $year;
+        if ($nextMonth > 12) {
+            $nextMonth = 1;
+            $nextYear++;
+        }
+
+        return view('public/prayer_schedule', [
+            'activePage'      => 'prayer-schedule',
+            'masjid'          => $masjid,
+            'today'           => $this->computePrayerTimesForMasjid($masjid, date('Y-m-d')),
+            'monthlySchedule' => $monthlySchedule,
+            'month'           => $month,
+            'year'            => $year,
+            'prevMonth'       => $prevMonth,
+            'prevYear'        => $prevYear,
+            'nextMonth'       => $nextMonth,
+            'nextYear'        => $nextYear,
+        ]);
+    }
+
+    /**
+     * Shared prayer-time computation for a masjid record, reading its
+     * Prayer Time configuration (Master Data -> Profil Masjid -> Prayer
+     * Time). No hardcoded schedule, no external API -- purely local
+     * calculation via PrayerTimeCalculator.
+     */
+    private function computePrayerTimesForMasjid(?array $masjid, string $date): array
+    {
+        $calculator = new \App\Services\Prayer\PrayerTimeCalculator();
+
+        $latitude = (float) ($masjid['latitude'] ?? -6.200000);
+        $longitude = (float) ($masjid['longitude'] ?? 106.816666);
+        $timezone = $masjid['timezone'] ?? 'Asia/Jakarta';
+        $calcMethod = $masjid['prayer_calc_method'] ?? 'KEMENAG';
+        $asrMethod = $masjid['prayer_asr_method'] ?? 'STANDARD';
+        $highLatRule = $masjid['prayer_high_lat_rule'] ?? 'NONE';
+
+        return $calculator->calculate($latitude, $longitude, $timezone, $date, $calcMethod, $asrMethod, $highLatRule);
     }
 
     public function profile(): string

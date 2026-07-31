@@ -8,7 +8,7 @@
 <?= view('public/components/header', ['activePage' => 'home', 'masjid' => $masjid, 'settings' => $settings ?? []]) ?>
 
 <!-- 2. Hero Banner Section -->
-<?= view('public/components/hero', ['masjid' => $masjid, 'donationSettings' => $donationSettings, 'settings' => $settings ?? [], 'prayerTimes' => $prayerTimes ?? [], 'prayerCity' => $prayerCity ?? 'Kota Masjid']) ?>
+<?= view('public/components/hero', ['masjid' => $masjid, 'prayerTimes' => $prayerTimes ?? [], 'prayerCity' => $prayerCity ?? 'Kota Masjid', 'donationSettings' => $donationSettings, 'settings' => $settings ?? []]) ?>
 
 <!-- 3. Quick Access Toolbar -->
 <?= view('public/components/quick_access') ?>
@@ -22,7 +22,6 @@ $visibility = $sectionVisibility ?? [];
 $sectionRenderers = [
     'program'  => fn () => view('public/components/program_section', ['programList' => $activePrograms, 'settings' => $settings ?? []]),
     'layanan'  => fn () => view('public/components/layanan_section', ['layananList' => $activeServices, 'settings' => $settings ?? []]),
-    'bidang'   => fn () => view('public/components/bidang_section', ['bidangList' => $bidangList, 'settings' => $settings ?? []]),
     'pengurus' => fn () => view('public/components/pengurus_section', ['pengurusList' => $pengurusList, 'settings' => $settings ?? []]),
     'bidang'   => fn () => view('public/components/bidang_section', ['bidangList' => $bidangList ?? [], 'settings' => $settings ?? []]),
     'kajian'   => fn () => view('public/components/kajian_section', ['kajianList' => $kajianList, 'settings' => $settings ?? []]),

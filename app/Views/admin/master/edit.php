@@ -118,7 +118,54 @@
                 </div>
             </div>
 
-        <?php elseif ($tab === 'bidang'): ?>
+            <!-- Prayer Time Configuration (TASK-022 finding G): Master Data
+                 -> Profil Masjid -> Prayer Time. Feeds PrayerTimeCalculator,
+                 which computes the public homepage widget locally -- no
+                 hardcoded schedule, no external API. -->
+            <h3 style="font-size: 15px; font-weight: 800; margin: 8px 0 12px; padding-top: 12px; border-top: 1px solid var(--border-light);">🕌 Prayer Time Configuration</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 6px;">Latitude</label>
+                    <input type="number" step="0.00000001" name="latitude" value="<?= esc(old('latitude', $item['latitude'] ?? '')) ?>" placeholder="-6.56412300" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;">
+                </div>
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 6px;">Longitude</label>
+                    <input type="number" step="0.00000001" name="longitude" value="<?= esc(old('longitude', $item['longitude'] ?? '')) ?>" placeholder="106.77234500" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;">
+                </div>
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 6px;">Timezone</label>
+                    <input type="text" name="timezone" value="<?= esc(old('timezone', $item['timezone'] ?? 'Asia/Jakarta')) ?>" placeholder="Asia/Jakarta" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;">
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 6px;">Calculation Method</label>
+                    <select name="prayer_calc_method" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;">
+                        <?php $currentCalc = old('prayer_calc_method', $item['prayer_calc_method'] ?? 'KEMENAG'); ?>
+                        <?php foreach (\App\Services\Prayer\PrayerTimeCalculator::availableMethods() as $code => $m): ?>
+                            <option value="<?= esc($code) ?>" <?= $currentCalc === $code ? 'selected' : '' ?>><?= esc($m['label']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 6px;">Asr Method (Madhab)</label>
+                    <select name="prayer_asr_method" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;">
+                        <?php $currentAsr = old('prayer_asr_method', $item['prayer_asr_method'] ?? 'STANDARD'); ?>
+                        <?php foreach (\App\Services\Prayer\PrayerTimeCalculator::availableAsrMethods() as $code => $m): ?>
+                            <option value="<?= esc($code) ?>" <?= $currentAsr === $code ? 'selected' : '' ?>><?= esc($m['label']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 6px;">High Latitude Rule</label>
+                    <select name="prayer_high_lat_rule" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;">
+                        <?php $currentHighLat = old('prayer_high_lat_rule', $item['prayer_high_lat_rule'] ?? 'NONE'); ?>
+                        <?php foreach (\App\Services\Prayer\PrayerTimeCalculator::HIGH_LAT_RULES as $code => $label): ?>
+                            <option value="<?= esc($code) ?>" <?= $currentHighLat === $code ? 'selected' : '' ?>><?= esc($label) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            </div>
             <div style="margin-bottom: 16px;">
                 <label style="display: block; font-weight: 600; margin-bottom: 6px;">Nama Bidang / Departemen *</label>
                 <input type="text" name="name" required value="<?= esc(old('name', $item['name'] ?? '')) ?>" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;">

@@ -2,7 +2,7 @@
 <section class="quick-access-section">
     <div class="container">
         <div class="quick-access-grid">
-            <a href="#sholat" class="quick-card">
+            <a href="<?= site_url('jadwal-shalat') ?>" class="quick-card">
                 <div class="quick-card-icon">⏰</div>
                 <span class="quick-card-label">Jadwal Sholat</span>
             </a>

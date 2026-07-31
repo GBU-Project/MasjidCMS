@@ -1,4 +1,3 @@
-
 <!-- Hero Banner Section UI 2.0 -->
 <?php $sectionSettings = $settings ?? []; ?>
 <section class="hero-banner-section">
@@ -27,13 +26,25 @@
             </div>
         </div>
 
-        <a href="<?= site_url('jadwal-sholat') ?>" class="prayer-hero-card-link">
-        <div class="prayer-hero-card" id="sholat">
-            <?php if (empty($prayerTimes)): ?>
-            <div style="background: red; color: white; padding: 10px; margin-bottom: 10px;">
-                DEBUG: prayerTimes is empty! Count: <?= count($prayerTimes ?? []) ?>
-            </div>
-            <?php endif; ?>
+        <?php
+            $prayerLabels = ['imsak' => 'Imsak', 'fajr' => 'Subuh', 'sunrise' => 'Terbit', 'dhuhr' => 'Dzuhur', 'asr' => 'Ashar', 'maghrib' => 'Maghrib', 'isha' => 'Isya'];
+            $times = $prayerTimes ?? [];
+            $mainFive = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
+
+            // Determine the next upcoming prayer
+            $now = date('H:i');
+            $nextKey = null;
+            if (is_array($times)) {
+                foreach ($mainFive as $key) {
+                    if (!empty($times[$key]) && is_string($times[$key]) && $times[$key] > $now) {
+                        $nextKey = $key;
+                        break;
+                    }
+                }
+            }
+            $nextKey = $nextKey ?? $mainFive[0];
+        ?>
+        <a href="<?= site_url('jadwal-shalat') ?>" class="prayer-hero-card" style="text-decoration: none; color: inherit; display: block; cursor: pointer;">
             <div class="prayer-card-head">
                 <div>
                     <span class="prayer-card-label">Jadwal Ibadah Hari Ini</span>
@@ -44,61 +55,20 @@
                 </div>
             </div>
 
-            <?php
-            $prayerTimes = $prayerTimes ?? [];
-            $now = time();
-            $nextPrayer = null;
-            $nextPrayerTime = null;
-            $prayerIcons = [
-                'Subuh'   => '🌅',
-                'Dzuhur'  => '☀️',
-                'Ashar'   => '🌤️',
-                'Maghrib' => '🌇',
-                'Isya'    => '🌙',
-            ];
-
-            // Find next prayer
-            foreach ($prayerTimes as $pt) {
-                $ptTime = strtotime(substr($pt['prayer_time'] ?? '00:00:00', 0, 5));
-                if ($ptTime === false) continue;
-                // Adjust to today
-                $ptToday = strtotime(date('Y-m-d') . ' ' . substr($pt['prayer_time'] ?? '00:00:00', 0, 5));
-                if ($ptToday > $now) {
-                    $nextPrayer = $pt;
-                    $nextPrayerTime = $ptToday;
-                    break;
-                }
-            }
-            // If no next prayer found, first prayer tomorrow
-            if (!$nextPrayer && !empty($prayerTimes)) {
-                $nextPrayer = $prayerTimes[0];
-                $nextPrayerTime = strtotime('+1 day ' . date('Y-m-d') . ' ' . substr($prayerTimes[0]['prayer_time'] ?? '00:00:00', 0, 5));
-            }
-            ?>
-
-            <?php if ($nextPrayer): ?>
             <div class="prayer-card-highlight">
                 <span>Waktu Sholat Berikutnya</span>
-                <h2><?= esc($nextPrayer['prayer_name']) ?> — <?= esc(substr($nextPrayer['prayer_time'] ?? '00:00', 0, 5)) ?> WIB</h2>
-                <?php if ($nextPrayerTime): ?>
-                <span class="prayer-card-note">⏱ <?= gmdate('H:i:s', max(0, $nextPrayerTime - $now)) ?> menuju Adzan</span>
-                <?php endif; ?>
+                <h2><?= esc(strtoupper($prayerLabels[$nextKey] ?? 'SUBUH')) ?> — <?= esc(is_array($times) && isset($times[$nextKey]) ? $times[$nextKey] : '--:--') ?> WIB</h2>
+                <span class="prayer-card-note">Lihat jadwal lengkap &amp; bulanan →</span>
             </div>
-            <?php endif; ?>
 
             <div class="prayer-time-grid">
-                <?php foreach ($prayerTimes as $pt):
-                    $ptName = $pt['prayer_name'] ?? '';
-                    $ptTime = substr($pt['prayer_time'] ?? '00:00:00', 0, 5);
-                    $isActive = ($nextPrayer && $nextPrayer['prayer_name'] === $ptName);
-                ?>
-                <div class="prayer-time-box <?= $isActive ? 'active' : '' ?>">
-                    <div><?= esc($ptName) ?></div>
-                    <div><?= esc($ptTime) ?></div>
-                </div>
+                <?php foreach ($mainFive as $key): ?>
+                    <div class="prayer-time-box <?= $key === $nextKey ? 'active' : '' ?>">
+                        <div><?= esc($prayerLabels[$key]) ?></div>
+                        <div><?= esc(is_array($times) && isset($times[$key]) ? $times[$key] : '--:--') ?></div>
+                    </div>
                 <?php endforeach; ?>
             </div>
-        </div>
         </a>
     </div>
 </section>
