@@ -75,6 +75,6 @@
 
     <div class="container" style="border-top: 1px solid var(--slate-800); padding-top: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; font-size: 12.5px;">
         <span>&copy; <?= date('Y') ?> <?= esc($masjid['name'] ?? 'MasjidCMS') ?>. All Rights Reserved.</span>
-        <span>Powered by <strong style="color: #fff;">MasjidCMS</strong></span>
+        <span>Powered by <strong style="color: #fff;">GBU-Project</strong></span>
     </div>
 </footer>
