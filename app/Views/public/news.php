@@ -8,7 +8,7 @@
 
     <!-- Schedule Section: Kajian Syariah -->
     <div style="margin-bottom: 32px;">
-        <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 16px; color: var(--primary-800);">🕌 Jadwal Kajian Rutin & Tematik</h2>
+        <h2 id="kajian" style="font-size: 20px; font-weight: 700; margin-bottom: 16px; color: var(--primary-800); scroll-margin-top: 100px;">🕌 Jadwal Kajian Rutin & Tematik</h2>
         <div class="card-grid">
             <?php if (empty($kajianList)): ?>
                 <div class="portal-card" style="grid-column: 1 / -1; text-align: center; color: var(--text-muted);">

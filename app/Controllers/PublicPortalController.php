@@ -464,16 +464,94 @@ class PublicPortalController extends BaseController
         return view('public/contact', ['activePage' => 'contact', 'masjid' => $this->resolveMasjidProfile()]);
     }
 
+    /**
+     * TASK-022A: 'Agenda' is a Direktori submenu item in the unified nav,
+     * but only ever existed embedded in the homepage section -- no
+     * standalone listing page existed to link to.
+     */
+    public function agenda(): string
+    {
+        $db = Database::connect();
+        $agendaList = [];
+        if ($db->tableExists('agenda')) {
+            $agendaList = $db->table('agenda')->orderBy('event_date', 'ASC')->get()->getResultArray();
+        }
+
+        return view('public/agenda', [
+            'activePage' => 'agenda',
+            'masjid'     => $this->resolveMasjidProfile(),
+            'agendaList' => $agendaList,
+        ]);
+    }
+
+    /**
+     * TASK-022A: lightweight JSON endpoint powering the Prayer Time header
+     * utility on every public page (fetched client-side so every page gets
+     * it "for free" via the shared layout, without every controller action
+     * needing to compute and pass prayer times individually).
+     */
+    public function prayerTimesJson()
+    {
+        $masjid = $this->resolveMasjidProfile();
+        $times = $this->computePrayerTimesForMasjid($masjid, date('Y-m-d'));
+
+        return $this->response->setJSON([
+            'times'    => $times,
+            'masjid'   => $masjid['name'] ?? null,
+            'date'     => date('Y-m-d'),
+            'schedule_url' => site_url('jadwal-shalat'),
+        ]);
+    }
+
+    /**
+     * TASK-022A: Search utility in the header. Simple cross-content search
+     * across Berita, Program, and Layanan -- kept intentionally lightweight
+     * (LIKE query, no external search engine dependency).
+     */
+    public function search(): string
+    {
+        $db = Database::connect();
+        $q = trim((string) ($this->request->getGet('q') ?? ''));
+        $results = ['posts' => [], 'programs' => [], 'services' => []];
+
+        if ($q !== '') {
+            if ($db->tableExists('posts')) {
+                $results['posts'] = $db->table('posts')->where('is_published', 1)->like('title', $q)->orderBy('created_at', 'DESC')->limit(10)->get()->getResultArray();
+            }
+            if ($db->tableExists('program_kegiatan')) {
+                $results['programs'] = $db->table('program_kegiatan')->where('status', 'ACTIVE')->like('nama', $q)->limit(10)->get()->getResultArray();
+            }
+            if ($db->tableExists('layanan_masjid')) {
+                $results['services'] = $db->table('layanan_masjid')->where('status', 'ACTIVE')->like('nama', $q)->limit(10)->get()->getResultArray();
+            }
+        }
+
+        return view('public/search', [
+            'activePage' => 'search',
+            'masjid'     => $this->resolveMasjidProfile(),
+            'query'      => $q,
+            'results'    => $results,
+        ]);
+    }
+
     public function gallery(): string
     {
         $db = Database::connect();
         $gallery = [];
+        $type = (string) ($this->request->getGet('type') ?? '');
         try {
             if ($db->tableExists('gallery')) {
                 $builder = $db->table('gallery');
                 if ($db->tableExists('media')) {
-                    $builder->select('gallery.*, media.filepath')
+                    $builder->select('gallery.*, media.filepath, media.mime_type')
                             ->join('media', 'media.id = gallery.media_id', 'left');
+                }
+                if ($type === 'photo') {
+                    $builder->like('media.mime_type', 'image/', 'after');
+                } elseif ($type === 'video') {
+                    $builder->like('media.mime_type', 'video/', 'after');
+                } elseif ($type === 'document') {
+                    $builder->like('media.mime_type', 'application/', 'after');
                 }
                 $gallery = $builder->get()->getResultArray();
             }
@@ -482,9 +560,10 @@ class PublicPortalController extends BaseController
         }
 
         return view('public/gallery', [
-            'activePage' => 'gallery',
-            'masjid'     => $this->resolveMasjidProfile(),
-            'gallery'    => $gallery,
+            'activePage'  => 'gallery',
+            'masjid'      => $this->resolveMasjidProfile(),
+            'gallery'     => $gallery,
+            'currentType' => $type,
         ]);
     }
 

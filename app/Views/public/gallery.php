@@ -5,7 +5,14 @@
 <?= $this->section('content') ?>
 <div class="portal-container" style="max-width: 1000px;">
     <h1 style="font-size: 28px; font-weight: 800; margin-bottom: 8px;">Galeri & Dokumentasi Kegiatan</h1>
-    <p style="color: var(--text-muted); margin-bottom: 24px;">Dokumentasi foto kegiatan ibadah, kajian, dan sosial di Masjid.</p>
+    <p style="color: var(--text-muted); margin-bottom: 16px;">Dokumentasi foto kegiatan ibadah, kajian, dan sosial di Masjid.</p>
+
+    <div style="display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap;">
+        <a href="<?= site_url('galeri') ?>" class="btn-ui2 <?= empty($currentType) ? 'btn-primary-ui2' : 'btn-secondary-ui2' ?>" style="padding: 6px 16px; font-size: 13px;">Semua</a>
+        <a href="<?= site_url('galeri?type=photo') ?>" class="btn-ui2 <?= ($currentType ?? '') === 'photo' ? 'btn-primary-ui2' : 'btn-secondary-ui2' ?>" style="padding: 6px 16px; font-size: 13px;">📷 Foto</a>
+        <a href="<?= site_url('galeri?type=video') ?>" class="btn-ui2 <?= ($currentType ?? '') === 'video' ? 'btn-primary-ui2' : 'btn-secondary-ui2' ?>" style="padding: 6px 16px; font-size: 13px;">🎬 Video</a>
+        <a href="<?= site_url('galeri?type=document') ?>" class="btn-ui2 <?= ($currentType ?? '') === 'document' ? 'btn-primary-ui2' : 'btn-secondary-ui2' ?>" style="padding: 6px 16px; font-size: 13px;">📄 Dokumen</a>
+    </div>
 
     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
         <?php if (empty($gallery)): ?>

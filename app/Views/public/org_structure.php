@@ -13,7 +13,7 @@
 
 <div style="max-width: 1100px; margin: 40px auto; padding: 0 24px;">
     <!-- Bidang Departemen Grid -->
-    <h2 style="font-size: 22px; font-weight: 700; margin-bottom: 20px; text-align: center;">🏛️ Bidang & Departemen Kerja</h2>
+    <h2 id="bidang" style="font-size: 22px; font-weight: 700; margin-bottom: 20px; text-align: center; scroll-margin-top: 100px;">🏛️ Bidang & Departemen Kerja</h2>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 48px;">
         <?php foreach ($bidangList as $b): ?>
             <div class="panel-card" style="padding: 20px; border-radius: 12px; border-left: 4px solid var(--primary-600);">
@@ -25,7 +25,7 @@
     </div>
 
     <!-- Pengurus Card Grid -->
-    <h2 style="font-size: 22px; font-weight: 700; margin-bottom: 20px; text-align: center;">👔 Susunan Pengurus DKM</h2>
+    <h2 id="struktur-dkm" style="font-size: 22px; font-weight: 700; margin-bottom: 20px; text-align: center; scroll-margin-top: 100px;">👔 Susunan Pengurus DKM</h2>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
         <?php foreach ($pengurusList as $p): ?>
             <div class="panel-card" style="padding: 24px; border-radius: 12px; text-align: center; box-shadow: var(--shadow-sm);">

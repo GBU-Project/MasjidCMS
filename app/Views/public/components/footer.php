@@ -1,57 +1,80 @@
-<!-- Rich Footer Component UI 2.0 -->
-<footer style="background: var(--slate-900); color: var(--slate-400); border-top: 1px solid var(--slate-800); padding: 64px 0 32px; font-size: 14px;">
-    <div class="container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 40px; margin-bottom: 48px;">
-        <div>
-            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-                <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: var(--emerald-700); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 20px;">🕌</div>
-                <span style="font-size: 20px; font-weight: 800; color: #fff; font-family: var(--font-heading);"><?= esc($masjid['name'] ?? 'MasjidCMS') ?></span>
+<!-- Unified Public Footer UI 2.0 (TASK-022A) -->
+<footer class="site-footer-v2">
+    <div class="container footer-v2-grid">
+        <div class="footer-v2-brand">
+            <div class="footer-v2-logo">
+                <?php if (!empty($masjid['logo_url'])): ?>
+                    <img src="<?= esc($masjid['logo_url']) ?>" alt="<?= esc($masjid['name'] ?? 'Logo Masjid') ?>">
+                <?php else: ?>
+                    <span class="footer-v2-logo-fallback">🕌</span>
+                <?php endif; ?>
+                <span class="footer-v2-logo-text"><?= esc($masjid['name'] ?? 'MasjidCMS') ?></span>
             </div>
-            <p style="line-height: 1.6; margin-bottom: 20px;">
-                <?= esc($masjid['address'] ?? 'Pusat ibadah dan pelayanan jamaah terpadu.') ?>
+            <p class="footer-v2-desc">
+                <?= esc($masjid['history_text'] ?? $masjid['address'] ?? 'Pusat ibadah dan pelayanan jamaah terpadu.') ?>
             </p>
-            <div style="color: var(--emerald-500); font-weight: 600;">
-                📍 <?= esc($masjid['city'] ?? 'Kota') ?>, <?= esc($masjid['province'] ?? 'Provinsi') ?>
-            </div>
+            <?php
+                $socialLinks = [
+                    'facebook_url'  => ['icon' => '📘', 'label' => 'Facebook'],
+                    'instagram_url' => ['icon' => '📷', 'label' => 'Instagram'],
+                    'youtube_url'   => ['icon' => '📺', 'label' => 'YouTube'],
+                ];
+                $hasSocial = false;
+                foreach ($socialLinks as $field => $meta) {
+                    if (!empty($masjid[$field])) { $hasSocial = true; break; }
+                }
+            ?>
+            <?php if ($hasSocial): ?>
+                <div class="footer-v2-social">
+                    <?php foreach ($socialLinks as $field => $meta): ?>
+                        <?php if (!empty($masjid[$field])): ?>
+                            <a href="<?= esc($masjid[$field]) ?>" target="_blank" rel="noopener" title="<?= esc($meta['label']) ?>"><?= $meta['icon'] ?></a>
+                        <?php endif; ?>
+                    <?php endforeach; ?>
+                    <?php if (!empty($masjid['whatsapp_number'])): ?>
+                        <a href="https://wa.me/<?= esc(preg_replace('/[^0-9]/', '', $masjid['whatsapp_number'])) ?>" target="_blank" rel="noopener" title="WhatsApp">💬</a>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
         </div>
 
-        <div>
-            <h4 style="color: #fff; font-size: 16px; margin-bottom: 16px;">Navigasi Cepat</h4>
-            <ul style="list-style: none; display: flex; flex-direction: column; gap: 10px;">
-                <li><a href="<?= site_url('/') ?>" style="color: var(--slate-400); text-decoration: none;">Beranda Portal</a></li>
-                <li><a href="<?= site_url('profil') ?>" style="color: var(--slate-400); text-decoration: none;">Profil & Sejarah</a></li>
-                <li><a href="<?= site_url('berita') ?>" style="color: var(--slate-400); text-decoration: none;">Berita & Warta</a></li>
-                <li><a href="<?= site_url('program') ?>" style="color: var(--slate-400); text-decoration: none;">Program DKM</a></li>
-                <li><a href="<?= site_url('layanan') ?>" style="color: var(--slate-400); text-decoration: none;">Layanan Jamaah</a></li>
+        <div class="footer-v2-col">
+            <h4>Tautan Cepat</h4>
+            <ul>
+                <li><a href="<?= site_url('/') ?>">Beranda</a></li>
+                <li><a href="<?= site_url('profil') ?>">Profil Masjid</a></li>
+                <li><a href="<?= site_url('berita') ?>">Berita</a></li>
+                <li><a href="<?= site_url('agenda') ?>">Agenda</a></li>
+                <li><a href="<?= site_url('program') ?>">Program</a></li>
+                <li><a href="<?= site_url('galeri') ?>">Galeri</a></li>
             </ul>
         </div>
 
-        <div>
-            <h4 style="color: #fff; font-size: 16px; margin-bottom: 16px;">Transparansi & Donasi</h4>
-            <ul style="list-style: none; display: flex; flex-direction: column; gap: 10px;">
-                <li><a href="<?= site_url('donasi') ?>" style="color: var(--slate-400); text-decoration: none;">Infaq & Sedekah</a></li>
-                <li><a href="<?= site_url('transparansi') ?>" style="color: var(--slate-400); text-decoration: none;">Laporan Keuangan Realtime</a></li>
-                <li><a href="<?= site_url('galeri') ?>" style="color: var(--slate-400); text-decoration: none;">Galeri Dokumentasi</a></li>
-                <li><a href="<?= site_url('admin/dashboard') ?>" style="color: var(--slate-400); text-decoration: none;">Login Operator DKM</a></li>
+        <div class="footer-v2-col">
+            <h4>Layanan</h4>
+            <ul>
+                <li><a href="<?= site_url('layanan') ?>">Ambulans</a></li>
+                <li><a href="<?= site_url('layanan') ?>">Layanan Jenazah</a></li>
+                <li><a href="<?= site_url('layanan') ?>">Pernikahan</a></li>
+                <li><a href="<?= site_url('layanan') ?>">Mualaf</a></li>
+                <li><a href="<?= site_url('layanan') ?>">ZISWAF</a></li>
+                <li><a href="<?= site_url('donasi') ?>">Donasi Online</a></li>
             </ul>
         </div>
 
-        <div>
-            <h4 style="color: #fff; font-size: 16px; margin-bottom: 16px;">Hubungi DKM</h4>
-            <div style="display: flex; flex-direction: column; gap: 12px;">
-                <div>📞 <strong>Telepon:</strong> <?= esc($masjid['phone'] ?? '08xxxxxxxxxx') ?></div>
-                <div>📧 <strong>Email:</strong> <?= esc($masjid['email'] ?? 'info@masjid.id') ?></div>
-                <div>🌐 <strong>Website:</strong> <?= base_url() ?></div>
-            </div>
+        <div class="footer-v2-col">
+            <h4>Kontak</h4>
+            <ul class="footer-v2-contact">
+                <li>📍 <?= esc(trim(($masjid['address'] ?? '') . (!empty($masjid['city']) ? ', ' . $masjid['city'] : '')) ?: 'Alamat belum diisi') ?></li>
+                <?php if (!empty($masjid['phone'])): ?><li>📞 <?= esc($masjid['phone']) ?></li><?php endif; ?>
+                <?php if (!empty($masjid['email'])): ?><li>📧 <?= esc($masjid['email']) ?></li><?php endif; ?>
+            </ul>
+            <a href="<?= site_url('jadwal-shalat') ?>" class="footer-v2-prayer-shortcut">🕌 Lihat Jadwal Sholat →</a>
         </div>
     </div>
 
-    <div class="container" style="border-top: 1px solid var(--slate-800); padding-top: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; font-size: 13px;">
-        <div>
-            © <?= date('Y') ?> <strong><?= esc($masjid['name'] ?? 'MasjidCMS') ?></strong>. All Rights Reserved. Built with <span style="color: var(--emerald-500);">Digital Mosque Platform</span>.
-        </div>
-        <div style="display: flex; gap: 16px;">
-            <a href="<?= site_url('profil') ?>" style="color: var(--slate-400);">Privacy Policy</a>
-            <a href="<?= site_url('kontak') ?>" style="color: var(--slate-400);">Contact Support</a>
-        </div>
+    <div class="container footer-v2-bottom">
+        <span>&copy; <?= date('Y') ?> <?= esc($masjid['name'] ?? 'MasjidCMS') ?>. All Rights Reserved.</span>
+        <span class="footer-v2-powered">Powered by <strong>MasjidCMS</strong></span>
     </div>
 </footer>

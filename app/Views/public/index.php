@@ -4,8 +4,7 @@
 
 <?= $this->section('content') ?>
 
-<!-- 1. Header & Navigation -->
-<?= view('public/components/header', ['activePage' => 'home', 'masjid' => $masjid, 'settings' => $settings ?? []]) ?>
+<!-- Header is now rendered once by layouts/public.php for every page (TASK-022A) -->
 
 <!-- 2. Hero Banner Section -->
 <?= view('public/components/hero', ['masjid' => $masjid, 'prayerTimes' => $prayerTimes ?? [], 'prayerCity' => $prayerCity ?? 'Kota Masjid', 'donationSettings' => $donationSettings, 'settings' => $settings ?? []]) ?>
@@ -42,7 +41,6 @@ foreach ($sectionOrder as $sectionKey) {
 }
 ?>
 
-<!-- Rich Footer -->
-<?= view('public/components/footer', ['masjid' => $masjid]) ?>
+<!-- Footer is now rendered once by layouts/public.php for every page (TASK-022A) -->
 
 <?= $this->endSection() ?>

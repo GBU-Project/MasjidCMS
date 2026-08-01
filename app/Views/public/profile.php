@@ -13,10 +13,10 @@ $missionPoints = $missionText !== '' ? array_values(array_filter(array_map('trim
 <div class="portal-container" style="max-width: 800px;">
     <h1 style="font-size: 28px; font-weight: 800; margin-bottom: 16px;">Profil & Sejarah Masjid</h1>
     <div style="background: white; border: 1px solid var(--border-light); border-radius: var(--radius-lg); padding: 32px; margin-bottom: 32px;">
-        <h2 style="font-size: 20px; font-weight: 700; color: var(--primary-700); margin-bottom: 12px;">Sejarah Singkat</h2>
+        <h2 id="sejarah" style="font-size: 20px; font-weight: 700; color: var(--primary-700); margin-bottom: 12px; scroll-margin-top: 100px;">Sejarah Singkat</h2>
         <p style="margin-bottom: 16px; white-space: pre-line;"><?= esc($historyText) ?></p>
 
-        <h2 style="font-size: 20px; font-weight: 700; color: var(--primary-700); margin-top: 24px; margin-bottom: 12px;">Visi & Misi</h2>
+        <h2 id="visi-misi" style="font-size: 20px; font-weight: 700; color: var(--primary-700); margin-top: 24px; margin-bottom: 12px; scroll-margin-top: 100px;">Visi & Misi</h2>
         <p style="font-weight: 600;">Visi:</p>
         <p style="margin-bottom: 12px; white-space: pre-line;"><?= esc($visionText) ?></p>
 
