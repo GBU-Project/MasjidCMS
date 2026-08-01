@@ -23,8 +23,7 @@ class AdminHomepageManagerController extends BaseController
         }
 
         // Default section order
-        $defaultOrder = ['hero', 'prayer', 'profile', 'program', 'layanan', 'pengurus', 'bidang', 'kajian', 'agenda', 'gallery', 'donation'];
-        $sectionOrder = $defaultOrder;
+        $defaultOrder = ['hero', 'prayer', 'profile', 'program', 'layanan', 'pengurus', 'bidang', 'kajian', 'agenda', 'berita', 'gallery', 'financial', 'donation'];
         if (!empty($settings['homepage_section_order'])) {
             $decoded = json_decode($settings['homepage_section_order'], true);
             if (is_array($decoded) && count($decoded) > 0) {
@@ -41,6 +40,8 @@ class AdminHomepageManagerController extends BaseController
             'layanan' => ['name' => 'Katalog Layanan Masjid', 'icon' => '🤝', 'table' => 'layanan_masjid', 'setting_key' => 'show_layanan_section', 'limit_key' => 'limit_layanan'],
             'pengurus' => ['name' => 'Pengurus DKM Masjid', 'icon' => '👔', 'table' => 'pengurus', 'setting_key' => 'show_pengurus_section', 'limit_key' => 'limit_pengurus'],
             'bidang' => ['name' => 'Bidang / Departemen', 'icon' => '🏛️', 'table' => 'bidang', 'setting_key' => 'show_bidang_section', 'limit_key' => 'limit_bidang'],
+            'berita' => ['name' => 'Warta Jamaah (Berita)', 'icon' => '📰', 'table' => 'posts', 'setting_key' => 'show_berita_section', 'limit_key' => 'limit_kajian'],
+            'financial' => ['name' => 'Transparansi Keuangan', 'icon' => '💰', 'table' => 'financial_accounts', 'setting_key' => 'show_financial_section', 'limit_key' => null],
             'kajian' => ['name' => 'Jadwal Warta & Kajian', 'icon' => '📖', 'table' => 'kajian', 'setting_key' => 'show_kajian_section', 'limit_key' => 'limit_kajian'],
             'agenda' => ['name' => 'Agenda & Jadwal Kegiatan', 'icon' => '📅', 'table' => 'agenda', 'setting_key' => 'show_agenda_section', 'limit_key' => 'limit_agenda'],
             'gallery' => ['name' => 'Galeri Foto & Dokumentasi', 'icon' => '🖼️', 'table' => 'gallery', 'setting_key' => 'show_gallery_section', 'limit_key' => 'limit_gallery'],
@@ -209,7 +210,7 @@ class AdminHomepageManagerController extends BaseController
 
     public function resetDefault()
     {
-        $defaultOrder = ['hero', 'prayer', 'profile', 'program', 'layanan', 'pengurus', 'bidang', 'kajian', 'agenda', 'gallery', 'donation'];
+        $defaultOrder = ['hero', 'prayer', 'profile', 'program', 'layanan', 'pengurus', 'bidang', 'kajian', 'agenda', 'berita', 'gallery', 'financial', 'donation'];
         $this->saveSettingKey('homepage_section_order', json_encode($defaultOrder));
 
         $defaultLimits = [

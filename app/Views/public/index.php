@@ -20,13 +20,15 @@
 // public block yet, so it is intentionally skipped here.
 $visibility = $sectionVisibility ?? [];
 $sectionRenderers = [
-    'program'  => fn () => view('public/components/program_section', ['programList' => $activePrograms, 'settings' => $settings ?? []]),
-    'layanan'  => fn () => view('public/components/layanan_section', ['layananList' => $activeServices, 'settings' => $settings ?? []]),
-    'pengurus' => fn () => view('public/components/pengurus_section', ['pengurusList' => $pengurusList, 'settings' => $settings ?? []]),
-    'bidang'   => fn () => view('public/components/bidang_section', ['bidangList' => $bidangList ?? [], 'settings' => $settings ?? []]),
-    'kajian'   => fn () => view('public/components/kajian_section', ['kajianList' => $kajianList, 'settings' => $settings ?? []]),
-    'agenda'   => fn () => view('public/components/agenda_section', ['agendaList' => $agendaList, 'settings' => $settings ?? []]),
-    'donation' => fn () => view('public/components/donation_section', ['donationSettings' => $donationSettings, 'masjid' => $masjid, 'settings' => $settings ?? []]),
+    'program'   => fn () => view('public/components/program_section', ['programList' => $activePrograms, 'settings' => $settings ?? []]),
+    'layanan'   => fn () => view('public/components/layanan_section', ['layananList' => $activeServices, 'settings' => $settings ?? []]),
+    'pengurus'  => fn () => view('public/components/pengurus_section', ['pengurusList' => $pengurusList, 'settings' => $settings ?? []]),
+    'bidang'    => fn () => view('public/components/bidang_section', ['bidangList' => $bidangList ?? [], 'settings' => $settings ?? []]),
+    'kajian'    => fn () => view('public/components/kajian_section', ['kajianList' => $kajianList, 'settings' => $settings ?? []]),
+    'agenda'    => fn () => view('public/components/agenda_section', ['agendaList' => $agendaList, 'settings' => $settings ?? []]),
+    'berita'    => fn () => view('public/components/berita_section', ['postsList' => $latestPosts, 'settings' => $settings ?? []]),
+    'financial' => fn () => view('public/components/financial_section', ['financialSummary' => $financialSummary, 'programCount' => count($activePrograms), 'settings' => $settings ?? []]),
+    'donation'  => fn () => view('public/components/donation_section', ['donationSettings' => $donationSettings, 'masjid' => $masjid, 'settings' => $settings ?? []]),
 ];
 
 foreach ($sectionOrder as $sectionKey) {
@@ -39,10 +41,6 @@ foreach ($sectionOrder as $sectionKey) {
     echo $sectionRenderers[$sectionKey]();
 }
 ?>
-
-<!-- Berita & Transparansi Keuangan are always shown; not yet part of Homepage Manager's section list -->
-<?= view('public/components/berita_section', ['postsList' => $latestPosts, 'settings' => $settings ?? []]) ?>
-<?= view('public/components/financial_section', ['financialSummary' => $financialSummary, 'programCount' => count($activePrograms), 'settings' => $settings ?? []]) ?>
 
 <!-- Rich Footer -->
 <?= view('public/components/footer', ['masjid' => $masjid]) ?>

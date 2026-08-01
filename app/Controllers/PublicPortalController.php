@@ -66,7 +66,7 @@ class PublicPortalController extends BaseController
             }
         }
 
-        $defaultOrder = ['hero', 'prayer', 'profile', 'program', 'layanan', 'pengurus', 'bidang', 'kajian', 'gallery', 'donation'];
+        $defaultOrder = ['hero', 'prayer', 'profile', 'program', 'layanan', 'pengurus', 'bidang', 'kajian', 'berita', 'gallery', 'financial', 'donation'];
         $sectionOrder = $defaultOrder;
         if (!empty($settings['homepage_section_order'])) {
             $decoded = json_decode($settings['homepage_section_order'], true);
@@ -77,15 +77,17 @@ class PublicPortalController extends BaseController
 
         // Homepage Manager is the single source of truth for section visibility.
         $sectionVisibilityKeys = [
-            'profile'  => 'show_profile_section',
-            'program'  => 'show_program_section',
-            'layanan'  => 'show_layanan_section',
-            'pengurus' => 'show_pengurus_section',
-            'bidang'   => 'show_bidang_section',
-            'kajian'   => 'show_kajian_section',
-            'agenda'   => 'show_agenda_section',
-            'gallery'  => 'show_gallery_section',
-            'donation' => 'show_donation_section',
+            'profile'   => 'show_profile_section',
+            'program'   => 'show_program_section',
+            'layanan'   => 'show_layanan_section',
+            'pengurus'  => 'show_pengurus_section',
+            'bidang'    => 'show_bidang_section',
+            'kajian'    => 'show_kajian_section',
+            'agenda'    => 'show_agenda_section',
+            'berita'    => 'show_berita_section',
+            'gallery'   => 'show_gallery_section',
+            'financial' => 'show_financial_section',
+            'donation'  => 'show_donation_section',
         ];
         $sectionVisibility = [];
         foreach ($sectionVisibilityKeys as $sectionKey => $settingKey) {

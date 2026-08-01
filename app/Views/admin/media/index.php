@@ -17,7 +17,7 @@
         <button type="button" class="btn btn-primary" onclick="document.getElementById('standaloneFileInput').click()" style="padding: 10px 20px; font-weight: 700;">
             📤 Unggah Media Baru
         </button>
-        <input type="file" id="standaloneFileInput" multiple accept="image/*,.pdf" style="display: none;" onchange="document.getElementById('standaloneUploadForm').submit()">
+        <input type="file" id="standaloneFileInput" name="files[]" multiple accept="image/*,.pdf" style="display: none;" onchange="document.getElementById('standaloneUploadForm').submit()">
     </div>
 </div>
 
@@ -42,6 +42,46 @@
         <p style="font-size: 13px; color: var(--text-muted); margin: 0;">Mendukung multi-file upload otomatis (Maksimal 10MB per file: JPG, PNG, WEBP, GIF, SVG, PDF)</p>
     </div>
 </form>
+
+<script>
+    // Bug fix: #mediaDropzone previously had no real drag-and-drop wiring at
+    // all -- it only worked via onclick (browse dialog). Dragging a file
+    // onto the dashed box silently did nothing despite the label promising
+    // "Seret (Drag & Drop)". This wires the actual HTML5 DnD events onto the
+    // same hidden file input + form used by the click-to-browse path.
+    (function () {
+        var dropzone = document.getElementById('mediaDropzone');
+        var fileInput = document.getElementById('standaloneFileInput');
+        var uploadForm = document.getElementById('standaloneUploadForm');
+        if (!dropzone || !fileInput || !uploadForm) return;
+
+        ['dragenter', 'dragover'].forEach(function (evtName) {
+            dropzone.addEventListener(evtName, function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                dropzone.style.background = '#e0f2e9';
+                dropzone.style.borderColor = 'var(--primary-700, #15803d)';
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(function (evtName) {
+            dropzone.addEventListener(evtName, function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                dropzone.style.background = 'var(--bg-surface, #f8fafc)';
+                dropzone.style.borderColor = 'var(--primary-600, #16a34a)';
+            });
+        });
+
+        dropzone.addEventListener('drop', function (e) {
+            var dropped = e.dataTransfer && e.dataTransfer.files;
+            if (dropped && dropped.length > 0) {
+                fileInput.files = dropped;
+                uploadForm.submit();
+            }
+        });
+    })();
+</script>
 
 <!-- Filter & Search Toolbar -->
 <div class="panel-card" style="padding: 16px 20px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">

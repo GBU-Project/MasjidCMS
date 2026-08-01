@@ -84,7 +84,13 @@ php_errors.log
 #-------------------------
 # Composer
 #-------------------------
-vendor/
+# Anchored to repo root only -- an unanchored 'vendor/' here previously also
+# matched public/assets/vendor/ (self-hosted TinyMCE), silently excluding it
+# from every commit. That's why TinyMCE never actually loaded: the <script>
+# tag in layouts/admin.php pointed at a file that was never committed, so
+# window.tinymce was always undefined and every "tinymce-standard" textarea
+# silently fell back to a plain, small, unstyled <textarea>.
+/vendor/
 
 #-------------------------
 # IDE / Development Files
