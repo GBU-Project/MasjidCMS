@@ -39,14 +39,14 @@
                 </div>
             <?php else: ?>
                 <?php foreach ($posts as $p): ?>
-                    <div class="portal-card">
+                    <a href="<?= site_url('berita/' . ($p['slug'] ?? '')) ?>" class="portal-card" style="text-decoration: none; color: inherit; display: block;">
                         <span style="font-size: 12px; font-weight: 600; color: var(--primary-600); text-transform: uppercase;">WARTA MASJID</span>
                         <h3 style="font-size: 18px; margin: 8px 0;"><?= esc($p['title']) ?></h3>
                         <p style="font-size: 14px; color: var(--text-muted);"><?= esc(substr($p['content'], 0, 140)) ?>...</p>
                         <div style="font-size: 12px; color: var(--text-subtle); margin-top: 12px;">
-                            📅 <?= esc(substr($p['created_at'], 0, 10)) ?> &bull; 🏷️ Slug: <?= esc($p['slug']) ?>
+                            📅 <?= esc(substr($p['created_at'], 0, 10)) ?> &bull; Baca selengkapnya →
                         </div>
-                    </div>
+                    </a>
                 <?php endforeach; ?>
             <?php endif; ?>
         </div>

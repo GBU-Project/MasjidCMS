@@ -44,6 +44,9 @@
 <?php endif; ?>
 
 <?php if ($activeTab === 'coa'): ?>
+    <div style="margin-bottom: 12px;">
+        <a href="<?= site_url('admin/financial/coa/export') ?>" class="btn btn-secondary" style="padding: 6px 14px; font-size: 12px;">📤 Export COA (CSV)</a>
+    </div>
     <div class="panel-card" style="padding: 20px; margin-bottom: 20px; max-width: 600px;">
         <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 12px;">+ Tambah Akun COA Baru</h4>
         <form action="<?= site_url('admin/financial/coa/store') ?>" method="POST" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
@@ -74,6 +77,9 @@
     </div>
 
 <?php elseif ($activeTab === 'budget'): ?>
+    <div style="margin-bottom: 12px;">
+        <a href="<?= site_url('admin/financial/budget/export') ?>" class="btn btn-secondary" style="padding: 6px 14px; font-size: 12px;">📤 Export Budget/RAB (CSV)</a>
+    </div>
     <div class="panel-card" style="padding: 20px; margin-bottom: 20px; max-width: 600px;">
         <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 12px;">+ Tambah Alokasi Budget / RAB</h4>
         <form action="<?= site_url('admin/financial/budget/store') ?>" method="POST" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
@@ -93,6 +99,9 @@
     </div>
 
 <?php elseif ($activeTab === 'periods'): ?>
+    <div style="margin-bottom: 12px;">
+        <a href="<?= site_url('admin/financial/periods/export') ?>" class="btn btn-secondary" style="padding: 6px 14px; font-size: 12px;">📤 Export Periode (CSV)</a>
+    </div>
     <div class="panel-card" style="padding: 20px; margin-bottom: 20px; max-width: 650px;">
         <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 12px;">+ Tambah Periode Akuntansi Baru</h4>
         <form action="<?= site_url('admin/financial/periods/store') ?>" method="POST" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
@@ -120,6 +129,9 @@
     </div>
 
 <?php elseif ($activeTab === 'journal'): ?>
+    <div style="margin-bottom: 12px;">
+        <a href="<?= site_url('admin/financial/journal/export') ?>" class="btn btn-secondary" style="padding: 6px 14px; font-size: 12px;">📤 Export Jurnal (CSV)</a>
+    </div>
     <div class="panel-card" style="padding: 20px; margin-bottom: 20px; max-width: 600px;">
         <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 12px;">+ Input Catatan Jurnal Manual</h4>
         <form action="<?= site_url('admin/financial/journal/store') ?>" method="POST" style="display: flex; flex-direction: column; gap: 12px;">

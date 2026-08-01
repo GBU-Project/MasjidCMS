@@ -24,12 +24,18 @@ class AdminHomepageManagerController extends BaseController
 
         // Default section order
         $defaultOrder = ['hero', 'prayer', 'profile', 'program', 'layanan', 'pengurus', 'bidang', 'kajian', 'agenda', 'berita', 'gallery', 'financial', 'donation'];
+        $sectionOrder = $defaultOrder;
         if (!empty($settings['homepage_section_order'])) {
             $decoded = json_decode($settings['homepage_section_order'], true);
             if (is_array($decoded) && count($decoded) > 0) {
                 $sectionOrder = $decoded;
             }
         }
+        // Same bug/fix as PublicPortalController::index(): a site that saved
+        // homepage_section_order before a section (e.g. berita/financial)
+        // existed in code would never see it here either, so it couldn't
+        // even be dragged into the visible list from the admin UI.
+        $sectionOrder = array_values(array_unique(array_merge($sectionOrder, $defaultOrder)));
 
         // Section Metadata Definition
         $sectionMeta = [

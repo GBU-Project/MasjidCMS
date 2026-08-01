@@ -22,7 +22,7 @@
                             </div>
                             <h3><?= esc($post['title'] ?? 'Judul Berita') ?></h3>
                             <p><?= esc(strip_tags($post['content'] ?? '')) ?></p>
-                            <a href="<?= site_url('berita') ?>" class="news-link">Baca Artikel →</a>
+                            <a href="<?= site_url('berita/' . ($post['slug'] ?? '')) ?>" class="news-link">Baca Artikel →</a>
                         </div>
                     </article>
                 <?php endforeach; ?>

@@ -74,6 +74,15 @@ class PublicPortalController extends BaseController
                 $sectionOrder = $decoded;
             }
         }
+        // Bug fix: on a site that already saved homepage_section_order
+        // before 'berita'/'financial' (or any future section) existed in
+        // \$defaultOrder, that persisted list simply doesn't contain those
+        // keys -- so they were skipped entirely by the render loop below,
+        // no matter what their show_*_section toggle said. Append any
+        // known section that's missing from the saved order so newly
+        // introduced sections always render (at the end) until an admin
+        // explicitly reorders them.
+        $sectionOrder = array_values(array_unique(array_merge($sectionOrder, $defaultOrder)));
 
         // Homepage Manager is the single source of truth for section visibility.
         $sectionVisibilityKeys = [
@@ -356,6 +365,44 @@ class PublicPortalController extends BaseController
             'masjid'     => $this->resolveMasjidProfile(),
             'posts'      => $posts,
             'kajianList' => $kajianList,
+        ]);
+    }
+
+    /**
+     * Bug fix: berita cards on the homepage and news listing page were not
+     * actually clickable to a full article -- there was no detail page at
+     * all. Every card either wasn't a link (plain <div> on the listing
+     * page) or linked back to the generic listing (site_url('berita') on
+     * every homepage card, regardless of which post). This adds the real
+     * single-article view.
+     */
+    public function newsDetail(string $slug): string
+    {
+        $db = Database::connect();
+        $post = null;
+        if ($db->tableExists('posts')) {
+            $post = $db->table('posts')->where('slug', $slug)->where('is_published', 1)->get()->getRowArray();
+        }
+
+        if (!$post) {
+            return $this->response->setStatusCode(404)->setBody(view('errors/html/error_404'));
+        }
+
+        $relatedPosts = [];
+        if ($db->tableExists('posts')) {
+            $relatedPosts = $db->table('posts')
+                ->where('is_published', 1)
+                ->where('id !=', $post['id'])
+                ->orderBy('created_at', 'DESC')
+                ->limit(3)
+                ->get()->getResultArray();
+        }
+
+        return view('public/news_detail', [
+            'activePage'   => 'news',
+            'masjid'       => $this->resolveMasjidProfile(),
+            'post'         => $post,
+            'relatedPosts' => $relatedPosts,
         ]);
     }
 

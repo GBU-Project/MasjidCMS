@@ -363,6 +363,75 @@ class AdminFinancialWorkspaceController extends BaseController
     }
 
     /**
+     * Bug fix (UAT): only the Transactions tab had an Export button --
+     * COA, Budget, Periode, and Jurnal had none at all, matching the
+     * report "semua fungsi keuangan tidak bisa export". Shared CSV
+     * streaming helper reused by the four new export actions below, same
+     * pattern as export() above.
+     */
+    private function streamCsv(array $rows, array $headers, string $filenamePrefix)
+    {
+        $filename = $filenamePrefix . '-' . date('Ymd-His') . '.csv';
+        $csv = fopen('php://temp', 'w+');
+        fputcsv($csv, $headers);
+        foreach ($rows as $r) {
+            $line = [];
+            foreach ($headers as $h) {
+                $line[] = $r[$h] ?? '';
+            }
+            fputcsv($csv, $line);
+        }
+        rewind($csv);
+        $content = stream_get_contents($csv);
+        fclose($csv);
+
+        return $this->response
+            ->setHeader('Content-Type', 'text/csv')
+            ->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"')
+            ->setBody($content);
+    }
+
+    public function exportCoa()
+    {
+        $db = Database::connect();
+        $rows = $db->tableExists('coa_accounts')
+            ? $db->table('coa_accounts')->orderBy('account_code', 'ASC')->get()->getResultArray()
+            : [];
+
+        return $this->streamCsv($rows, ['account_code', 'name', 'account_type', 'is_active', 'created_at'], 'coa-accounts');
+    }
+
+    public function exportBudget()
+    {
+        $db = Database::connect();
+        $rows = $db->tableExists('budget')
+            ? $db->table('budget')->orderBy('period_id', 'ASC')->get()->getResultArray()
+            : [];
+
+        return $this->streamCsv($rows, ['period_id', 'account_id', 'fund_id', 'allocated_amount', 'used_amount'], 'budget-rab');
+    }
+
+    public function exportPeriods()
+    {
+        $db = Database::connect();
+        $rows = $db->tableExists('financial_periods')
+            ? $db->table('financial_periods')->orderBy('start_date', 'DESC')->get()->getResultArray()
+            : [];
+
+        return $this->streamCsv($rows, ['period_code', 'name', 'start_date', 'end_date', 'is_closed', 'created_at'], 'financial-periods');
+    }
+
+    public function exportJournal()
+    {
+        $db = Database::connect();
+        $rows = $db->tableExists('journal_entries')
+            ? $db->table('journal_entries')->orderBy('entry_date', 'DESC')->get()->getResultArray()
+            : [];
+
+        return $this->streamCsv($rows, ['journal_no', 'transaction_id', 'entry_date', 'description', 'created_at'], 'journal-entries');
+    }
+
+    /**
      * Finding C (UAT RC0-001): Import button was missing entirely from the
      * Financial Workspace. Accepts a CSV upload and creates transactions
      * through the SAME posting path as the manual "Buat Transaksi" form
