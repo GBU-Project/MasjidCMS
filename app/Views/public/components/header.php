@@ -1,126 +1,112 @@
 <!-- Unified Public Header UI 2.0 (TASK-022A) -->
-<?php
-    // Everything here is driven by $masjid (Website Settings + Media
-    // Library, via PublicPortalController::resolveMasjidProfile()) --
-    // no hardcoded mosque name/logo. Nav labels are structural (routes),
-    // not mosque-specific content, so they stay in code like any other
-    // site's fixed navigation.
-    $activePage = $activePage ?? '';
-?>
-<header class="site-header-v2">
-    <div class="container header-v2-inner">
-        <a href="<?= site_url('/') ?>" class="site-logo-v2">
+<?php $activePage = $activePage ?? ''; ?>
+<header class="site-header">
+    <div class="container header-inner">
+        <a href="<?= site_url('/') ?>" class="site-logo">
             <?php if (!empty($masjid['logo_url'])): ?>
-                <img src="<?= esc($masjid['logo_url']) ?>" alt="<?= esc($masjid['name'] ?? 'Logo Masjid') ?>" class="site-logo-v2-img">
+                <img src="<?= esc($masjid['logo_url']) ?>" alt="<?= esc($masjid['name'] ?? 'Logo Masjid') ?>" class="site-logo-img">
             <?php else: ?>
-                <span class="site-logo-v2-fallback">🕌</span>
+                <div class="site-logo-icon">🕌</div>
             <?php endif; ?>
-            <span class="site-logo-v2-text"><?= esc($masjid['name'] ?? 'MasjidCMS') ?></span>
+            <span class="site-logo-text"><?= esc($masjid['name'] ?? 'MasjidCMS') ?></span>
         </a>
 
         <button type="button" class="nav-hamburger-btn" id="navHamburgerBtn" aria-label="Buka menu navigasi" aria-expanded="false">
             <span></span><span></span><span></span>
         </button>
 
-        <nav class="nav-v2" id="navV2">
-            <ul class="nav-v2-list">
-                <li><a href="<?= site_url('/') ?>" class="<?= $activePage === 'home' ? 'active' : '' ?>">Beranda</a></li>
+        <nav class="main-nav" id="navV2">
+            <a href="<?= site_url('/') ?>" class="nav-link <?= $activePage === 'home' ? 'active' : '' ?>">Beranda</a>
 
-                <li class="nav-v2-dropdown">
-                    <button type="button" class="nav-v2-dropdown-trigger <?= in_array($activePage, ['profile', 'org_structure']) ? 'active' : '' ?>">Tentang Kami <span>▾</span></button>
-                    <ul class="nav-v2-dropdown-menu">
-                        <li><a href="<?= site_url('profil') ?>">Profil Masjid</a></li>
-                        <li><a href="<?= site_url('profil#sejarah') ?>">Sejarah</a></li>
-                        <li><a href="<?= site_url('profil#visi-misi') ?>">Visi & Misi</a></li>
-                        <li><a href="<?= site_url('struktur-organisasi#struktur-dkm') ?>">Struktur DKM</a></li>
-                        <li><a href="<?= site_url('struktur-organisasi#bidang') ?>">Bidang</a></li>
-                    </ul>
-                </li>
-
-                <li class="nav-v2-dropdown">
-                    <button type="button" class="nav-v2-dropdown-trigger <?= in_array($activePage, ['news', 'agenda', 'programs']) ? 'active' : '' ?>">Direktori <span>▾</span></button>
-                    <ul class="nav-v2-dropdown-menu">
-                        <li><a href="<?= site_url('berita') ?>">Berita</a></li>
-                        <li><a href="<?= site_url('agenda') ?>">Agenda</a></li>
-                        <li><a href="<?= site_url('berita#kajian') ?>">Jadwal Kajian</a></li>
-                        <li><a href="<?= site_url('program') ?>">Program</a></li>
-                    </ul>
-                </li>
-
-                <li class="nav-v2-dropdown">
-                    <button type="button" class="nav-v2-dropdown-trigger <?= $activePage === 'services' ? 'active' : '' ?>">Layanan <span>▾</span></button>
-                    <ul class="nav-v2-dropdown-menu">
-                        <li><a href="<?= site_url('layanan') ?>">Ambulans</a></li>
-                        <li><a href="<?= site_url('layanan') ?>">Layanan Jenazah</a></li>
-                        <li><a href="<?= site_url('layanan') ?>">Pernikahan</a></li>
-                        <li><a href="<?= site_url('layanan') ?>">Mualaf</a></li>
-                        <li><a href="<?= site_url('layanan') ?>">ZISWAF</a></li>
-                    </ul>
-                </li>
-
-                <li class="nav-v2-dropdown">
-                    <button type="button" class="nav-v2-dropdown-trigger <?= $activePage === 'gallery' ? 'active' : '' ?>">Galeri <span>▾</span></button>
-                    <ul class="nav-v2-dropdown-menu">
-                        <li><a href="<?= site_url('galeri?type=photo') ?>">Foto</a></li>
-                        <li><a href="<?= site_url('galeri?type=video') ?>">Video</a></li>
-                        <li><a href="<?= site_url('galeri?type=document') ?>">Dokumen</a></li>
-                    </ul>
-                </li>
-
-                <li><a href="<?= site_url('kontak') ?>" class="<?= $activePage === 'contact' ? 'active' : '' ?>">Kontak</a></li>
-            </ul>
-
-            <!-- Right Header Utilities: Search, Prayer Time, Login -->
-            <div class="nav-v2-utilities">
-                <form action="<?= site_url('cari') ?>" method="GET" class="nav-v2-search">
-                    <input type="text" name="q" placeholder="Cari..." aria-label="Cari">
-                    <button type="submit" aria-label="Cari">🔍</button>
-                </form>
-
-                <a href="<?= site_url('jadwal-shalat') ?>" class="nav-v2-prayer-widget" id="navPrayerWidget" title="Jadwal Sholat Hari Ini">
-                    <span class="nav-v2-prayer-icon">🕌</span>
-                    <span class="nav-v2-prayer-text">
-                        <span class="nav-v2-prayer-label" id="navPrayerLabel">Jadwal Sholat</span>
-                        <span class="nav-v2-prayer-time" id="navPrayerTime">--:--</span>
-                    </span>
-                </a>
-
-                <a href="<?= site_url('login') ?>" class="nav-v2-login-btn">Login</a>
+            <div class="nav-dropdown">
+                <button type="button" class="nav-link nav-dropdown-trigger <?= in_array($activePage, ['profile', 'org_structure']) ? 'active' : '' ?>">Tentang Kami <span>▾</span></button>
+                <div class="nav-dropdown-menu">
+                    <a href="<?= site_url('profil') ?>">Profil Masjid</a>
+                    <a href="<?= site_url('profil#sejarah') ?>">Sejarah</a>
+                    <a href="<?= site_url('profil#visi-misi') ?>">Visi & Misi</a>
+                    <a href="<?= site_url('struktur-organisasi#struktur-dkm') ?>">Struktur DKM</a>
+                    <a href="<?= site_url('struktur-organisasi#bidang') ?>">Bidang</a>
+                </div>
             </div>
+
+            <div class="nav-dropdown">
+                <button type="button" class="nav-link nav-dropdown-trigger <?= in_array($activePage, ['news', 'agenda', 'programs']) ? 'active' : '' ?>">Direktori <span>▾</span></button>
+                <div class="nav-dropdown-menu">
+                    <a href="<?= site_url('berita') ?>">Berita</a>
+                    <a href="<?= site_url('agenda') ?>">Agenda</a>
+                    <a href="<?= site_url('berita#kajian') ?>">Jadwal Kajian</a>
+                    <a href="<?= site_url('program') ?>">Program</a>
+                </div>
+            </div>
+
+            <div class="nav-dropdown">
+                <button type="button" class="nav-link nav-dropdown-trigger <?= $activePage === 'services' ? 'active' : '' ?>">Layanan <span>▾</span></button>
+                <div class="nav-dropdown-menu">
+                    <a href="<?= site_url('layanan') ?>">Ambulans</a>
+                    <a href="<?= site_url('layanan') ?>">Layanan Jenazah</a>
+                    <a href="<?= site_url('layanan') ?>">Pernikahan</a>
+                    <a href="<?= site_url('layanan') ?>">Mualaf</a>
+                    <a href="<?= site_url('layanan') ?>">ZISWAF</a>
+                </div>
+            </div>
+
+            <div class="nav-dropdown">
+                <button type="button" class="nav-link nav-dropdown-trigger <?= $activePage === 'gallery' ? 'active' : '' ?>">Galeri <span>▾</span></button>
+                <div class="nav-dropdown-menu">
+                    <a href="<?= site_url('galeri?type=photo') ?>">Foto</a>
+                    <a href="<?= site_url('galeri?type=video') ?>">Video</a>
+                    <a href="<?= site_url('galeri?type=document') ?>">Dokumen</a>
+                </div>
+            </div>
+
+            <a href="<?= site_url('kontak') ?>" class="nav-link <?= $activePage === 'contact' ? 'active' : '' ?>">Kontak</a>
         </nav>
+
+        <!-- Right Header Utilities: Search, Prayer Time, Login -->
+        <div class="header-cta">
+            <form action="<?= site_url('cari') ?>" method="GET" class="nav-search">
+                <input type="text" name="q" placeholder="Cari..." aria-label="Cari">
+                <button type="submit" aria-label="Cari">🔍</button>
+            </form>
+
+            <a href="<?= site_url('jadwal-shalat') ?>" class="nav-prayer-widget" id="navPrayerWidget" title="Jadwal Sholat Hari Ini">
+                <span class="nav-prayer-icon">🕌</span>
+                <span class="nav-prayer-text">
+                    <span class="nav-prayer-label" id="navPrayerLabel">Jadwal Sholat</span>
+                    <span class="nav-prayer-time" id="navPrayerTime">--:--</span>
+                </span>
+            </a>
+
+            <a href="<?= site_url('login') ?>" class="btn-ui2 btn-primary-ui2 nav-login-btn">Login</a>
+        </div>
     </div>
 </header>
 
 <script>
     (function () {
-        // Dropdown toggling (click-based so it works on touch devices too).
-        document.querySelectorAll('.nav-v2-dropdown-trigger').forEach(function (trigger) {
+        document.querySelectorAll('.nav-dropdown-trigger').forEach(function (trigger) {
             trigger.addEventListener('click', function (e) {
                 e.stopPropagation();
-                var dropdown = trigger.closest('.nav-v2-dropdown');
+                var dropdown = trigger.closest('.nav-dropdown');
                 var wasOpen = dropdown.classList.contains('open');
-                document.querySelectorAll('.nav-v2-dropdown.open').forEach(function (d) { d.classList.remove('open'); });
+                document.querySelectorAll('.nav-dropdown.open').forEach(function (d) { d.classList.remove('open'); });
                 if (!wasOpen) dropdown.classList.add('open');
             });
         });
         document.addEventListener('click', function () {
-            document.querySelectorAll('.nav-v2-dropdown.open').forEach(function (d) { d.classList.remove('open'); });
+            document.querySelectorAll('.nav-dropdown.open').forEach(function (d) { d.classList.remove('open'); });
         });
 
-        // Mobile hamburger toggle.
         var hamburger = document.getElementById('navHamburgerBtn');
         var nav = document.getElementById('navV2');
         if (hamburger && nav) {
             hamburger.addEventListener('click', function () {
-                var isOpen = nav.classList.toggle('nav-v2-open');
+                var isOpen = nav.classList.toggle('main-nav-open');
                 hamburger.classList.toggle('open', isOpen);
                 hamburger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
             });
         }
 
-        // Prayer Time utility: fetched client-side so it appears on every
-        // page via this one shared header, without every controller action
-        // needing to compute/pass prayer times individually.
         fetch('<?= site_url('api/prayer-times-today') ?>')
             .then(function (r) { return r.json(); })
             .then(function (data) {

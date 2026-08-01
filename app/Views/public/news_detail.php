@@ -17,8 +17,9 @@
         <?php if (!empty($masjid['name'])): ?> &bull; 🕌 <?= esc($masjid['name']) ?><?php endif; ?>
     </div>
 
-    <div style="font-size: 16px; line-height: 1.8; color: var(--text-primary);">
-        <?= nl2br(esc($post['content'])) ?>
+    <div class="article-content" style="font-size: 16px; line-height: 1.8; color: var(--text-primary, #1e293b);">
+        <?php helper('content'); ?>
+        <?= render_rich_content($post['content']) ?>
     </div>
 
     <?php if (!empty($relatedPosts)): ?>
