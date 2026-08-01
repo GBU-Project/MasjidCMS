@@ -88,7 +88,16 @@ class PrayerTimeCalculator
         $method = self::METHODS[$calcMethod] ?? self::METHODS['KEMENAG'];
         $asr = self::ASR_METHODS[$asrMethod] ?? self::ASR_METHODS['STANDARD'];
 
-        $tz = new \DateTimeZone($timezone ?: 'UTC');
+        // Bug found in UAT: an invalid IANA timezone string here (e.g. the
+        // reported 'Asia/Bogor' or 'Bogor' -- Bogor shares Jakarta's WIB
+        // zone and has no IANA identifier of its own) throws an uncaught
+        // \Exception from DateTimeZone's constructor. Since this runs on
+        // every public page via resolveMasjidProfile(), that crashed the
+        // entire site with a 500, not just the prayer widget. Validate
+        // against the real IANA identifier list and fall back safely
+        // instead of ever letting a bad config value take down the site.
+        $timezone = in_array($timezone, \DateTimeZone::listIdentifiers(), true) ? $timezone : 'Asia/Jakarta';
+        $tz = new \DateTimeZone($timezone);
         $day = new \DateTime($date . ' 12:00:00', $tz);
         $utcOffsetHours = $tz->getOffset($day) / 3600;
 

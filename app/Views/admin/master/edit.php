@@ -134,7 +134,29 @@
                 </div>
                 <div>
                     <label style="display: block; font-weight: 600; margin-bottom: 6px;">Timezone</label>
-                    <input type="text" name="timezone" value="<?= esc(old('timezone', $item['timezone'] ?? 'Asia/Jakarta')) ?>" placeholder="Asia/Jakarta" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;">
+                    <?php
+                        // Fix for the reported crash: a free-text timezone
+                        // field let an invalid value like 'Asia/Bogor' (not
+                        // a real IANA identifier -- Bogor uses Jakarta's WIB
+                        // zone) get saved and take down the whole site.
+                        // Restricted to a curated list of valid identifiers
+                        // so this can no longer happen from this form.
+                        $currentTz = old('timezone', $item['timezone'] ?? 'Asia/Jakarta');
+                        $tzOptions = [
+                            'Asia/Jakarta'    => 'Asia/Jakarta (WIB — Jawa, Sumatra, Bogor, dll.)',
+                            'Asia/Pontianak'  => 'Asia/Pontianak (WIB — Kalimantan Barat/Tengah)',
+                            'Asia/Makassar'   => 'Asia/Makassar (WITA — Kalimantan Timur/Selatan, Sulawesi, Bali, NTB, NTT)',
+                            'Asia/Jayapura'   => 'Asia/Jayapura (WIT — Maluku, Papua)',
+                        ];
+                        if (!array_key_exists($currentTz, $tzOptions)) {
+                            $tzOptions[$currentTz] = $currentTz . ' (nilai tersimpan saat ini)';
+                        }
+                    ?>
+                    <select name="timezone" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;">
+                        <?php foreach ($tzOptions as $tzValue => $tzLabel): ?>
+                            <option value="<?= esc($tzValue) ?>" <?= $currentTz === $tzValue ? 'selected' : '' ?>><?= esc($tzLabel) ?></option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
             </div>
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px;">

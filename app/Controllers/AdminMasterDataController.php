@@ -548,7 +548,18 @@ class AdminMasterDataController extends BaseController
                     $profileData['longitude'] = (float) $this->request->getPost('longitude');
                 }
                 if ($this->request->getPost('timezone')) {
-                    $profileData['timezone'] = (string) $this->request->getPost('timezone');
+                    $postedTz = (string) $this->request->getPost('timezone');
+                    // Defense in depth: the admin form is now a dropdown of
+                    // valid identifiers, but validate here too in case of a
+                    // direct POST -- an invalid value here previously took
+                    // the entire public site down with a 500 (PrayerTimeCalculator
+                    // also has its own fallback now, but this stops it at
+                    // the source instead of only downstream).
+                    if (in_array($postedTz, \DateTimeZone::listIdentifiers(), true)) {
+                        $profileData['timezone'] = $postedTz;
+                    } else {
+                        session()->setFlashdata('error', 'Timezone "' . $postedTz . '" tidak valid dan tidak disimpan. Gunakan salah satu opsi yang tersedia.');
+                    }
                 }
                 foreach (['prayer_calc_method', 'prayer_asr_method', 'prayer_high_lat_rule'] as $prayerField) {
                     if ($db->fieldExists($prayerField, 'masjids') && $this->request->getPost($prayerField)) {
