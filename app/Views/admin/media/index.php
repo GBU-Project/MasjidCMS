@@ -17,7 +17,7 @@
         <button type="button" class="btn btn-primary" onclick="document.getElementById('standaloneFileInput').click()" style="padding: 10px 20px; font-weight: 700;">
             📤 Unggah Media Baru
         </button>
-        <input type="file" id="standaloneFileInput" name="files[]" multiple accept="image/*,.pdf" style="display: none;" onchange="document.getElementById('standaloneUploadForm').submit()">
+        <input type="file" id="standaloneFileInput" name="files[]" form="standaloneUploadForm" multiple accept="image/*,.pdf" style="display: none;" onchange="document.getElementById('standaloneUploadForm').submit()">
     </div>
 </div>
 
@@ -117,7 +117,7 @@
             ?>
             <div class="panel-card" style="padding: 12px; position: relative; border-radius: 10px; display: flex; flex-direction: column; justify-content: space-between;">
                 <!-- Checkbox Selection -->
-                <input type="checkbox" class="media-bulk-chk" value="<?= $m['id'] ?>" onchange="updateBulkDeleteState()" style="position: absolute; top: 18px; left: 18px; z-index: 10; width: 18px; height: 18px; cursor: pointer;">
+                <input type="checkbox" name="ids[]" class="media-bulk-chk" value="<?= $m['id'] ?>" onchange="updateBulkDeleteState()" style="position: absolute; top: 18px; left: 18px; z-index: 10; width: 18px; height: 18px; cursor: pointer;">
 
                 <!-- Thumbnail -->
                 <div style="width: 100%; height: 130px; border-radius: 6px; overflow: hidden; background: var(--bg-surface, #f8fafc); border: 1px solid var(--border-light); display: flex; align-items: center; justify-content: center; margin-bottom: 10px;">
