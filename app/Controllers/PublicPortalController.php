@@ -194,7 +194,14 @@ class PublicPortalController extends BaseController
                 ->get()
                 ->getResultArray();
         }
-        $prayerCity = $settings['prayer_city'] ?? ($masjid['city'] ?? 'Kota Masjid');
+        $configuredPrayerCity = (string) ($settings['prayer_city'] ?? '');
+        if (!empty($configuredPrayerCity) && $configuredPrayerCity !== 'Kota Masjid') {
+            $prayerCity = $configuredPrayerCity;
+        } elseif (!empty($masjid['city'])) {
+            $prayerCity = $masjid['city'];
+        } else {
+            $prayerCity = 'Kota Masjid';
+        }
 
         $financialSummary = [
             'total_balance' => 0,
@@ -615,7 +622,15 @@ class PublicPortalController extends BaseController
             }
         }
 
-        $prayerCity = $settings['prayer_city'] ?? 'Kota Masjid';
+        $masjid = $this->getMasjidProfile();
+        $configuredPrayerCity = (string) ($settings['prayer_city'] ?? '');
+        if (!empty($configuredPrayerCity) && $configuredPrayerCity !== 'Kota Masjid') {
+            $prayerCity = $configuredPrayerCity;
+        } elseif (!empty($masjid['city'])) {
+            $prayerCity = $masjid['city'];
+        } else {
+            $prayerCity = 'Kota Masjid';
+        }
 
         if ($db->tableExists('prayer_times')) {
             $prayerTimes = $db->table('prayer_times')

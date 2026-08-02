@@ -22,10 +22,7 @@
                 <button type="button" class="nav-link nav-dropdown-trigger <?= in_array($activePage, ['profile', 'org_structure']) ? 'active' : '' ?>">Tentang Kami <span>▾</span></button>
                 <div class="nav-dropdown-menu">
                     <a href="<?= site_url('profil') ?>">Profil Masjid</a>
-                    <a href="<?= site_url('profil#sejarah') ?>">Sejarah</a>
-                    <a href="<?= site_url('profil#visi-misi') ?>">Visi & Misi</a>
-                    <a href="<?= site_url('struktur-organisasi#struktur-dkm') ?>">Struktur DKM</a>
-                    <a href="<?= site_url('struktur-organisasi#bidang') ?>">Bidang</a>
+                    <a href="<?= site_url('struktur-organisasi') ?>">Struktur Organisasi</a>
                 </div>
             </div>
 

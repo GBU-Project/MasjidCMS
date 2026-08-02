@@ -323,9 +323,13 @@
         });
     };
 
-    // Initialize on DOM Ready
-    document.addEventListener('DOMContentLoaded', function() {
+    // Initialize on DOM Ready or immediately if DOM is already ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            initTinyMCE();
+        });
+    } else {
         initTinyMCE();
-    });
+    }
 
 })(window, document);

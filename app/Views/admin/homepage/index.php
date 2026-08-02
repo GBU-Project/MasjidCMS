@@ -551,40 +551,6 @@ input:checked + .slider:before {
     </div>
 </div>
 
-<!-- 4d. TRANSPARANSI KEUANGAN CARD (same bug: hardcoded to always show) -->
-<div class="biz-card">
-    <div>
-        <?php $finStat = $sectionStats['financial'] ?? []; ?>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="font-size: 28px;">💰</span>
-                <div>
-                    <h3 style="font-size: 16px; font-weight: 800; color: var(--text-primary);">Transparansi Keuangan</h3>
-                    <span style="font-size: 12px; color: var(--text-tertiary);">Ringkasan saldo & kas masjid di homepage</span>
-                </div>
-            </div>
-            <?php if ($finStat['is_visible'] ?? true): ?>
-                <span class="badge badge-green">🟢 Ditampilkan</span>
-            <?php else: ?>
-                <span class="badge badge-red" style="background: #fef2f2; color: #991b1b; border: 1px solid #fca5a5;">⚪ Disembunyikan</span>
-            <?php endif; ?>
-        </div>
-        <form action="<?= site_url('admin/homepage-manager/save-settings') ?>" method="POST" style="margin-top: 12px;">
-            <?= csrf_field() ?>
-            <div class="switch-container">
-                <span class="switch-label">Tampilkan di Homepage</span>
-                <label class="switch">
-                    <input type="hidden" name="show_financial_section" value="0">
-                    <input type="checkbox" name="show_financial_section" value="1" <?= (($settings['show_financial_section'] ?? '1') === '1') ? 'checked' : '' ?> onchange="this.form.submit()">
-                    <span class="slider"></span>
-                </label>
-            </div>
-        </form>
-    </div>
-    <div style="display: flex; gap: 8px; margin-top: 16px; border-top: 1px solid var(--border-light); padding-top: 12px;">
-        <a href="<?= site_url('admin/financial') ?>" class="btn btn-secondary" style="flex: 1; text-align: center; padding: 6px; font-size: 12px;">⚙️ Kelola Keuangan</a>
-    </div>
-</div>
 
 <!-- 4e. AGENDA CARD (finding H: separate module from Kajian) -->
 <?php $agStat = $sectionStats['agenda'] ?? []; ?>
