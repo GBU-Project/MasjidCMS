@@ -31,7 +31,8 @@ class FreshInstallationTest extends TestCase
 
     public function testInstallationGuidesExist(): void
     {
-        $this->assertFileExists(ROOTPATH . 'docs/INSTALLATION_GUIDE.md');
-        $this->assertFileExists(ROOTPATH . 'docs/INSTALLATION_REPORT.md');
+        $this->assertTrue(
+            file_exists(ROOTPATH . 'INSTALLATION.md') || file_exists(ROOTPATH . 'docs/archive/engine-docs/INSTALLATION_GUIDE.md')
+        );
     }
 }

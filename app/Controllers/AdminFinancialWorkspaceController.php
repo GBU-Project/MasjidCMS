@@ -57,7 +57,7 @@ class AdminFinancialWorkspaceController extends BaseController
             return ['success' => false, 'message' => 'Data tidak lengkap atau tidak valid.'];
         }
 
-        $uuid = sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x', mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0x0fff) | 0x4000, mt_rand(0, 0x3fff) | 0x8000, mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff));
+        $uuid = $this->generateUuid();
         $trxNo = 'TRX-' . date('Ym') . '-' . str_pad((string) mt_rand(1, 9999), 5, '0', STR_PAD_LEFT);
 
         $db->transStart();
@@ -80,6 +80,9 @@ class AdminFinancialWorkspaceController extends BaseController
         $trxId = $db->insertID();
 
         if ($db->tableExists('financial_accounts')) {
+            // Native CI4 pessimistic row locking (SELECT ... FOR UPDATE) inside transaction boundary
+            $db->query('SELECT balance FROM financial_accounts WHERE id = ? FOR UPDATE', [$finAccId]);
+
             $builder = $db->table('financial_accounts')->where('id', $finAccId);
             if ($type === 'INCOME') {
                 $builder->set('balance', 'balance + ' . $amount, false);
@@ -90,7 +93,7 @@ class AdminFinancialWorkspaceController extends BaseController
         }
 
         if ($db->tableExists('journal_entries')) {
-            $jUuid = sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x', mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0x0fff) | 0x4000, mt_rand(0, 0x3fff) | 0x8000, mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff));
+            $jUuid = $this->generateUuid();
             $jNo = 'JRN-' . date('Ym') . '-' . str_pad((string) mt_rand(1, 9999), 5, '0', STR_PAD_LEFT);
 
             $db->table('journal_entries')->insert([
@@ -136,7 +139,7 @@ class AdminFinancialWorkspaceController extends BaseController
         try {
             if ($tab === 'transactions' && $db->tableExists('financial_transactions')) {
                 $headers = ['No. Transaksi', 'Tanggal', 'Jenis', 'Nominal (Rp)', 'Status', 'Aksi'];
-                $data = $db->table('financial_transactions')->orderBy('created_at', 'DESC')->get()->getResultArray();
+                $data = $db->table('financial_transactions')->orderBy('created_at', 'DESC')->limit(100)->get()->getResultArray();
                 foreach ($data as $t) {
                     $trxNo = $t['transaction_no'] ?? $t['transaction_number'] ?? ('TRX-' . $t['id']);
                     $rows[] = [
@@ -717,5 +720,20 @@ class AdminFinancialWorkspaceController extends BaseController
             'transactionId' => $id,
             'transaction'   => $transaction,
         ]);
+    }
+
+    private function generateUuid(): string
+    {
+        return sprintf(
+            '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0x0fff) | 0x4000,
+            mt_rand(0, 0x3fff) | 0x8000,
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff)
+        );
     }
 }

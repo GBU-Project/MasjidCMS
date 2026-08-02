@@ -8,11 +8,14 @@
 
 ## 1. Financial Posting Lifecycle
 
-Siklus hidup transaksi keuangan pada MasjidCMS dikelola secara deklaratif melalui State Transition Machine yang ketat untuk menjamin integritas pembukuan:
+Siklus hidup transaksi keuangan pada MasjidCMS mendukung 2 Tier Posting Workflow yang diselaraskan dengan skala & kebutuhan operasional masjid:
+1. **Direct Single-Step Posting (Admin Web Workspace):** Digunakan pada Form Admin Web untuk efisiensi entri kas harian oleh Bendahara/Pengurus (Submit ➔ `POSTED` secara atomik dengan `SELECT ... FOR UPDATE` row locking).
+2. **Multi-Step Governed Posting (API Financial Domain):** Digunakan untuk integrasi sistem/skala besar dengan pengawasan bertahap (`DRAFT` ➔ `PENDING_APPROVAL` ➔ `APPROVED` ➔ `POSTED`).
 
 ```mermaid
 stateDiagram-v2
-    [*] --> DRAFT : Operator Input Data
+    [*] --> DRAFT : Operator Input Data (API)
+    [*] --> POSTED : Direct Submit (Web Admin Form)
     DRAFT --> PENDING_APPROVAL : Submit (> Threshold Amount)
     DRAFT --> POSTED : Submit (<= Threshold Amount)
     PENDING_APPROVAL --> APPROVED : DKM / Bendahara Approve

@@ -227,7 +227,6 @@ class AdminHomepageManagerController extends BaseController
             'limit_pengurus'        => '3',
             'limit_bidang'          => '6',
             'limit_program'         => '6',
-            'limit_bidang'          => '6',
             'limit_kajian'          => '6',
             'limit_gallery'         => '8',
             'limit_layanan'         => '4',
