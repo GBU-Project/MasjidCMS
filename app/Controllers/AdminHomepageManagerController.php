@@ -181,13 +181,13 @@ class AdminHomepageManagerController extends BaseController
         $db = Database::connect();
 
         if ($action === 'show_all') {
-            $keys = ['show_pengurus_section', 'show_program_section', 'show_layanan_section', 'show_bidang_section', 'show_kajian_section', 'show_agenda_section', 'show_gallery_section', 'show_profile_section', 'show_donation_section'];
+            $keys = ['show_pengurus_section', 'show_program_section', 'show_layanan_section', 'show_bidang_section', 'show_kajian_section', 'show_agenda_section', 'show_berita_section', 'show_gallery_section', 'show_financial_section', 'show_profile_section', 'show_donation_section'];
             foreach ($keys as $k) {
                 $this->saveSettingKey($k, '1');
             }
             $this->logActivity('Homepage section shown', 'Semua section homepage di-set Tampil.');
         } elseif ($action === 'hide_all') {
-            $keys = ['show_pengurus_section', 'show_program_section', 'show_layanan_section', 'show_bidang_section', 'show_kajian_section', 'show_agenda_section', 'show_gallery_section', 'show_profile_section', 'show_donation_section'];
+            $keys = ['show_pengurus_section', 'show_program_section', 'show_layanan_section', 'show_bidang_section', 'show_kajian_section', 'show_agenda_section', 'show_berita_section', 'show_gallery_section', 'show_financial_section', 'show_profile_section', 'show_donation_section'];
             foreach ($keys as $k) {
                 $this->saveSettingKey($k, '0');
             }

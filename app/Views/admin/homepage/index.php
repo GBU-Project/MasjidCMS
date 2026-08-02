@@ -443,7 +443,7 @@ input:checked + .slider:before {
         </div>
     </div>
 
-    <!-- 4. KAJIAN & BERITA CARD -->
+    <!-- 4. KAJIAN & TAKLIM CARD -->
     <?php $kStat = $sectionStats['kajian'] ?? []; ?>
     <div class="biz-card">
         <div>
@@ -451,8 +451,8 @@ input:checked + .slider:before {
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <span style="font-size: 28px;">📖</span>
                     <div>
-                        <h3 style="font-size: 16px; font-weight: 800; color: var(--text-primary);">Warta & Jadwal Kajian</h3>
-                        <span style="font-size: 12px; color: var(--text-tertiary);">Artikel & Jadwal Taklim</span>
+                        <h3 style="font-size: 16px; font-weight: 800; color: var(--text-primary);">Kajian & Taklim</h3>
+                        <span style="font-size: 12px; color: var(--text-tertiary);">Jadwal Kajian Rutin & Tematik</span>
                     </div>
                 </div>
                 <?php if ($kStat['is_visible'] ?? true): ?>
@@ -503,13 +503,13 @@ input:checked + .slider:before {
         </div>
 
         <div style="display: flex; gap: 8px; margin-top: 16px; border-top: 1px solid var(--border-light); padding-top: 12px;">
-            <a href="<?= site_url('admin/cms/create?tab=posts') ?>" class="btn btn-primary" style="flex: 1; text-align: center; padding: 6px; font-size: 12px;">+ Tambah Berita</a>
-            <a href="<?= site_url('admin/cms?tab=posts') ?>" class="btn btn-secondary" style="flex: 1; text-align: center; padding: 6px; font-size: 12px;">⚙️ Kelola</a>
+            <a href="<?= site_url('admin/cms/create?tab=kajian') ?>" class="btn btn-primary" style="flex: 1; text-align: center; padding: 6px; font-size: 12px;">+ Tambah Kajian</a>
+            <a href="<?= site_url('admin/cms?tab=kajian') ?>" class="btn btn-secondary" style="flex: 1; text-align: center; padding: 6px; font-size: 12px;">⚙️ Kelola</a>
         </div>
     </div>
 </div>
 
-<!-- 4c. WARTA JAMAAH / BERITA CARD (bug fix: this section was hardcoded to
+<!-- 4c. BERITA / WARTA JAMAAH CARD (bug fix: this section was hardcoded to
      always show on the homepage, bypassing Homepage Manager entirely) -->
 <div class="biz-card">
     <div>
@@ -518,7 +518,7 @@ input:checked + .slider:before {
             <div style="display: flex; align-items: center; gap: 10px;">
                 <span style="font-size: 28px;">📰</span>
                 <div>
-                    <h3 style="font-size: 16px; font-weight: 800; color: var(--text-primary);">Warta Jamaah (Section Homepage)</h3>
+                    <h3 style="font-size: 16px; font-weight: 800; color: var(--text-primary);">Berita (Warta Jamaah)</h3>
                     <span style="font-size: 12px; color: var(--text-tertiary);">Daftar berita terbaru di homepage</span>
                 </div>
             </div>
