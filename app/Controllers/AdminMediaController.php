@@ -103,16 +103,20 @@ class AdminMediaController extends BaseController
             $fileList = [$files['file']];
         }
 
-        // .ico is included so classic favicon.ico uploads work, not just
-        // modern PNG/SVG favicons -- browsers report this mime type
-        // inconsistently (image/x-icon vs image/vnd.microsoft.icon), so
-        // both are whitelisted.
-        $allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml', 'image/x-icon', 'image/vnd.microsoft.icon', 'application/pdf'];
+        // TASK-026 Blocker 3: SVG format is removed from allowed mimes to eliminate Stored XSS & XXE vectors.
+        // Raster formats (JPEG, PNG, GIF, WebP, ICO, PDF) cover all media library needs safely.
+        $allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/x-icon', 'image/vnd.microsoft.icon', 'application/pdf'];
         $maxSize = 10 * 1024 * 1024; // 10MB
 
         foreach ($fileList as $file) {
             if (!$file->isValid() || $file->hasMoved()) {
                 $errors[] = $file->getErrorString();
+                continue;
+            }
+
+            $ext = strtolower($file->getClientExtension());
+            if ($ext === 'svg') {
+                $errors[] = 'File SVG tidak diizinkan demi keamanan.';
                 continue;
             }
 

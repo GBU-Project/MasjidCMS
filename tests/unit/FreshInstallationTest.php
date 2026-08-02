@@ -35,4 +35,10 @@ class FreshInstallationTest extends TestCase
             file_exists(ROOTPATH . 'INSTALLATION.md') || file_exists(ROOTPATH . 'docs/archive/engine-docs/INSTALLATION_GUIDE.md')
         );
     }
+
+    public function testInstalledLockIsIgnoredInGit(): void
+    {
+        $gitignore = file_get_contents(ROOTPATH . '.gitignore');
+        $this->assertStringContainsString('/writable/installed.lock', $gitignore);
+    }
 }

@@ -22,7 +22,7 @@ class PermissionRepository extends BaseRepository
      */
     public function findByUserId(int|string $userId): array
     {
-        if (empty($userId)) {
+        if (empty($userId) || !$this->db->tableExists($this->table) || !$this->db->tableExists('user_roles')) {
             return [];
         }
 

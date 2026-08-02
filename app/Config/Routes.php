@@ -98,11 +98,11 @@ $routes->group('admin', ['filter' => ['auth', 'rbac']], static function (RouteCo
     $routes->post('financial/store', '\App\Controllers\AdminFinancialWorkspaceController::store', ['filter' => 'rbac:financial.manage']);
     $routes->get('financial/delete/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::delete/$1', ['filter' => 'rbac:financial.manage']);
     $routes->get('financial/detail/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::detail/$1');
-    $routes->get('financial/export', '\App\Controllers\AdminFinancialWorkspaceController::export');
-    $routes->get('financial/coa/export', '\App\Controllers\AdminFinancialWorkspaceController::exportCoa');
-    $routes->get('financial/budget/export', '\App\Controllers\AdminFinancialWorkspaceController::exportBudget');
-    $routes->get('financial/periods/export', '\App\Controllers\AdminFinancialWorkspaceController::exportPeriods');
-    $routes->get('financial/journal/export', '\App\Controllers\AdminFinancialWorkspaceController::exportJournal');
+    $routes->get('financial/export', '\App\Controllers\AdminFinancialWorkspaceController::export', ['filter' => 'rbac:financial.manage']);
+    $routes->get('financial/coa/export', '\App\Controllers\AdminFinancialWorkspaceController::exportCoa', ['filter' => 'rbac:financial.manage']);
+    $routes->get('financial/budget/export', '\App\Controllers\AdminFinancialWorkspaceController::exportBudget', ['filter' => 'rbac:financial.manage']);
+    $routes->get('financial/periods/export', '\App\Controllers\AdminFinancialWorkspaceController::exportPeriods', ['filter' => 'rbac:financial.manage']);
+    $routes->get('financial/journal/export', '\App\Controllers\AdminFinancialWorkspaceController::exportJournal', ['filter' => 'rbac:financial.manage']);
     $routes->post('financial/import', '\App\Controllers\AdminFinancialWorkspaceController::import', ['filter' => 'rbac:financial.manage']);
 
     $routes->post('financial/coa/store', '\App\Controllers\AdminFinancialWorkspaceController::storeCoa', ['filter' => 'rbac:financial.manage']);

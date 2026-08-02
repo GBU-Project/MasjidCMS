@@ -73,7 +73,15 @@ class DatabasePermissionProvider implements PermissionProviderInterface
      */
     public function hasPermission(AuthenticatedUser $user, string $permission): bool
     {
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+
+        if (!empty($user->permissions) && in_array($permission, $user->permissions, true)) {
+            return true;
+        }
+
         $userPermissions = $this->getPermissions($user);
-        return in_array($permission, $userPermissions, true) || $user->isSuperAdmin();
+        return in_array($permission, $userPermissions, true);
     }
 }
