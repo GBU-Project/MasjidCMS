@@ -9,7 +9,7 @@
         </div>
 
         <?php if (!empty($postsList)): ?>
-            <div class="card-grid-ui2 card-grid-news">
+            <div class="card-grid-ui2 card-grid-news card-grid-news-4col">
                 <?php foreach ($postsList as $post): ?>
                     <article class="card-ui2 card-news">
                         <div class="news-thumb">
@@ -21,7 +21,7 @@
                                 <span class="news-date">📅 <?= esc(substr($post['created_at'] ?? date('Y-m-d'), 0, 10)) ?></span>
                             </div>
                             <h3><?= esc($post['title'] ?? 'Judul Berita') ?></h3>
-                            <p><?= esc(strip_tags($post['content'] ?? '')) ?></p>
+                            <p><?= esc(substr(strip_tags($post['content'] ?? ''), 0, 100)) ?>...</p>
                             <a href="<?= site_url('berita/' . ($post['slug'] ?? '')) ?>" class="news-link">Baca Artikel →</a>
                         </div>
                     </article>

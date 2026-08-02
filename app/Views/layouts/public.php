@@ -40,6 +40,25 @@
         as everything else.
     -->
     <style>
+        /* ---- Berita section: explicit 4-column grid (auto-fit made a
+             single post stretch to full width, looking like one giant
+             card instead of a tidy news grid) ---- */
+        .card-grid-news-4col { grid-template-columns: repeat(4, 1fr) !important; }
+        @media (max-width: 1024px) { .card-grid-news-4col { grid-template-columns: repeat(2, 1fr) !important; } }
+        @media (max-width: 640px) { .card-grid-news-4col { grid-template-columns: 1fr !important; } }
+        .card-news .news-thumb { height: 140px; }
+        .card-news .card-body p { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+        /* ---- Header overflow fix (bug found in UAT): the original
+             .header-inner has a fixed height:66px, which clipped/overlapped
+             content whenever logo + full nav + search + prayer widget +
+             login didn't fit on one line at medium (tablet/small-laptop)
+             widths -- looked "berantakan". Let it wrap cleanly instead, and
+             push the hamburger breakpoint wider so those widths get the
+             clean mobile menu rather than a squished desktop row. ---- */
+        .site-header .header-inner { height: auto; min-height: 66px; flex-wrap: wrap; row-gap: 10px; padding-top: 10px; padding-bottom: 10px; }
+        .nav-search input { width: 90px; }
+
         /* ---- Logo image variant (original .site-logo-icon assumed an
              emoji only; this supports an uploaded image too) ---- */
         .site-logo-img { height: 40px; max-width: 150px; width: auto; object-fit: contain; border-radius: var(--radius-md); }
@@ -72,7 +91,8 @@
         .nav-hamburger-btn.open span:nth-child(2) { opacity: 0; }
         .nav-hamburger-btn.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
 
-        @media (max-width: 768px) {
+        @media (max-width: 1024px) {
+            .site-header .main-nav { display: none; }
             .nav-hamburger-btn { display: flex; }
             .site-header .main-nav.main-nav-open {
                 display: flex; flex-direction: column; align-items: stretch; gap: 2px;
