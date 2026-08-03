@@ -73,27 +73,9 @@ class Filters extends BaseFilters
     public array $globals = [
         'before' => [
             'csrf' => ['except' => ['api/*', 'install/*', 'install']],
-            // Fix: 'pagecache' was previously a *required* filter (applied to
-            // every single route with no exceptions), which full-page-caches
-            // the rendered HTML response -- including any embedded CSRF
-            // hidden field -- for Config\Cache::$ttl (60s), keyed generically
-            // per URI rather than per session. That meant an admin loading
-            // e.g. admin/hero-slides/edit/5 could be served an HTML page
-            // cached from an earlier render (their own or another admin's),
-            // whose embedded CSRF token no longer matched their current
-            // session's token, causing the very next form submit to fail
-            // with "The action you requested is not allowed." (only
-            // succeeding on a second attempt, after a fresh, uncached
-            // render happened to be served). Login and any other
-            // CSRF-protected form page are equally exposed. Page caching
-            // should only ever apply to genuinely public, session-agnostic
-            // pages, so it's scoped here to exclude 'admin/*', 'login', and
-            // 'install/*'.
-            'pagecache' => ['except' => ['admin/*', 'login', 'install/*', 'install']],
         ],
         'after' => [
             'secureheaders',
-            'pagecache' => ['except' => ['admin/*', 'login', 'install/*', 'install']],
         ],
     ];
 

@@ -74,9 +74,12 @@ class AuthPageController extends BaseController
             return redirect()->to('/admin/dashboard')->with('success', 'Login berhasil. Selamat datang kembali.');
         } catch (ValidationException|AuthorizationException $e) {
             return redirect()->to('/login')->withInput()->with('error', $e->getMessage());
+        } catch (\CodeIgniter\Database\Exceptions\DatabaseException $e) {
+            log_message('error', 'Database connection error during login: {msg}', ['msg' => $e->getMessage()]);
+            return redirect()->to('/login')->withInput()->with('error', 'Koneksi ke database gagal. Pastikan database MySQL aktif dan kredensial database di file .env sudah dikonfigurasi dengan benar.');
         } catch (\Throwable $e) {
             log_message('error', 'Login page error: {msg}', ['msg' => $e->getMessage()]);
-            return redirect()->to('/login')->withInput()->with('error', 'Terjadi kesalahan sistem saat memproses login.');
+            return redirect()->to('/login')->withInput()->with('error', 'Terjadi kesalahan sistem saat memproses login: ' . $e->getMessage());
         }
     }
 
