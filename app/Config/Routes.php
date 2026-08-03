@@ -138,6 +138,16 @@ $routes->group('admin', ['filter' => ['auth', 'rbac']], static function (RouteCo
     $routes->post('homepage-manager/bulk-action', '\App\Controllers\AdminHomepageManagerController::bulkAction', ['filter' => 'rbac:admin.manage']);
     $routes->post('homepage-manager/reset-default', '\App\Controllers\AdminHomepageManagerController::resetDefault', ['filter' => 'rbac:admin.manage']);
     $routes->post('homepage-manager/clear-cache', '\App\Controllers\AdminHomepageManagerController::clearCache', ['filter' => 'rbac:admin.manage']);
+
+    // Hero Slides Management Routes
+    $routes->get('hero-slides', '\App\Controllers\AdminHeroSlideController::index');
+    $routes->get('hero-slides/create', '\App\Controllers\AdminHeroSlideController::create');
+    $routes->post('hero-slides/store', '\App\Controllers\AdminHeroSlideController::store', ['filter' => 'rbac:admin.manage']);
+    $routes->get('hero-slides/edit/(:segment)', '\App\Controllers\AdminHeroSlideController::edit/$1');
+    $routes->post('hero-slides/update/(:segment)', '\App\Controllers\AdminHeroSlideController::update/$1', ['filter' => 'rbac:admin.manage']);
+    $routes->get('hero-slides/delete/(:segment)', '\App\Controllers\AdminHeroSlideController::delete/$1', ['filter' => 'rbac:admin.manage']);
+    $routes->post('hero-slides/toggle/(:segment)', '\App\Controllers\AdminHeroSlideController::toggle/$1', ['filter' => 'rbac:admin.manage']);
+    $routes->post('hero-slides/save-order', '\App\Controllers\AdminHeroSlideController::saveOrder', ['filter' => 'rbac:admin.manage']);
     $routes->get('theme', '\App\Controllers\AdminSystemWorkspaceController::index');
     $routes->post('theme/store', '\App\Controllers\AdminSystemWorkspaceController::storeTheme', ['filter' => 'rbac:admin.manage']);
 

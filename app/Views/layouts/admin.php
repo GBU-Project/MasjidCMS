@@ -244,6 +244,12 @@
                 </a>
             </li>
             <li>
+                <a href="<?= site_url('admin/hero-slides') ?>" class="nav-item-link">
+                    <span>🖼️</span>
+                    <span class="nav-text">Hero Slider</span>
+                </a>
+            </li>
+            <li>
                 <a href="<?= site_url('admin/menu') ?>" class="nav-item-link">
                     <span>🧭</span>
                     <span class="nav-text">Navigation</span>

@@ -222,12 +222,17 @@ class PublicPortalController extends BaseController
             }
         }
 
-        $prayerTimes = $this->computePrayerTimesForMasjid($masjid, date('Y-m-d'));
+        $heroSlides = [];
+        if ($db->tableExists('hero_slides')) {
+            $heroSlideModel = new \App\Models\HeroSlideModel();
+            $heroSlides = $heroSlideModel->getActiveSlides();
+        }
 
         return view('public/index', [
             'activePage'       => 'home',
             'masjidName'       => $masjidName,
             'masjid'           => $masjid,
+            'heroSlides'       => $heroSlides,
             'prayerTimes'      => $prayerTimes,
             'sectionOrder'     => $sectionOrder,
             'sectionVisibility' => $sectionVisibility,

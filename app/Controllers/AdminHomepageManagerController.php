@@ -39,7 +39,7 @@ class AdminHomepageManagerController extends BaseController
 
         // Section Metadata Definition
         $sectionMeta = [
-            'hero' => ['name' => 'Hero Banner Header', 'icon' => '🚀', 'table' => null],
+            'hero' => ['name' => 'Hero Banner Header & Slider', 'icon' => '🚀', 'table' => 'hero_slides', 'setting_key' => 'show_hero_section'],
             'prayer' => ['name' => 'Jadwal Sholat Widget', 'icon' => '🕌', 'table' => null],
             'profile' => ['name' => 'Profil & Identitas Masjid', 'icon' => '🏛️', 'table' => 'masjids', 'setting_key' => 'show_profile_section'],
             'program' => ['name' => 'Program & Kegiatan Masjid', 'icon' => '🚩', 'table' => 'program_kegiatan', 'setting_key' => 'show_program_section', 'limit_key' => 'limit_program'],

@@ -180,6 +180,63 @@ input:checked + .slider:before {
 </div>
 
 <div class="section-cards-grid">
+    <!-- 0. HERO SLIDER CARD -->
+    <?php $heroStat = $sectionStats['hero'] ?? []; ?>
+    <div class="biz-card">
+        <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 28px;">🖼️</span>
+                    <div>
+                        <h3 style="font-size: 16px; font-weight: 800; color: var(--text-primary);">Hero Banner &amp; Slider</h3>
+                        <span style="font-size: 12px; color: var(--text-tertiary);">Slide Utama Header Homepage</span>
+                    </div>
+                </div>
+                <?php if ($heroStat['is_visible'] ?? true): ?>
+                    <span class="badge badge-green">🟢 Ditampilkan</span>
+                <?php else: ?>
+                    <span class="badge badge-red" style="background: #fef2f2; color: #991b1b; border: 1px solid #fca5a5;">⚪ Disembunyikan</span>
+                <?php endif; ?>
+            </div>
+
+            <div class="stat-mini-grid">
+                <div class="stat-mini-box">
+                    <div class="stat-mini-val"><?= $heroStat['total'] ?? 0 ?></div>
+                    <div class="stat-mini-lbl">Total</div>
+                </div>
+                <div class="stat-mini-box">
+                    <div class="stat-mini-val" style="color: var(--primary-600);"><?= $heroStat['active'] ?? 0 ?></div>
+                    <div class="stat-mini-lbl">Aktif</div>
+                </div>
+                <div class="stat-mini-box">
+                    <div class="stat-mini-val" style="color: #d97706;"><?= $heroStat['hidden'] ?? 0 ?></div>
+                    <div class="stat-mini-lbl">Hidden</div>
+                </div>
+                <div class="stat-mini-box">
+                    <div class="stat-mini-val" style="color: #2563eb;"><?= $heroStat['featured'] ?? 0 ?></div>
+                    <div class="stat-mini-lbl">Featured</div>
+                </div>
+            </div>
+
+            <form action="<?= site_url('admin/homepage-manager/save-settings') ?>" method="POST" style="margin-top: 12px;">
+                <?= csrf_field() ?>
+                <div class="switch-container">
+                    <span class="switch-label">Tampilkan di Homepage</span>
+                    <label class="switch">
+                        <input type="hidden" name="show_hero_section" value="0">
+                        <input type="checkbox" name="show_hero_section" value="1" <?= (($settings['show_hero_section'] ?? '1') === '1') ? 'checked' : '' ?> onchange="this.form.submit()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </form>
+        </div>
+
+        <div style="display: flex; gap: 8px; margin-top: 16px; border-top: 1px solid var(--border-light); padding-top: 12px;">
+            <a href="<?= site_url('admin/hero-slides/create') ?>" class="btn btn-primary" style="flex: 1; text-align: center; padding: 6px; font-size: 12px;">+ Tambah Slide</a>
+            <a href="<?= site_url('admin/hero-slides') ?>" class="btn btn-secondary" style="flex: 1; text-align: center; padding: 6px; font-size: 12px;">⚙️ Kelola Hero</a>
+        </div>
+    </div>
+
     <!-- 1. PROGRAM CARD -->
     <?php $pStat = $sectionStats['program'] ?? []; ?>
     <div class="biz-card">
