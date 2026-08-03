@@ -7,7 +7,7 @@
 <!-- Header is now rendered once by layouts/public.php for every page (TASK-022A) -->
 
 <!-- 2. Hero Banner Section -->
-<?= view('public/components/hero', ['masjid' => $masjid, 'prayerTimes' => $prayerTimes ?? [], 'prayerCity' => $prayerCity ?? 'Kota Masjid', 'donationSettings' => $donationSettings, 'settings' => $settings ?? []]) ?>
+<?= view('public/components/hero', ['masjid' => $masjid, 'heroSlides' => $heroSlides ?? [], 'prayerTimes' => $prayerTimes ?? [], 'prayerCity' => $prayerCity ?? 'Kota Masjid', 'donationSettings' => $donationSettings, 'settings' => $settings ?? []]) ?>
 
 <!-- 3. Quick Access Toolbar -->
 <?= view('public/components/quick_access') ?>

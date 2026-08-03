@@ -17,7 +17,10 @@
                     $alignStyle = $align === 'center' ? 'text-align: center; margin-left: auto; margin-right: auto;' : ($align === 'right' ? 'text-align: right; margin-left: auto;' : 'text-align: left;');
                 ?>
                 <div class="hero-slide-item <?= $idx === 0 ? 'active' : '' ?>" data-slide-index="<?= $idx ?>" style="position: <?= $idx === 0 ? 'relative' : 'absolute' ?>; top: 0; left: 0; width: 100%; height: 100%; opacity: <?= $idx === 0 ? '1' : '0' ?>; transition: opacity 0.6s ease-in-out; pointer-events: <?= $idx === 0 ? 'auto' : 'none' ?>;">
-                    <div class="hero-bg-overlay" style="background-image: url('<?= $bgUrl ?>'); filter: brightness(<?= max(0.2, 1 - $opacity) ?>);"></div>
+                    <div class="hero-bg-media-wrap">
+                        <img src="<?= $bgUrl ?>" alt="" class="hero-bg-media" loading="<?= $idx === 0 ? 'eager' : 'lazy' ?>">
+                        <div class="hero-bg-tint" style="opacity: <?= $opacity ?>;"></div>
+                    </div>
                     <div class="container hero-grid">
                         <div class="hero-copy" style="<?= $alignStyle ?>">
                             <div class="hero-pill" style="<?= $align === 'center' ? 'margin: 0 auto 16px;' : ($align === 'right' ? 'margin-left: auto;' : '') ?>">
@@ -167,7 +170,10 @@
 
     <?php else: ?>
         <!-- Static Default Hero Fallback -->
-        <div class="hero-bg-overlay" style="background-image: url('<?= !empty($donationSettings['donation_bg_image']) ? esc($donationSettings['donation_bg_image']) : base_url('assets/images/hero-bg.svg') ?>');"></div>
+        <div class="hero-bg-media-wrap">
+            <img src="<?= !empty($donationSettings['donation_bg_image']) ? esc($donationSettings['donation_bg_image']) : base_url('assets/images/hero-bg.svg') ?>" alt="" class="hero-bg-media" loading="eager">
+            <div class="hero-bg-tint" style="opacity: 0.55;"></div>
+        </div>
         <div class="container hero-grid">
             <div class="hero-copy">
                 <div class="hero-pill">

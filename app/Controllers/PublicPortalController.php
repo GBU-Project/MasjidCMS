@@ -185,15 +185,17 @@ class PublicPortalController extends BaseController
         }
 
         // Prayer Times
-        $prayerTimes = [];
+        // Fixed: previously queried the raw 'prayer_times' table directly via
+        // getResultArray(), which returns a numeric list of DB rows (e.g.
+        // [0 => [...], 1 => [...]]), not an associative array keyed by
+        // prayer name (fajr/dhuhr/asr/...). The hero widget in
+        // components/hero.php reads $times['fajr'], $times['dhuhr'], etc.,
+        // so that mismatch meant every prayer time on the homepage always
+        // fell back to '--:--'. computePrayerTimesForMasjid() is the same
+        // helper already used correctly by prayerTimesJson() and
+        // prayerTimes(), so this also makes all three consistent.
+        $prayerTimes = $this->computePrayerTimesForMasjid($masjid, date('Y-m-d'));
         $prayerCity = 'Kota Masjid';
-        if ($db->tableExists('prayer_times')) {
-            $prayerTimes = $db->table('prayer_times')
-                ->where('is_active', 1)
-                ->orderBy('sort_order', 'ASC')
-                ->get()
-                ->getResultArray();
-        }
         $configuredPrayerCity = (string) ($settings['prayer_city'] ?? '');
         if (!empty($configuredPrayerCity) && $configuredPrayerCity !== 'Kota Masjid') {
             $prayerCity = $configuredPrayerCity;
