@@ -59,20 +59,12 @@
             <a href="<?= site_url('kontak') ?>" class="nav-link <?= $activePage === 'contact' ? 'active' : '' ?>">Kontak</a>
         </nav>
 
-        <!-- Right Header Utilities: Search, Prayer Time, Login -->
+        <!-- Right Header Utilities: Search & Login -->
         <div class="header-cta">
             <form action="<?= site_url('cari') ?>" method="GET" class="nav-search">
                 <input type="text" name="q" placeholder="Cari..." aria-label="Cari">
                 <button type="submit" aria-label="Cari">🔍</button>
             </form>
-
-            <a href="<?= site_url('jadwal-shalat') ?>" class="nav-prayer-widget" id="navPrayerWidget" title="Jadwal Sholat Hari Ini">
-                <span class="nav-prayer-icon">🕌</span>
-                <span class="nav-prayer-text">
-                    <span class="nav-prayer-label" id="navPrayerLabel">Jadwal Sholat</span>
-                    <span class="nav-prayer-time" id="navPrayerTime">--:--</span>
-                </span>
-            </a>
 
             <a href="<?= site_url('login') ?>" class="btn-ui2 btn-primary-ui2 nav-login-btn">Login</a>
         </div>

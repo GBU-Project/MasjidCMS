@@ -10,7 +10,7 @@
 <?= view('public/components/hero', ['masjid' => $masjid, 'heroSlides' => $heroSlides ?? [], 'prayerTimes' => $prayerTimes ?? [], 'prayerCity' => $prayerCity ?? 'Kota Masjid', 'donationSettings' => $donationSettings, 'settings' => $settings ?? []]) ?>
 
 <!-- 3. Quick Access Toolbar -->
-<?= view('public/components/quick_access') ?>
+<?= view('public/components/quick_access', ['settings' => $settings ?? []]) ?>
 
 <?php
 // Sections managed by Homepage Manager & Section Control (single source of truth

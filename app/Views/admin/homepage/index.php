@@ -245,6 +245,60 @@ input:checked + .slider:before {
         </div>
     </div>
 
+    <!-- QUICK ACCESS TOOLBAR CARD -->
+    <div class="biz-card">
+        <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 28px;">⚡</span>
+                    <div>
+                        <h3 style="font-size: 16px; font-weight: 800; color: var(--text-primary);">Toolbar Akses Cepat</h3>
+                        <span style="font-size: 12px; color: var(--text-tertiary);">Quick Access Bar di Bawah Hero</span>
+                    </div>
+                </div>
+                <?php if (($settings['show_quickaccess_section'] ?? '1') === '1'): ?>
+                    <span class="badge badge-green">🟢 Ditampilkan</span>
+                <?php else: ?>
+                    <span class="badge badge-red" style="background: #fef2f2; color: #991b1b; border: 1px solid #fca5a5;">⚪ Disembunyikan</span>
+                <?php endif; ?>
+            </div>
+
+            <form action="<?= site_url('admin/homepage-manager/save-settings') ?>" method="POST" style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
+                <?= csrf_field() ?>
+                <div class="switch-container">
+                    <span class="switch-label">Tampilkan Toolbar Akses Cepat</span>
+                    <label class="switch">
+                        <input type="hidden" name="show_quickaccess_section" value="0">
+                        <input type="checkbox" name="show_quickaccess_section" value="1" <?= (($settings['show_quickaccess_section'] ?? '1') === '1') ? 'checked' : '' ?> onchange="this.form.submit()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div style="font-size: 12px; font-weight: 700; color: var(--text-secondary); margin-top: 6px; margin-bottom: 2px;">Kelola Item Akses Cepat:</div>
+                <?php
+                    $qaItems = [
+                        'show_quickaccess_jadwal'  => ['label' => '⏰ Jadwal Sholat', 'default' => '1'],
+                        'show_quickaccess_kajian'  => ['label' => '📖 Kajian & Taklim', 'default' => '1'],
+                        'show_quickaccess_program' => ['label' => '🤝 Program DKM', 'default' => '1'],
+                        'show_quickaccess_layanan' => ['label' => '🚑 Layanan Jamaah', 'default' => '1'],
+                        'show_quickaccess_donasi'  => ['label' => '💳 Infaq & Zakat', 'default' => '1'],
+                        'show_quickaccess_galeri'  => ['label' => '🖼️ Galeri Foto', 'default' => '1'],
+                        'show_quickaccess_kontak'  => ['label' => '📞 Kontak DKM', 'default' => '1'],
+                    ];
+                    foreach ($qaItems as $qKey => $qInfo):
+                ?>
+                    <div class="switch-container">
+                        <span class="switch-label" style="font-size: 13px;"><?= $qInfo['label'] ?></span>
+                        <label class="switch">
+                            <input type="hidden" name="<?= $qKey ?>" value="0">
+                            <input type="checkbox" name="<?= $qKey ?>" value="1" <?= (($settings[$qKey] ?? $qInfo['default']) === '1') ? 'checked' : '' ?> onchange="this.form.submit()">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                <?php endforeach; ?>
+            </form>
+        </div>
+    </div>
+
     <!-- 1. PROGRAM CARD -->
     <?php $pStat = $sectionStats['program'] ?? []; ?>
     <div class="biz-card">

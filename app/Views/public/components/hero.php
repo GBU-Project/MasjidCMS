@@ -47,7 +47,7 @@
                                             $pUrl = site_url($pUrl);
                                         }
                                     ?>
-                                    <a href="<?= esc($pUrl) ?>" <?= !empty($slide['primary_btn_new_tab']) ? 'target="_blank" rel="noopener"' : '' ?> class="btn-ui2 btn-primary-ui2">
+                                    <a href="<?= esc($pUrl) ?>" <?= !empty($slide['primary_btn_new_tab']) ? 'target="_blank" rel="noopener"' : '' ?> class="hero-btn-primary">
                                         <span>✨</span> <?= esc($slide['primary_btn_text']) ?>
                                     </a>
                                 <?php endif; ?>
@@ -59,7 +59,7 @@
                                             $sUrl = site_url($sUrl);
                                         }
                                     ?>
-                                    <a href="<?= esc($sUrl) ?>" <?= !empty($slide['secondary_btn_new_tab']) ? 'target="_blank" rel="noopener"' : '' ?> class="btn-ui2 btn-amber-ui2">
+                                    <a href="<?= esc($sUrl) ?>" <?= !empty($slide['secondary_btn_new_tab']) ? 'target="_blank" rel="noopener"' : '' ?> class="hero-btn-secondary">
                                         <span>💳</span> <?= esc($slide['secondary_btn_text']) ?>
                                     </a>
                                 <?php endif; ?>
@@ -200,10 +200,10 @@
                 </p>
 
                 <div class="hero-cta-group">
-                    <a href="<?= site_url('program') ?>" class="btn-ui2 btn-primary-ui2">
+                    <a href="<?= site_url('program') ?>" class="hero-btn-primary">
                         <span>✨</span> <?= esc($sectionSettings['hero_primary_cta'] ?? 'Jelajahi Program DKM') ?>
                     </a>
-                    <a href="<?= site_url('donasi') ?>" class="btn-ui2 btn-amber-ui2">
+                    <a href="<?= site_url('donasi') ?>" class="hero-btn-secondary">
                         <span>💳</span> <?= esc($sectionSettings['hero_secondary_cta'] ?? 'Infaq & Zakat Online') ?>
                     </a>
                 </div>
