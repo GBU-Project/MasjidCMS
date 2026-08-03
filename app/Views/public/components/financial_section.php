@@ -1,6 +1,6 @@
 <!-- Transparansi Keuangan Section UI 2.0 -->
-<?php $sectionSettings = $settings ?? []; $programCount = (int) ($programCount ?? 0); $progressValue = min(100, max(18, $programCount * 12)); ?>
-<section class="section-wrapper" id="keuangan" style="background: linear-gradient(135deg, var(--slate-900) 0%, #111827 100%); color: #fff;">
+<?php $sectionSettings = $settings ?? []; $programCount = (int) ($programCount ?? 0); ?>
+<section class="section-wrapper" id="keuangan" style="background: linear-gradient(135deg, var(--emerald-950), var(--emerald-900)); color: #fff;">
     <div class="container">
         <div class="section-header-center">
             <span class="section-tag" style="background: rgba(255, 255, 255, 0.1); color: var(--emerald-100); border-color: rgba(255, 255, 255, 0.15);"><?= esc($sectionSettings['financial_tag'] ?? 'TRANSPARANSI KEUANGAN') ?></span>
@@ -41,14 +41,7 @@
         </div>
 
         <div class="financial-progress-row">
-            <div class="progress-panel">
-                <div class="progress-label-row">
-                    <span>Progress Program</span>
-                    <strong><?= $progressValue ?>%</strong>
-                </div>
-                <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: <?= $progressValue ?>%"></div></div>
-                <p>Aktivitas program DKM terus tumbuh dan terpantau secara berkala.</p>
-            </div>
+            <p style="color: var(--slate-400); max-width: 480px; margin: 0;">Aktivitas program DKM terus tumbuh dan terpantau secara berkala. Lihat rincian lengkap realisasi anggaran di laporan keuangan.</p>
             <a href="<?= site_url('transparansi') ?>" class="btn-ui2 btn-primary-ui2">
                 📊 <?= esc($sectionSettings['financial_cta'] ?? 'Laporan Keuangan Lengkap') ?>
             </a>
