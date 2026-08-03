@@ -218,13 +218,21 @@ input:checked + .slider:before {
                 </div>
             </div>
 
-            <form action="<?= site_url('admin/homepage-manager/save-settings') ?>" method="POST" style="margin-top: 12px;">
+            <form action="<?= site_url('admin/homepage-manager/save-settings') ?>" method="POST" style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
                 <?= csrf_field() ?>
                 <div class="switch-container">
-                    <span class="switch-label">Tampilkan di Homepage</span>
+                    <span class="switch-label">Tampilkan Section Hero</span>
                     <label class="switch">
                         <input type="hidden" name="show_hero_section" value="0">
                         <input type="checkbox" name="show_hero_section" value="1" <?= (($settings['show_hero_section'] ?? '1') === '1') ? 'checked' : '' ?> onchange="this.form.submit()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="switch-container">
+                    <span class="switch-label">Tampilkan Widget Sholat di Hero</span>
+                    <label class="switch">
+                        <input type="hidden" name="show_hero_prayer_widget" value="0">
+                        <input type="checkbox" name="show_hero_prayer_widget" value="1" <?= (($settings['show_hero_prayer_widget'] ?? '1') === '1') ? 'checked' : '' ?> onchange="this.form.submit()">
                         <span class="slider"></span>
                     </label>
                 </div>

@@ -3,12 +3,14 @@
     $sectionSettings = $settings ?? [];
     $slides = $heroSlides ?? [];
     $hasDynamicSlides = !empty($slides) && is_array($slides);
+    $showPrayerWidget = (($sectionSettings['show_hero_prayer_widget'] ?? '1') === '1');
+    $gridClass = $showPrayerWidget ? 'hero-grid' : 'hero-grid hero-grid-no-widget';
 ?>
 
-<section class="hero-banner-section" style="position: relative; overflow: hidden;">
+<section class="hero-banner-section">
     <?php if ($hasDynamicSlides): ?>
         <!-- Dynamic Hero Slides Container -->
-        <div class="hero-slides-wrapper" id="heroSlidesWrapper" style="position: relative; min-height: 480px;">
+        <div class="hero-slides-wrapper" id="heroSlidesWrapper">
             <?php foreach ($slides as $idx => $slide): ?>
                 <?php
                     $bgUrl = !empty($slide['bg_image_path']) ? base_url($slide['bg_image_path']) : (!empty($donationSettings['donation_bg_image']) ? esc($donationSettings['donation_bg_image']) : base_url('assets/images/hero-bg.svg'));
@@ -16,12 +18,12 @@
                     $align = $slide['text_alignment'] ?? 'left';
                     $alignStyle = $align === 'center' ? 'text-align: center; margin-left: auto; margin-right: auto;' : ($align === 'right' ? 'text-align: right; margin-left: auto;' : 'text-align: left;');
                 ?>
-                <div class="hero-slide-item <?= $idx === 0 ? 'active' : '' ?>" data-slide-index="<?= $idx ?>" style="position: <?= $idx === 0 ? 'relative' : 'absolute' ?>; top: 0; left: 0; width: 100%; height: 100%; opacity: <?= $idx === 0 ? '1' : '0' ?>; transition: opacity 0.6s ease-in-out; pointer-events: <?= $idx === 0 ? 'auto' : 'none' ?>;">
+                <div class="hero-slide-item <?= $idx === 0 ? 'active' : '' ?>" data-slide-index="<?= $idx ?>">
                     <div class="hero-bg-media-wrap">
                         <img src="<?= $bgUrl ?>" alt="" class="hero-bg-media" loading="<?= $idx === 0 ? 'eager' : 'lazy' ?>">
                         <div class="hero-bg-tint" style="opacity: <?= $opacity ?>;"></div>
                     </div>
-                    <div class="container hero-grid">
+                    <div class="container <?= $gridClass ?>">
                         <div class="hero-copy" style="<?= $alignStyle ?>">
                             <div class="hero-pill" style="<?= $align === 'center' ? 'margin: 0 auto 16px;' : ($align === 'right' ? 'margin-left: auto;' : '') ?>">
                                 <span>🕌</span> <?= esc($sectionSettings['hero_badge'] ?? 'Portal Digital Masjid') ?> <?= esc($masjid['name'] ?? 'Masjid') ?>
@@ -64,50 +66,52 @@
                             </div>
                         </div>
 
-                        <!-- Right Prayer Widget Card -->
-                        <?php
-                            $prayerLabels = ['imsak' => 'Imsak', 'fajr' => 'Subuh', 'sunrise' => 'Terbit', 'dhuhr' => 'Dzuhur', 'asr' => 'Ashar', 'maghrib' => 'Maghrib', 'isha' => 'Isya'];
-                            $times = $prayerTimes ?? [];
-                            $mainFive = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
+                        <?php if ($showPrayerWidget): ?>
+                            <!-- Right Prayer Widget Card -->
+                            <?php
+                                $prayerLabels = ['imsak' => 'Imsak', 'fajr' => 'Subuh', 'sunrise' => 'Terbit', 'dhuhr' => 'Dzuhur', 'asr' => 'Ashar', 'maghrib' => 'Maghrib', 'isha' => 'Isya'];
+                                $times = $prayerTimes ?? [];
+                                $mainFive = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
 
-                            $now = date('H:i');
-                            $nextKey = null;
-                            if (is_array($times)) {
-                                foreach ($mainFive as $key) {
-                                    if (!empty($times[$key]) && is_string($times[$key]) && $times[$key] > $now) {
-                                        $nextKey = $key;
-                                        break;
+                                $now = date('H:i');
+                                $nextKey = null;
+                                if (is_array($times)) {
+                                    foreach ($mainFive as $key) {
+                                        if (!empty($times[$key]) && is_string($times[$key]) && $times[$key] > $now) {
+                                            $nextKey = $key;
+                                            break;
+                                        }
                                     }
                                 }
-                            }
-                            $nextKey = $nextKey ?? $mainFive[0];
-                        ?>
-                        <a href="<?= site_url('jadwal-shalat') ?>" class="prayer-hero-card" style="text-decoration: none; color: inherit; display: block; cursor: pointer; position: relative; z-index: 10;">
-                            <div class="prayer-card-head">
-                                <div>
-                                    <span class="prayer-card-label">Jadwal Ibadah Hari Ini</span>
-                                    <h3>📍 <?= esc($prayerCity ?? ($masjid['city'] ?? 'Kota Masjid')) ?></h3>
-                                </div>
-                                <div class="prayer-card-date">
-                                    <span><?= date('d M Y') ?></span>
-                                </div>
-                            </div>
-
-                            <div class="prayer-card-highlight">
-                                <span>Waktu Sholat Berikutnya</span>
-                                <h2><?= esc(strtoupper($prayerLabels[$nextKey] ?? 'SUBUH')) ?> — <?= esc(is_array($times) && isset($times[$nextKey]) ? $times[$nextKey] : '--:--') ?> WIB</h2>
-                                <span class="prayer-card-note">Lihat jadwal lengkap &amp; bulanan →</span>
-                            </div>
-
-                            <div class="prayer-time-grid">
-                                <?php foreach ($mainFive as $key): ?>
-                                    <div class="prayer-time-box <?= $key === $nextKey ? 'active' : '' ?>">
-                                        <div><?= esc($prayerLabels[$key]) ?></div>
-                                        <div><?= esc(is_array($times) && isset($times[$key]) ? $times[$key] : '--:--') ?></div>
+                                $nextKey = $nextKey ?? $mainFive[0];
+                            ?>
+                            <a href="<?= site_url('jadwal-shalat') ?>" class="prayer-hero-card" style="text-decoration: none; color: inherit; display: block; cursor: pointer; position: relative; z-index: 10;">
+                                <div class="prayer-card-head">
+                                    <div>
+                                        <span class="prayer-card-label">Jadwal Ibadah Hari Ini</span>
+                                        <h3>📍 <?= esc($prayerCity ?? ($masjid['city'] ?? 'Kota Masjid')) ?></h3>
                                     </div>
-                                <?php endforeach; ?>
-                            </div>
-                        </a>
+                                    <div class="prayer-card-date">
+                                        <span><?= date('d M Y') ?></span>
+                                    </div>
+                                </div>
+
+                                <div class="prayer-card-highlight">
+                                    <span>Waktu Sholat Berikutnya</span>
+                                    <h2><?= esc(strtoupper($prayerLabels[$nextKey] ?? 'SUBUH')) ?> — <?= esc(is_array($times) && isset($times[$nextKey]) ? $times[$nextKey] : '--:--') ?> WIB</h2>
+                                    <span class="prayer-card-note">Lihat jadwal lengkap &amp; bulanan →</span>
+                                </div>
+
+                                <div class="prayer-time-grid">
+                                    <?php foreach ($mainFive as $key): ?>
+                                        <div class="prayer-time-box <?= $key === $nextKey ? 'active' : '' ?>">
+                                            <div><?= esc($prayerLabels[$key]) ?></div>
+                                            <div><?= esc(is_array($times) && isset($times[$key]) ? $times[$key] : '--:--') ?></div>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            </a>
+                        <?php endif; ?>
                     </div>
                 </div>
             <?php endforeach; ?>
@@ -115,9 +119,9 @@
 
         <?php if (count($slides) > 1): ?>
             <!-- Slider Dots Pagination -->
-            <div class="hero-slider-dots" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 20;">
+            <div class="hero-slider-dots" style="position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 20; background: rgba(0, 0, 0, 0.25); backdrop-filter: blur(8px); padding: 6px 14px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.15);">
                 <?php foreach ($slides as $idx => $s): ?>
-                    <button type="button" onclick="goToHeroSlide(<?= $idx ?>)" class="hero-dot <?= $idx === 0 ? 'active' : '' ?>" style="width: 10px; height: 10px; border-radius: 50%; border: none; background: <?= $idx === 0 ? 'var(--primary-600, #10b981)' : 'rgba(255,255,255,0.5)' ?>; cursor: pointer; transition: all 0.3s;"></button>
+                    <button type="button" onclick="goToHeroSlide(<?= $idx ?>)" class="hero-dot <?= $idx === 0 ? 'active' : '' ?>" style="width: <?= $idx === 0 ? '24px' : '10px' ?>; height: 10px; border-radius: 5px; border: none; background: <?= $idx === 0 ? '#10b981' : 'rgba(255,255,255,0.6)' ?>; cursor: pointer; transition: all 0.3s;"></button>
                 <?php endforeach; ?>
             </div>
             <script>
@@ -132,7 +136,7 @@
 
                     items.forEach((item, i) => {
                         if (i === idx) {
-                            item.style.position = 'relative';
+                            item.style.position = 'absolute';
                             item.style.opacity = '1';
                             item.style.pointerEvents = 'auto';
                             item.classList.add('active');
@@ -145,8 +149,15 @@
                     });
 
                     dots.forEach((dot, i) => {
-                        dot.style.background = (i === idx) ? 'var(--primary-600, #10b981)' : 'rgba(255,255,255,0.5)';
-                        if (i === idx) dot.classList.add('active'); else dot.classList.remove('active');
+                        if (i === idx) {
+                            dot.style.background = '#10b981';
+                            dot.style.width = '24px';
+                            dot.classList.add('active');
+                        } else {
+                            dot.style.background = 'rgba(255,255,255,0.6)';
+                            dot.style.width = '10px';
+                            dot.classList.remove('active');
+                        }
                     });
 
                     currentSlideIdx = idx;
@@ -174,7 +185,7 @@
             <img src="<?= !empty($donationSettings['donation_bg_image']) ? esc($donationSettings['donation_bg_image']) : base_url('assets/images/hero-bg.svg') ?>" alt="" class="hero-bg-media" loading="eager">
             <div class="hero-bg-tint" style="opacity: 0.55;"></div>
         </div>
-        <div class="container hero-grid">
+        <div class="container <?= $gridClass ?>">
             <div class="hero-copy">
                 <div class="hero-pill">
                     <span>🕌</span> <?= esc($sectionSettings['hero_badge'] ?? 'Portal Digital Masjid') ?> <?= esc($masjid['name'] ?? 'Masjid') ?>
@@ -198,49 +209,51 @@
                 </div>
             </div>
 
-            <?php
-                $prayerLabels = ['imsak' => 'Imsak', 'fajr' => 'Subuh', 'sunrise' => 'Terbit', 'dhuhr' => 'Dzuhur', 'asr' => 'Ashar', 'maghrib' => 'Maghrib', 'isha' => 'Isya'];
-                $times = $prayerTimes ?? [];
-                $mainFive = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
+            <?php if ($showPrayerWidget): ?>
+                <?php
+                    $prayerLabels = ['imsak' => 'Imsak', 'fajr' => 'Subuh', 'sunrise' => 'Terbit', 'dhuhr' => 'Dzuhur', 'asr' => 'Ashar', 'maghrib' => 'Maghrib', 'isha' => 'Isya'];
+                    $times = $prayerTimes ?? [];
+                    $mainFive = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
 
-                $now = date('H:i');
-                $nextKey = null;
-                if (is_array($times)) {
-                    foreach ($mainFive as $key) {
-                        if (!empty($times[$key]) && is_string($times[$key]) && $times[$key] > $now) {
-                            $nextKey = $key;
-                            break;
+                    $now = date('H:i');
+                    $nextKey = null;
+                    if (is_array($times)) {
+                        foreach ($mainFive as $key) {
+                            if (!empty($times[$key]) && is_string($times[$key]) && $times[$key] > $now) {
+                                $nextKey = $key;
+                                break;
+                            }
                         }
                     }
-                }
-                $nextKey = $nextKey ?? $mainFive[0];
-            ?>
-            <a href="<?= site_url('jadwal-shalat') ?>" class="prayer-hero-card" style="text-decoration: none; color: inherit; display: block; cursor: pointer;">
-                <div class="prayer-card-head">
-                    <div>
-                        <span class="prayer-card-label">Jadwal Ibadah Hari Ini</span>
-                        <h3>📍 <?= esc($prayerCity ?? ($masjid['city'] ?? 'Kota Masjid')) ?></h3>
-                    </div>
-                    <div class="prayer-card-date">
-                        <span><?= date('d M Y') ?></span>
-                    </div>
-                </div>
-
-                <div class="prayer-card-highlight">
-                    <span>Waktu Sholat Berikutnya</span>
-                    <h2><?= esc(strtoupper($prayerLabels[$nextKey] ?? 'SUBUH')) ?> — <?= esc(is_array($times) && isset($times[$nextKey]) ? $times[$nextKey] : '--:--') ?> WIB</h2>
-                    <span class="prayer-card-note">Lihat jadwal lengkap &amp; bulanan →</span>
-                </div>
-
-                <div class="prayer-time-grid">
-                    <?php foreach ($mainFive as $key): ?>
-                        <div class="prayer-time-box <?= $key === $nextKey ? 'active' : '' ?>">
-                            <div><?= esc($prayerLabels[$key]) ?></div>
-                            <div><?= esc(is_array($times) && isset($times[$key]) ? $times[$key] : '--:--') ?></div>
+                    $nextKey = $nextKey ?? $mainFive[0];
+                ?>
+                <a href="<?= site_url('jadwal-shalat') ?>" class="prayer-hero-card" style="text-decoration: none; color: inherit; display: block; cursor: pointer;">
+                    <div class="prayer-card-head">
+                        <div>
+                            <span class="prayer-card-label">Jadwal Ibadah Hari Ini</span>
+                            <h3>📍 <?= esc($prayerCity ?? ($masjid['city'] ?? 'Kota Masjid')) ?></h3>
                         </div>
-                    <?php endforeach; ?>
-                </div>
-            </a>
+                        <div class="prayer-card-date">
+                            <span><?= date('d M Y') ?></span>
+                        </div>
+                    </div>
+
+                    <div class="prayer-card-highlight">
+                        <span>Waktu Sholat Berikutnya</span>
+                        <h2><?= esc(strtoupper($prayerLabels[$nextKey] ?? 'SUBUH')) ?> — <?= esc(is_array($times) && isset($times[$nextKey]) ? $times[$nextKey] : '--:--') ?> WIB</h2>
+                        <span class="prayer-card-note">Lihat jadwal lengkap &amp; bulanan →</span>
+                    </div>
+
+                    <div class="prayer-time-grid">
+                        <?php foreach ($mainFive as $key): ?>
+                            <div class="prayer-time-box <?= $key === $nextKey ? 'active' : '' ?>">
+                                <div><?= esc($prayerLabels[$key]) ?></div>
+                                <div><?= esc(is_array($times) && isset($times[$key]) ? $times[$key] : '--:--') ?></div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </a>
+            <?php endif; ?>
         </div>
     <?php endif; ?>
 </section>
