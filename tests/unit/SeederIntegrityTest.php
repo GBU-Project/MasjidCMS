@@ -46,18 +46,20 @@ class SeederIntegrityTest extends TestCase
         $this->assertStringContainsString("'role_code'   => 'SUPER_ADMIN'", $content);
     }
 
-    public function testSeedFileExistsAndContainsInitialData(): void
+    public function testInitialDataComesFromCodeIgniterSeeders(): void
     {
-        $seedPath = ROOTPATH . 'database/seed.sql';
-        $this->assertFileExists($seedPath);
-        $sql = file_get_contents($seedPath);
+        $seeders = [
+            APPPATH . 'Database/Seeds/RbacSeeder.php',
+            APPPATH . 'Database/Seeds/MasjidSeeder.php',
+            APPPATH . 'Database/Seeds/FinancialSeeder.php',
+        ];
 
-        $this->assertStringContainsString("INSERT INTO `roles`", $sql);
-        $this->assertStringContainsString("INSERT INTO `permissions`", $sql);
-        $this->assertStringContainsString("INSERT INTO `users`", $sql);
-        $this->assertStringContainsString("INSERT INTO `masjids`", $sql);
-        $this->assertStringContainsString("INSERT INTO `funds`", $sql);
-        $this->assertStringContainsString("INSERT INTO `coa_accounts`", $sql);
-        $this->assertStringContainsString("INSERT INTO `settings`", $sql);
+        foreach ($seeders as $seederPath) {
+            $this->assertFileExists($seederPath);
+        }
+
+        $this->assertStringContainsString("'role_code'   => 'SUPER_ADMIN'", file_get_contents($seeders[0]));
+        $this->assertStringContainsString("'code'          => 'MSJ-YASMIN-001'", file_get_contents($seeders[1]));
+        $this->assertStringContainsString("'fund_code'  => 'GENERAL'", file_get_contents($seeders[2]));
     }
 }

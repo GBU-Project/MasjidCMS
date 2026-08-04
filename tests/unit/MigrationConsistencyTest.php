@@ -21,13 +21,18 @@ class MigrationConsistencyTest extends TestCase
         }
     }
 
-    public function testSchemaAndSeedFilesAreConsistent(): void
+    public function testLegacySqlDumpFilesAreNonExecutableCompatibilityMarkers(): void
     {
         $schemaSql = file_get_contents(ROOTPATH . 'database/schema.sql');
         $seedSql = file_get_contents(ROOTPATH . 'database/seed.sql');
 
         $this->assertNotEmpty($schemaSql);
         $this->assertNotEmpty($seedSql);
-        $this->assertStringContainsString('ENGINE=InnoDB', $schemaSql);
+        $this->assertStringContainsString('intentionally non-executable', $schemaSql);
+        $this->assertStringContainsString('app/Database/Migrations/', $schemaSql);
+        $this->assertStringNotContainsString('CREATE TABLE', $schemaSql);
+        $this->assertStringContainsString('intentionally non-executable', $seedSql);
+        $this->assertStringContainsString('app/Database/Seeds/', $seedSql);
+        $this->assertStringNotContainsString('INSERT INTO', $seedSql);
     }
 }

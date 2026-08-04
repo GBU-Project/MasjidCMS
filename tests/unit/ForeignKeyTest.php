@@ -6,12 +6,16 @@ use PHPUnit\Framework\TestCase;
 
 class ForeignKeyTest extends TestCase
 {
-    public function testSchemaFileContainsForeignKeyConstraints(): void
+    public function testMigrationsContainForeignKeyConstraints(): void
     {
-        $sql = file_get_contents(ROOTPATH . 'database/schema.sql');
-        $this->assertStringContainsString('FOREIGN KEY (`fund_id`) REFERENCES `funds`', $sql);
-        $this->assertStringContainsString('FOREIGN KEY (`transaction_id`) REFERENCES `financial_transactions`', $sql);
-        $this->assertStringContainsString('FOREIGN KEY (`role_id`) REFERENCES `roles`', $sql);
-        $this->assertStringContainsString('FOREIGN KEY (`user_id`) REFERENCES `users`', $sql);
+        $migrationContent = '';
+        foreach (glob(APPPATH . 'Database/Migrations/*.php') as $migrationFile) {
+            $migrationContent .= file_get_contents($migrationFile);
+        }
+
+        $this->assertStringContainsString("addForeignKey('fund_id', 'funds'", $migrationContent);
+        $this->assertStringContainsString("addForeignKey('transaction_id', 'financial_transactions'", $migrationContent);
+        $this->assertStringContainsString("addForeignKey('account_id', 'coa_accounts'", $migrationContent);
+        $this->assertStringContainsString("addForeignKey('financial_account_id', 'financial_accounts'", $migrationContent);
     }
 }

@@ -14,19 +14,18 @@ class FreshInstallationTest extends TestCase
         $this->assertStringContainsString('database.default.hostname', $envContent);
     }
 
-    public function testDatabaseSqlDumpFilesExist(): void
+    public function testFreshInstallUsesMigrationsAndSeeders(): void
     {
-        $this->assertFileExists(ROOTPATH . 'database/schema.sql');
-        $this->assertFileExists(ROOTPATH . 'database/seed.sql');
+        $migrationFiles = glob(APPPATH . 'Database/Migrations/*.php');
+        $seederFiles = glob(APPPATH . 'Database/Seeds/*.php');
 
-        $schemaContent = file_get_contents(ROOTPATH . 'database/schema.sql');
-        $this->assertStringContainsString('CREATE TABLE IF NOT EXISTS `funds`', $schemaContent);
-        $this->assertStringContainsString('CREATE TABLE IF NOT EXISTS `coa_accounts`', $schemaContent);
-        $this->assertStringContainsString('CREATE TABLE IF NOT EXISTS `financial_transactions`', $schemaContent);
+        $this->assertNotEmpty($migrationFiles);
+        $this->assertNotEmpty($seederFiles);
 
-        $seedContent = file_get_contents(ROOTPATH . 'database/seed.sql');
-        $this->assertStringContainsString("INSERT INTO `funds`", $seedContent);
-        $this->assertStringContainsString("superadmin", $seedContent);
+        $this->assertFileExists(APPPATH . 'Database/Migrations/2026-07-27-000003_CreateRbacTables.php');
+        $this->assertFileExists(APPPATH . 'Database/Migrations/2026-07-27-000008_CreateFinancialTransactionsTable.php');
+        $this->assertFileExists(APPPATH . 'Database/Seeds/RbacSeeder.php');
+        $this->assertFileExists(APPPATH . 'Database/Seeds/FinancialSeeder.php');
     }
 
     public function testInstallationGuidesExist(): void
