@@ -151,7 +151,7 @@ class AdminFinancialWorkspaceController extends BaseController
                             '<span class="badge ' . ($t['status'] === 'POSTED' ? 'badge-green' : 'badge-amber') . '">' . esc($t['status']) . '</span>',
                             '<div style="display:flex; gap:4px;">' .
                             '<a href="' . site_url('admin/financial/detail/' . $t['id']) . '" class="btn btn-secondary" style="padding: 2px 8px; font-size: 12px;">Detail</a>' .
-                            '<a href="' . site_url('admin/financial/delete/' . $t['id']) . '" class="btn btn-secondary" onclick="return confirm(\'Void/Hapus transaksi ini?\')" style="padding: 2px 8px; font-size: 12px; color: var(--status-danger-text);">Void</a>' .
+                            $this->destructivePostButton(site_url('admin/financial/delete/' . $t['id']), 'Void', 'Void/Hapus transaksi ini?') .
                             '</div>',
                         ]
                     ];
@@ -166,7 +166,7 @@ class AdminFinancialWorkspaceController extends BaseController
                             '<strong>' . esc($c['name']) . '</strong>',
                             '<span class="badge badge-green">' . esc($c['account_type']) . '</span>',
                             '<span class="badge ' . ($c['is_active'] ? 'badge-green' : 'badge-amber') . '">' . ($c['is_active'] ? 'ACTIVE' : 'INACTIVE') . '</span>',
-                            '<a href="' . site_url('admin/financial/coa/delete/' . $c['id']) . '" class="btn btn-secondary" onclick="return confirm(\'Hapus COA ini?\')" style="padding: 2px 8px; font-size: 12px; color: var(--status-danger-text);">Hapus</a>',
+                            $this->destructivePostButton(site_url('admin/financial/coa/delete/' . $c['id']), 'Hapus', 'Hapus COA ini?'),
                         ]
                     ];
                 }
@@ -180,7 +180,7 @@ class AdminFinancialWorkspaceController extends BaseController
                             '<span class="stat-mono">PER-' . esc($b['period_id']) . '</span>',
                             '<span class="stat-mono">Rp ' . number_format((float)$b['allocated_amount'], 0, ',', '.') . '</span>',
                             '<span class="stat-mono">Rp ' . number_format((float)$b['used_amount'], 0, ',', '.') . '</span>',
-                            '<a href="' . site_url('admin/financial/budget/delete/' . $b['id']) . '" class="btn btn-secondary" onclick="return confirm(\'Hapus anggaran ini?\')" style="padding: 2px 8px; font-size: 12px; color: var(--status-danger-text);">Hapus</a>',
+                            $this->destructivePostButton(site_url('admin/financial/budget/delete/' . $b['id']), 'Hapus', 'Hapus anggaran ini?'),
                         ]
                     ];
                 }
@@ -195,7 +195,7 @@ class AdminFinancialWorkspaceController extends BaseController
                             esc($p['start_date']),
                             esc($p['end_date']),
                             '<span class="badge ' . ($p['is_closed'] ? 'badge-amber' : 'badge-green') . '">' . ($p['is_closed'] ? 'CLOSED' : 'OPEN') . '</span>',
-                            '<a href="' . site_url('admin/financial/periods/delete/' . $p['id']) . '" class="btn btn-secondary" onclick="return confirm(\'Hapus periode ini?\')" style="padding: 2px 8px; font-size: 12px; color: var(--status-danger-text);">Hapus</a>',
+                            $this->destructivePostButton(site_url('admin/financial/periods/delete/' . $p['id']), 'Hapus', 'Hapus periode ini?'),
                         ]
                     ];
                 }

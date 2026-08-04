@@ -121,7 +121,10 @@
                                 <td style="padding: 12px; text-align: center;">
                                     <div style="display: flex; gap: 6px; justify-content: center;">
                                         <a href="<?= site_url('admin/hero-slides/edit/' . $slide['id']) ?>" class="btn btn-secondary" style="padding: 4px 10px; font-size: 12px; border-radius: 6px; text-decoration: none;">✏️ Edit</a>
-                                        <a href="<?= site_url('admin/hero-slides/delete/' . $slide['id']) ?>" onclick="return confirm('Hapus slide hero ini? (File di Media Library tidak akan terhapus)')" class="btn btn-secondary" style="padding: 4px 10px; font-size: 12px; border-radius: 6px; text-decoration: none; color: #dc2626;">🗑️ Hapus</a>
+                                        <form action="<?= site_url('admin/hero-slides/delete/' . $slide['id']) ?>" method="POST" onsubmit="return confirm('Hapus slide hero ini? (File di Media Library tidak akan terhapus)')" style="display: inline;">
+                                            <?= csrf_field() ?>
+                                            <button type="submit" class="btn btn-secondary" style="padding: 4px 10px; font-size: 12px; border-radius: 6px; color: #dc2626;">🗑️ Hapus</button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>

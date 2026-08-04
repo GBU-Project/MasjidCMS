@@ -38,7 +38,7 @@ class AdminSystemWorkspaceController extends BaseController
                             '<span class="stat-mono">' . esc($s['setting_key']) . '</span>',
                             '<strong>' . esc($s['setting_value']) . '</strong>',
                             '<span class="badge badge-green">' . esc($s['setting_group']) . '</span>',
-                            '<a href="' . site_url('admin/settings/delete/' . esc($s['setting_key'])) . '" class="btn btn-secondary" onclick="return confirm(\'Hapus setting ini?\')" style="padding: 2px 8px; font-size: 12px; color: var(--status-danger-text);">Hapus</a>',
+                            $this->destructivePostButton(site_url('admin/settings/delete/' . $s['setting_key']), 'Hapus', 'Hapus setting ini?'),
                         ]
                     ];
                 }
@@ -64,7 +64,7 @@ class AdminSystemWorkspaceController extends BaseController
                             '<span class="badge badge-green">ACTIVE</span>',
                             '<div style="display:flex; gap:4px;">' .
                             '<a href="' . site_url('admin/menu/edit/' . $m['id']) . '" class="btn btn-secondary" style="padding: 2px 8px; font-size: 12px;">Edit</a>' .
-                            '<a href="' . site_url('admin/menu/delete/' . $m['id']) . '" class="btn btn-secondary" onclick="return confirm(\'Hapus menu ini?\')" style="padding: 2px 8px; font-size: 12px; color: var(--status-danger-text);">Hapus</a>' .
+                            $this->destructivePostButton(site_url('admin/menu/delete/' . $m['id']), 'Hapus', 'Hapus menu ini?') .
                             '</div>',
                         ]
                     ];
@@ -93,7 +93,7 @@ class AdminSystemWorkspaceController extends BaseController
                             '<span class="stat-mono">' . esc($n['user_id'] ?? 'SEMUA') . '</span>',
                             '<span class="badge badge-green">' . esc($n['channel'] ?? 'SYSTEM') . '</span>',
                             '<span class="badge ' . (($n['is_read'] ?? 0) ? 'badge-gray' : 'badge-amber') . '">' . (($n['is_read'] ?? 0) ? 'READ' : 'UNREAD') . '</span>',
-                            '<a href="' . site_url('admin/notification/delete/' . $n['id']) . '" class="btn btn-secondary" onclick="return confirm(\'Hapus notifikasi ini?\')" style="padding: 2px 8px; font-size: 12px; color: var(--status-danger-text);">Hapus</a>',
+                            $this->destructivePostButton(site_url('admin/notification/delete/' . $n['id']), 'Hapus', 'Hapus notifikasi ini?'),
                         ]
                     ];
                 }

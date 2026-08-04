@@ -37,7 +37,7 @@ class SecurityAuthorizationTest extends CIUnitTestCase
      */
     public function testAnonymousAccessToFinancialMutationIsRedirectedToLogin(): void
     {
-        $result = $this->get('admin/financial/delete/1');
+        $result = $this->post('admin/financial/delete/1', [csrf_token() => csrf_hash()]);
         $result->assertRedirectTo(site_url('login'));
     }
 
@@ -75,7 +75,7 @@ class SecurityAuthorizationTest extends CIUnitTestCase
         ];
 
         $result = $this->withSession(['auth_user' => $userData])
-                       ->get('admin/financial/delete/1');
+                       ->post('admin/financial/delete/1', [csrf_token() => csrf_hash()]);
         $result->assertStatus(403);
     }
 

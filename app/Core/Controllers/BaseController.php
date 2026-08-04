@@ -76,4 +76,15 @@ abstract class BaseController extends Controller
     {
         return ResponseFormatter::error($this->response, $message, $errors, $code);
     }
+
+    protected function destructivePostButton(string $url, string $label, string $confirmMessage, string $style = ''): string
+    {
+        $confirm = esc($confirmMessage, 'js');
+        $buttonStyle = $style !== '' ? $style : 'padding: 2px 8px; font-size: 12px; color: var(--status-danger-text);';
+
+        return '<form action="' . esc($url) . '" method="POST" onsubmit="return confirm(\'' . $confirm . '\')" style="display:inline;">'
+            . csrf_field()
+            . '<button type="submit" class="btn btn-secondary" style="' . esc($buttonStyle) . '">' . esc($label) . '</button>'
+            . '</form>';
+    }
 }

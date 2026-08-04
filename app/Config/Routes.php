@@ -83,7 +83,7 @@ $routes->group('admin', ['filter' => ['auth', 'rbac']], static function (RouteCo
     $routes->post('master/store', '\App\Controllers\AdminMasterDataController::store', ['filter' => 'rbac:admin.manage']);
     $routes->get('master/edit/(:segment)/(:segment)', '\App\Controllers\AdminMasterDataController::edit/$1/$2');
     $routes->post('master/update', '\App\Controllers\AdminMasterDataController::update', ['filter' => 'rbac:admin.manage']);
-    $routes->get('master/delete/(:segment)/(:segment)', '\App\Controllers\AdminMasterDataController::delete/$1/$2', ['filter' => 'rbac:admin.manage']);
+    $routes->post('master/delete/(:segment)/(:segment)', '\App\Controllers\AdminMasterDataController::delete/$1/$2', ['filter' => 'rbac:admin.manage']);
     $routes->get('masjid', '\App\Controllers\AdminMasterDataController::index');
     $routes->get('bidang', '\App\Controllers\AdminMasterDataController::index');
     $routes->get('pengurus', '\App\Controllers\AdminMasterDataController::index');
@@ -96,7 +96,7 @@ $routes->group('admin', ['filter' => ['auth', 'rbac']], static function (RouteCo
     $routes->get('financial', '\App\Controllers\AdminFinancialWorkspaceController::index');
     $routes->get('financial/create', '\App\Controllers\AdminFinancialWorkspaceController::create');
     $routes->post('financial/store', '\App\Controllers\AdminFinancialWorkspaceController::store', ['filter' => 'rbac:financial.manage']);
-    $routes->get('financial/delete/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::delete/$1', ['filter' => 'rbac:financial.manage']);
+    $routes->post('financial/delete/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::delete/$1', ['filter' => 'rbac:financial.manage']);
     $routes->get('financial/detail/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::detail/$1');
     $routes->get('financial/export', '\App\Controllers\AdminFinancialWorkspaceController::export', ['filter' => 'rbac:financial.manage']);
     $routes->get('financial/coa/export', '\App\Controllers\AdminFinancialWorkspaceController::exportCoa', ['filter' => 'rbac:financial.manage']);
@@ -106,13 +106,13 @@ $routes->group('admin', ['filter' => ['auth', 'rbac']], static function (RouteCo
     $routes->post('financial/import', '\App\Controllers\AdminFinancialWorkspaceController::import', ['filter' => 'rbac:financial.manage']);
 
     $routes->post('financial/coa/store', '\App\Controllers\AdminFinancialWorkspaceController::storeCoa', ['filter' => 'rbac:financial.manage']);
-    $routes->get('financial/coa/delete/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::deleteCoa/$1', ['filter' => 'rbac:financial.manage']);
+    $routes->post('financial/coa/delete/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::deleteCoa/$1', ['filter' => 'rbac:financial.manage']);
 
     $routes->post('financial/budget/store', '\App\Controllers\AdminFinancialWorkspaceController::storeBudget', ['filter' => 'rbac:financial.manage']);
-    $routes->get('financial/budget/delete/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::deleteBudget/$1', ['filter' => 'rbac:financial.manage']);
+    $routes->post('financial/budget/delete/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::deleteBudget/$1', ['filter' => 'rbac:financial.manage']);
 
     $routes->post('financial/periods/store', '\App\Controllers\AdminFinancialWorkspaceController::storePeriod', ['filter' => 'rbac:financial.manage']);
-    $routes->get('financial/periods/delete/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::deletePeriod/$1', ['filter' => 'rbac:financial.manage']);
+    $routes->post('financial/periods/delete/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::deletePeriod/$1', ['filter' => 'rbac:financial.manage']);
 
     $routes->post('financial/journal/store', '\App\Controllers\AdminFinancialWorkspaceController::storeJournal', ['filter' => 'rbac:financial.manage']);
 
@@ -127,7 +127,6 @@ $routes->group('admin', ['filter' => ['auth', 'rbac']], static function (RouteCo
     $routes->get('cms/edit/(:segment)/(:segment)', '\App\Controllers\AdminCmsWorkspaceController::edit/$1/$2');
     $routes->post('cms/update', '\App\Controllers\AdminCmsWorkspaceController::update', ['filter' => 'rbac:admin.manage']);
     $routes->post('cms/delete/(:segment)/(:segment)', '\App\Controllers\AdminCmsWorkspaceController::delete/$1/$2', ['filter' => 'rbac:admin.manage']);
-    $routes->get('cms/delete/(:segment)/(:segment)', '\App\Controllers\AdminCmsWorkspaceController::delete/$1/$2', ['filter' => 'rbac:admin.manage']);
     $routes->get('program', '\App\Controllers\AdminCmsWorkspaceController::index');
     $routes->get('layanan-cms', '\App\Controllers\AdminCmsWorkspaceController::index');
 
@@ -145,7 +144,7 @@ $routes->group('admin', ['filter' => ['auth', 'rbac']], static function (RouteCo
     $routes->post('hero-slides/store', '\App\Controllers\AdminHeroSlideController::store', ['filter' => 'rbac:admin.manage']);
     $routes->get('hero-slides/edit/(:segment)', '\App\Controllers\AdminHeroSlideController::edit/$1');
     $routes->post('hero-slides/update/(:segment)', '\App\Controllers\AdminHeroSlideController::update/$1', ['filter' => 'rbac:admin.manage']);
-    $routes->get('hero-slides/delete/(:segment)', '\App\Controllers\AdminHeroSlideController::delete/$1', ['filter' => 'rbac:admin.manage']);
+    $routes->post('hero-slides/delete/(:segment)', '\App\Controllers\AdminHeroSlideController::delete/$1', ['filter' => 'rbac:admin.manage']);
     $routes->post('hero-slides/toggle/(:segment)', '\App\Controllers\AdminHeroSlideController::toggle/$1', ['filter' => 'rbac:admin.manage']);
     $routes->post('hero-slides/save-order', '\App\Controllers\AdminHeroSlideController::saveOrder', ['filter' => 'rbac:admin.manage']);
     $routes->get('theme', '\App\Controllers\AdminSystemWorkspaceController::index');
@@ -153,13 +152,13 @@ $routes->group('admin', ['filter' => ['auth', 'rbac']], static function (RouteCo
 
     $routes->get('settings', '\App\Controllers\AdminSystemWorkspaceController::index');
     $routes->post('settings/store', '\App\Controllers\AdminSystemWorkspaceController::store', ['filter' => 'rbac:admin.manage']);
-    $routes->get('settings/delete/(:segment)', '\App\Controllers\AdminSystemWorkspaceController::deleteSetting/$1', ['filter' => 'rbac:admin.manage']);
+    $routes->post('settings/delete/(:segment)', '\App\Controllers\AdminSystemWorkspaceController::deleteSetting/$1', ['filter' => 'rbac:admin.manage']);
 
     $routes->get('menu', '\App\Controllers\AdminSystemWorkspaceController::index');
     $routes->post('menu/store', '\App\Controllers\AdminSystemWorkspaceController::storeMenu', ['filter' => 'rbac:admin.manage']);
     $routes->get('menu/edit/(:segment)', '\App\Controllers\AdminSystemWorkspaceController::editMenu/$1');
     $routes->post('menu/update', '\App\Controllers\AdminSystemWorkspaceController::updateMenu', ['filter' => 'rbac:admin.manage']);
-    $routes->get('menu/delete/(:segment)', '\App\Controllers\AdminSystemWorkspaceController::deleteMenu/$1', ['filter' => 'rbac:admin.manage']);
+    $routes->post('menu/delete/(:segment)', '\App\Controllers\AdminSystemWorkspaceController::deleteMenu/$1', ['filter' => 'rbac:admin.manage']);
 
     // NOTE (pra-eksisting, di luar cakupan TASK-019A): rute 'admin/media' &
     // 'admin/media/*' berikut ini duplikat/di-shadow oleh AdminMediaController
@@ -169,11 +168,11 @@ $routes->group('admin', ['filter' => ['auth', 'rbac']], static function (RouteCo
     // dibersihkan terpisah.
     $routes->get('media', '\App\Controllers\AdminSystemWorkspaceController::index');
     $routes->post('media/store', '\App\Controllers\AdminSystemWorkspaceController::storeMedia', ['filter' => 'rbac:admin.manage']);
-    $routes->get('media/delete/(:segment)', '\App\Controllers\AdminSystemWorkspaceController::deleteMedia/$1', ['filter' => 'rbac:admin.manage']);
+    $routes->post('media/delete/(:segment)', '\App\Controllers\AdminSystemWorkspaceController::deleteMedia/$1', ['filter' => 'rbac:admin.manage']);
 
     $routes->get('notification', '\App\Controllers\AdminSystemWorkspaceController::index');
     $routes->post('notification/store', '\App\Controllers\AdminSystemWorkspaceController::storeNotification', ['filter' => 'rbac:admin.manage']);
-    $routes->get('notification/delete/(:segment)', '\App\Controllers\AdminSystemWorkspaceController::deleteNotification/$1', ['filter' => 'rbac:admin.manage']);
+    $routes->post('notification/delete/(:segment)', '\App\Controllers\AdminSystemWorkspaceController::deleteNotification/$1', ['filter' => 'rbac:admin.manage']);
 
     // Prayer Time Routes
     $routes->get('prayer-time', '\App\Controllers\AdminPrayerTimeController::index');

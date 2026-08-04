@@ -20,7 +20,10 @@ class AdminMasterDataController extends BaseController
 
         return '<div class="row-actions" style="display:flex; gap:4px; justify-content:flex-end;">'
             . '<a href="' . esc($editUrl) . '" class="btn btn-secondary" style="padding: 4px 8px; font-size: 12px;" title="Edit Data">✏️</a>'
-            . '<a href="' . esc($deleteUrl) . '" class="btn btn-secondary" onclick="return confirm(\'' . $confirm . '\')" style="padding: 4px 8px; font-size: 12px; color: var(--status-danger-text);" title="Hapus Data">🗑️</a>'
+            . '<form action="' . esc($deleteUrl) . '" method="POST" onsubmit="return confirm(\'' . $confirm . '\')" style="display:inline;">'
+            . csrf_field()
+            . '<button type="submit" class="btn btn-secondary" style="padding: 4px 8px; font-size: 12px; color: var(--status-danger-text);" title="Hapus Data">???</button>'
+            . '</form>'
             . '</div>';
     }
 
