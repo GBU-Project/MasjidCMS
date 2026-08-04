@@ -80,6 +80,15 @@ class AdminMediaController extends BaseController
         return $this->response->setJSON([
             'status' => 'success',
             'data'   => $items,
+            // BUGFIX: opening the media picker (used by Hero Slider, CMS, etc.)
+            // fires this GET request, which passes through CI4's CSRF filter.
+            // With Config/Security.php `regenerate = true`, the token rotates
+            // on this request too — but this endpoint never told the browser
+            // about the new token. The underlying page's <form> still held the
+            // OLD token from page-load, so clicking "Simpan" afterwards failed
+            // CSRF validation until a full page refresh fetched a fresh token.
+            // Returning the current hash lets the JS side re-sync immediately.
+            'csrf_token_value' => csrf_hash(),
         ]);
     }
 

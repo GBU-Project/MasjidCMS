@@ -160,28 +160,37 @@
         // had no visual confirmation of where they were in a ~26-item menu.
         // We compare against 'admin/...' onward so this also works on subfolder
         // installs (e.g. /masjidgbu/admin/master) where REQUEST_URI has a prefix.
-        $__requestPath = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?? '';
-        $__requestQuery = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_QUERY) ?? '';
-        
-        $__pos = strpos($__requestPath, 'admin/');
-        $GLOBALS['__currentBase'] = $__pos !== false ? rtrim(substr($__requestPath, $__pos), '/') : trim($__requestPath, '/');
-        parse_str($__requestQuery, $GLOBALS['__currentQueryArr']);
-
-        // Named function using $GLOBALS array so it works reliably inside CodeIgniter view scope.
+        //
+        // BUGFIX: this used to set plain local variables and reach them from
+        // navClass() via `global $x` — but CodeIgniter includes views inside a
+        // method, so those vars were never real PHP globals, `global` resolved
+        // to null, and calling null as a function threw a fatal error (500) on
+        // every admin page. Writing into $GLOBALS explicitly makes `global`
+        // inside navClass() actually find them.
         if (!function_exists('navClass')) {
+            $GLOBALS['__navBasePath'] = function (string $path): string {
+                $pos = strpos($path, 'admin/');
+                return $pos !== false ? rtrim(substr($path, $pos), '/') : trim($path, '/');
+            };
+
             function navClass(string $route): string
             {
+                global $__navBasePath;
+
+                $requestPath  = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?? '';
+                $requestQuery = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_QUERY) ?? '';
+                $currentBase  = $__navBasePath($requestPath);
+                parse_str($requestQuery, $currentQueryArr);
+
                 [$routePath, $routeQuery] = array_pad(explode('?', $route, 2), 2, null);
-                $pos = strpos($routePath, 'admin/');
-                $routeBase = $pos !== false ? rtrim(substr($routePath, $pos), '/') : trim($routePath, '/');
-                
-                if ($routeBase !== ($GLOBALS['__currentBase'] ?? '')) {
+                $routeBase = $__navBasePath($routePath);
+                if ($routeBase !== $currentBase) {
                     return 'nav-item-link';
                 }
                 if ($routeQuery !== null) {
                     parse_str($routeQuery, $routeQueryArr);
                     foreach ($routeQueryArr as $key => $value) {
-                        if ((($GLOBALS['__currentQueryArr'] ?? [])[$key] ?? null) !== $value) {
+                        if (($currentQueryArr[$key] ?? null) !== $value) {
                             return 'nav-item-link';
                         }
                     }

@@ -66,11 +66,11 @@ class AdminHeroSlideController extends BaseController
         }
 
         $rules = [
-            'title' => 'required|min_length[3]|max_length[255]',
+            'title' => 'permit_empty|min_length[3]|max_length[255]',
         ];
 
         if (!$this->validate($rules)) {
-            return redirect()->back()->withInput()->with('error', 'Judul slide wajib diisi (minimal 3 karakter).');
+            return redirect()->back()->withInput()->with('error', 'Judul slide, jika diisi, minimal 3 karakter (maks. 255).');
         }
 
         $maxOrder = $db->table('hero_slides')->selectMax('sort_order', 'max_order')->get()->getRowArray();
@@ -136,11 +136,11 @@ class AdminHeroSlideController extends BaseController
         }
 
         $rules = [
-            'title' => 'required|min_length[3]|max_length[255]',
+            'title' => 'permit_empty|min_length[3]|max_length[255]',
         ];
 
         if (!$this->validate($rules)) {
-            return redirect()->back()->withInput()->with('error', 'Judul slide wajib diisi (minimal 3 karakter).');
+            return redirect()->back()->withInput()->with('error', 'Judul slide, jika diisi, minimal 3 karakter (maks. 255).');
         }
 
         $bgMediaId = (int) $this->request->getPost('bg_image_media_id');

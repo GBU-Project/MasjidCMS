@@ -30,8 +30,8 @@
             </h3>
 
             <div style="margin-bottom: 16px;">
-                <label style="display: block; font-weight: 700; font-size: 13px; margin-bottom: 6px;">Judul Utama (Title) *</label>
-                <input type="text" name="title" required value="<?= esc(old('title', $slide['title'])) ?>" placeholder="Contoh: Pusat Ibadah, Dakwah & Pemberdayaan Umat" style="width: 100%; padding: 10px 14px; border: 1px solid var(--border-light); border-radius: 8px; font-size: 14px;">
+                <label style="display: block; font-weight: 700; font-size: 13px; margin-bottom: 6px;">Judul Utama (Title) <span style="font-weight: 400; color: var(--text-muted);">(opsional)</span></label>
+                <input type="text" name="title" value="<?= esc(old('title', $slide['title'])) ?>" placeholder="Contoh: Pusat Ibadah, Dakwah & Pemberdayaan Umat — boleh dikosongkan" style="width: 100%; padding: 10px 14px; border: 1px solid var(--border-light); border-radius: 8px; font-size: 14px;">
             </div>
 
             <div style="margin-bottom: 20px;">

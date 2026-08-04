@@ -29,9 +29,11 @@
                                 <span>🕌</span> <?= esc($sectionSettings['hero_badge'] ?? 'Portal Digital Masjid') ?> <?= esc($masjid['name'] ?? 'Masjid') ?>
                             </div>
 
-                            <h1 class="hero-title">
-                                <?= esc($slide['title']) ?>
-                            </h1>
+                            <?php if (!empty($slide['title'])): ?>
+                                <h1 class="hero-title">
+                                    <?= esc($slide['title']) ?>
+                                </h1>
+                            <?php endif; ?>
 
                             <?php if (!empty($slide['subtitle'])): ?>
                                 <p class="hero-subtitle">

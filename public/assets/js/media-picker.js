@@ -97,6 +97,25 @@
         resetDetailPanel();
     };
 
+    // BUGFIX (reported: Hero Slider save fails, works after refresh):
+    // upload() already returned a fresh csrf_token_value, but the code only
+    // patched the <meta> tag. Any surrounding <form> (e.g. the Hero Slide
+    // create/edit form using "Pilih Gambar dari Media Library") keeps its own
+    // hidden csrf_field() input rendered at page-load with the OLD token, so
+    // it still failed on submit. This now patches every matching hidden input
+    // on the page too, so the next form submit anywhere on the page succeeds.
+    function syncCsrfToken(newValue) {
+        if (!newValue) return;
+        var csrfNameMeta = document.querySelector('meta[name="csrf-token-name"]');
+        var csrfValueMeta = document.querySelector('meta[name="csrf-token-value"]');
+        if (csrfValueMeta) csrfValueMeta.content = newValue;
+        if (csrfNameMeta) {
+            document.querySelectorAll('input[name="' + csrfNameMeta.content + '"]').forEach(function (input) {
+                input.value = newValue;
+            });
+        }
+    }
+
     // --- 3. AJAX Data Loader & Grid Rendering ---
     window.loadMediaPickerData = function() {
         var grid = document.getElementById('modalMediaGrid');
@@ -108,6 +127,13 @@
         fetch(appUrl('admin/media/api?type=image'))
             .then(function(res) { return res.json(); })
             .then(function(data) {
+                // BUGFIX: this GET request also rotates the CSRF token (CI4
+                // regenerates on every filtered request, not just POST), so
+                // just opening the picker to browse — without uploading
+                // anything — was enough to make the page's form go stale.
+                if (data.csrf_token_value) {
+                    syncCsrfToken(data.csrf_token_value);
+                }
                 if (data.status === 'success' && Array.isArray(data.data)) {
                     cachedMediaData = data.data;
                     renderMediaGrid(cachedMediaData);
@@ -306,11 +332,12 @@
 
             if (data.status === 'success') {
                 // CSRF token regenerates on every request (Config/Security.php
-                // regenerate = true); refresh the meta tags with the new hash
-                // returned by the server so the NEXT upload in this same
-                // modal session doesn't fail with a stale token.
-                if (data.csrf_token_value && csrfValueMeta) {
-                    csrfValueMeta.content = data.csrf_token_value;
+                // regenerate = true); sync it everywhere on the page — not
+                // just the meta tag — so the NEXT submit anywhere (including
+                // the surrounding Hero Slide / CMS form) doesn't fail with a
+                // stale token.
+                if (data.csrf_token_value) {
+                    syncCsrfToken(data.csrf_token_value);
                 }
                 loadMediaPickerData();
             } else {
