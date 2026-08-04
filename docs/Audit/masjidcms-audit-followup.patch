@@ -1,0 +1,207 @@
+diff --git a/.github/ISSUE_TEMPLATE/bug_report.md b/.github/ISSUE_TEMPLATE/bug_report.md
+new file mode 100644
+index 0000000..671d7a5
+--- /dev/null
++++ b/.github/ISSUE_TEMPLATE/bug_report.md
+@@ -0,0 +1,31 @@
++---
++name: Bug report
++about: Report a defect in MasjidCMS
++title: "[Bug] "
++labels: bug
++---
++
++**Describe the bug**
++A clear description of what's wrong.
++
++**Affected domain/module**
++(e.g. Financial, Jamaah, Family, Masjid, System/CMS)
++
++**Steps to reproduce**
++1.
++2.
++3.
++
++**Expected behavior**
++
++
++**Actual behavior**
++
++
++**Environment**
++- MasjidCMS version/commit:
++- PHP version:
++- Database (MySQL/MariaDB) version:
++
++**Security-sensitive?**
++If this bug could be a security vulnerability, please do **not** file it here — follow [`SECURITY.md`](../../SECURITY.md) instead.
+diff --git a/.github/ISSUE_TEMPLATE/feature_request.md b/.github/ISSUE_TEMPLATE/feature_request.md
+new file mode 100644
+index 0000000..82014af
+--- /dev/null
++++ b/.github/ISSUE_TEMPLATE/feature_request.md
+@@ -0,0 +1,21 @@
++---
++name: Feature request
++about: Suggest an idea for MasjidCMS
++title: "[Feature] "
++labels: enhancement
++---
++
++**What problem does this solve, for which user?**
++(e.g. treasurer, secretary, DKM admin, volunteer, congregation member)
++
++**Proposed solution**
++
++
++**Does this fit the current roadmap?**
++Check [`ROADMAP.md`](../../ROADMAP.md) — note if this overlaps with a planned milestone.
++
++**Alternatives considered**
++
++
++**Would this change existing architecture or workflow?**
++If yes, please describe why the current structure doesn't accommodate it — architectural changes need a discussion before implementation, not just in the PR.
+diff --git a/.github/PULL_REQUEST_TEMPLATE.md b/.github/PULL_REQUEST_TEMPLATE.md
+new file mode 100644
+index 0000000..8b8b23f
+--- /dev/null
++++ b/.github/PULL_REQUEST_TEMPLATE.md
+@@ -0,0 +1,12 @@
++## Summary
++
++
++## Related issue
++
++
++## Checklist
++- [ ] Linked to an existing issue
++- [ ] Tests added/updated and passing locally (`composer test`)
++- [ ] No unrelated architectural or workflow changes bundled in
++- [ ] Documentation updated if this affects architecture, security, or installation
++- [ ] If this touches the `Financial` domain, the affected business rule(s) are covered by tests
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+new file mode 100644
+index 0000000..899aa4c
+--- /dev/null
++++ b/.github/workflows/ci.yml
+@@ -0,0 +1,49 @@
++name: CI
++
++on:
++  push:
++    branches: [main, develop]
++  pull_request:
++    branches: [main, develop]
++
++jobs:
++  test:
++    runs-on: ubuntu-latest
++
++    services:
++      mysql:
++        image: mysql:8.0
++        env:
++          MYSQL_ALLOW_EMPTY_PASSWORD: yes
++          MYSQL_DATABASE: masjidcms_test
++        ports:
++          - 3306:3306
++        options: >-
++          --health-cmd="mysqladmin ping"
++          --health-interval=10s
++          --health-timeout=5s
++          --health-retries=5
++
++    steps:
++      - uses: actions/checkout@v4
++
++      - name: Setup PHP
++        uses: shivammathur/setup-php@v2
++        with:
++          php-version: '8.2'
++          extensions: mbstring, intl, mysqli, pdo_mysql
++          coverage: none
++
++      - name: Validate composer.json
++        run: composer validate --strict
++
++      - name: Install dependencies
++        run: composer install --prefer-dist --no-progress --no-interaction
++
++      # NOTE: Database setup (env vars, migrations, seed) intentionally left
++      # to maintainers to fill in — this workflow does not assume the exact
++      # `spark` migration invocation to avoid encoding unverified behavior.
++      # See INSTALLATION.md for the authoritative local setup steps.
++
++      - name: Run test suite
++        run: composer test
+diff --git a/CONTRIBUTING.md b/CONTRIBUTING.md
+new file mode 100644
+index 0000000..fba0c61
+--- /dev/null
++++ b/CONTRIBUTING.md
+@@ -0,0 +1,41 @@
++# Contributing to MasjidCMS
++
++Thank you for considering a contribution. MasjidCMS manages mosque finances and congregation data for real communities, so we ask contributors to follow a few extra guardrails beyond typical OSS etiquette.
++
++## Before you start
++
++- **Open an issue first** for anything beyond a trivial fix (typo, small bug), so the change can be discussed before you invest time.
++- **Do not change architecture, domain boundaries, or workflows speculatively.** MasjidCMS follows a domain-oriented structure (`app/Domains/*`); if your change would move code across domain boundaries or restructure a controller, explain why in the issue first.
++
++## Setting up
++
++Follow [`INSTALLATION.md`](INSTALLATION.md) for local environment setup (PHP 8.2+, Composer, MySQL/MariaDB).
++
++## Running tests
++
++```bash
++composer install
++composer test        # runs phpunit
++```
++
++All pull requests are automatically run against the test suite via GitHub Actions (see `.github/workflows/ci.yml`). PRs that fail CI will not be merged.
++
++- Add or update tests for any behavior change.
++- The `Financial` domain (fund accounting, double-entry posting) is the highest-risk area in the codebase — changes here require test coverage of the affected business rule(s) (see `docs/FINANCIAL_DATA_MODEL.md`) and should be reviewed with extra care.
++
++## Coding conventions
++
++- Follow the existing domain structure: Entities, Services, Repositories, DTOs, Policies under `app/Domains/<Domain>`.
++- Keep controllers thin — orchestration and business logic belong in domain Services, not Controllers. If a controller is growing to handle multiple resources, split it by resource rather than adding more actions to one class.
++- New API endpoints under `api/*` are CSRF-exempt by framework convention; they **must** be protected by the `auth` filter (and `rbac:<permission>` where applicable) at the route level — see `app/Domains/Financial/Routes/financial.php` for the pattern.
++
++## Security
++
++Do not open a public issue for security vulnerabilities — see [`SECURITY.md`](SECURITY.md) for the responsible-disclosure process.
++
++## Pull request checklist
++
++- [ ] Linked to an existing issue (or explains why one wasn't needed)
++- [ ] Tests added/updated and passing locally (`composer test`)
++- [ ] No unrelated architectural or workflow changes bundled in
++- [ ] Documentation updated if the change affects architecture, security, or installation (see `docs/`, `README.md`, `INSTALLATION.md`)
+diff --git a/SECURITY.md b/SECURITY.md
+index d71b1f0..9df852c 100644
+--- a/SECURITY.md
++++ b/SECURITY.md
+@@ -9,6 +9,18 @@ Below are the versions of MasjidCMS currently supported with security updates.
+ | 1.0.x   | :white_check_mark: |
+ | < 1.0   | :x:                |
+ 
++## Verified Controls (as of this audit)
++
++The following controls were reviewed against the `develop` branch source and confirmed present (source review only — not a penetration test):
++
++- **CSRF protection**: enabled globally via `Config/Filters.php`, exempted only for `api/*` and installer routes, with token randomization enabled (`Config/Security.php`).
++- **API authentication**: `api/*` routes are CSRF-exempt by CodeIgniter convention, but are independently protected by the `auth` (session authentication) and `rbac:<permission>` filters at the route-group level — see `app/Domains/Financial/Routes/financial.php` for the reference pattern. New API routes must follow the same pattern.
++- **Login rate limiting**: implemented via CodeIgniter's `Throttler` service in both `AuthPageController::login()` (browser login) and `App\Domains\System\Controllers\AuthenticationController` (JSON/API login), limiting to 5 attempts per 5 minutes per IP+username.
++- **SQL injection**: all raw `->query()` calls found in the codebase use parameterized placeholders (`?`), not string concatenation.
++- **Secrets in history**: no `.env` file found committed to the `develop` branch history.
++
++These were unverified claims in an earlier third-party audit and have since been confirmed by direct source inspection; no code changes were required for these items.
++
+ ## Reporting a Vulnerability
+ 
+ Security is paramount for MasjidCMS as it manages public funds, donations, and jamaah data.

@@ -1,26 +1,40 @@
 <?php
 
 use CodeIgniter\Router\RouteCollection;
+use App\Domains\Financial\Controllers\AdminFinancialWorkspaceController;
 
 /** @var RouteCollection $routes */
 
 /**
- * TASK-019A Security Blocker Remediation (29 Juli 2026):
- * Grup rute ini sebelumnya TIDAK memiliki filter 'auth'/'rbac' sama
- * sekali -- endpoint approve/reject/post/void transaksi keuangan (yang
- * lebih otoritatif dari UI admin biasa) bisa dipanggil siapa pun tanpa
- * login. Ditambahkan filter wajib di sini.
- *
- * PERHATIAN -- tindak lanjut terpisah yang WAJIB dikerjakan (di luar
- * cakupan perubahan routing ini): FinancialApiController::approve()
- * dan reject() saat ini mengambil identitas approver dari BODY JSON
- * request ($json['approver_user_id'] ?? 'user-dkm'), bukan dari
- * SecurityContext::user() hasil sesi login. Menambahkan filter 'auth'
- * di sini MENCEGAH akses anonim, tapi TIDAK mencegah user yang sudah
- * login memalsukan approver_user_id milik user lain untuk melewati
- * ApprovalPolicy (Treasurer/Finance Manager/Chairman only). Controller
- * & Application Service/DTO terkait perlu diubah agar approver_user_id
- * diambil dari SecurityContext::user()->id, bukan dari input client.
+ * Financial Domain Admin Workspace Routes
+ */
+$routes->group('admin', ['filter' => ['auth', 'rbac']], static function (RouteCollection $routes) {
+    $routes->get('financial', [AdminFinancialWorkspaceController::class, 'index']);
+    $routes->get('financial/create', [AdminFinancialWorkspaceController::class, 'create']);
+    $routes->post('financial/store', [AdminFinancialWorkspaceController::class, 'store'], ['filter' => 'rbac:financial.manage']);
+    $routes->post('financial/delete/(:segment)', [AdminFinancialWorkspaceController::class, 'delete'], ['filter' => 'rbac:financial.manage']);
+    $routes->get('financial/detail/(:segment)', [AdminFinancialWorkspaceController::class, 'detail']);
+    $routes->get('financial/export', [AdminFinancialWorkspaceController::class, 'export'], ['filter' => 'rbac:financial.manage']);
+    $routes->get('financial/coa/export', [AdminFinancialWorkspaceController::class, 'exportCoa'], ['filter' => 'rbac:financial.manage']);
+    $routes->get('financial/budget/export', [AdminFinancialWorkspaceController::class, 'exportBudget'], ['filter' => 'rbac:financial.manage']);
+    $routes->get('financial/periods/export', [AdminFinancialWorkspaceController::class, 'exportPeriods'], ['filter' => 'rbac:financial.manage']);
+    $routes->get('financial/journal/export', [AdminFinancialWorkspaceController::class, 'exportJournal'], ['filter' => 'rbac:financial.manage']);
+    $routes->post('financial/import', [AdminFinancialWorkspaceController::class, 'import'], ['filter' => 'rbac:financial.manage']);
+
+    $routes->post('financial/coa/store', [AdminFinancialWorkspaceController::class, 'storeCoa'], ['filter' => 'rbac:financial.manage']);
+    $routes->post('financial/coa/delete/(:segment)', [AdminFinancialWorkspaceController::class, 'deleteCoa'], ['filter' => 'rbac:financial.manage']);
+
+    $routes->post('financial/budget/store', [AdminFinancialWorkspaceController::class, 'storeBudget'], ['filter' => 'rbac:financial.manage']);
+    $routes->post('financial/budget/delete/(:segment)', [AdminFinancialWorkspaceController::class, 'deleteBudget'], ['filter' => 'rbac:financial.manage']);
+
+    $routes->post('financial/periods/store', [AdminFinancialWorkspaceController::class, 'storePeriod'], ['filter' => 'rbac:financial.manage']);
+    $routes->post('financial/periods/delete/(:segment)', [AdminFinancialWorkspaceController::class, 'deletePeriod'], ['filter' => 'rbac:financial.manage']);
+
+    $routes->post('financial/journal/store', [AdminFinancialWorkspaceController::class, 'storeJournal'], ['filter' => 'rbac:financial.manage']);
+});
+
+/**
+ * Financial Domain API Routes
  */
 $routes->group('api/financial', ['namespace' => 'App\Controllers\Api', 'filter' => ['auth', 'rbac:financial.manage']], static function ($routes) {
     $routes->post('transactions', 'FinancialApiController::create');

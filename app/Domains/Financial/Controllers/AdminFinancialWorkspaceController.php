@@ -1,131 +1,18 @@
 <?php
 
-namespace App\Controllers;
+namespace App\Domains\Financial\Controllers;
 
 use App\Core\Controllers\BaseController;
+use App\Domains\Financial\Services\FinancialPostingService;
 use Config\Database;
 
 class AdminFinancialWorkspaceController extends BaseController
 {
-    private function resolveDoubleEntryAccounts(string $type, int $financialAccountId, int $coaAccountId): array
+    private FinancialPostingService $postingService;
+
+    public function __construct()
     {
-        if ($type === 'INCOME') {
-            return [$financialAccountId, $coaAccountId];
-        }
-
-        return [$coaAccountId, $financialAccountId];
-    }
-
-    private function buildJournalDetailRows(string $type, float $amount, int $financialAccountId, int $coaAccountId): array
-    {
-        [$debitAccountId, $creditAccountId] = $this->resolveDoubleEntryAccounts($type, $financialAccountId, $coaAccountId);
-
-        return [
-            [
-                'account_id'    => $debitAccountId,
-                'debit_amount'  => $amount,
-                'credit_amount' => 0.0,
-            ],
-            [
-                'account_id'    => $creditAccountId,
-                'debit_amount'  => 0.0,
-                'credit_amount' => $amount,
-            ],
-        ];
-    }
-
-    /**
-     * Inserts a single financial transaction + its auto double-entry journal.
-     * Extracted from store() so CSV Import (see importTransactions()) can
-     * reuse the exact same posting logic instead of duplicating it.
-     *
-     * @return array{success: bool, message: string, transaction_no?: string}
-     */
-    private function insertTransaction(array $data): array
-    {
-        $db = Database::connect();
-
-        $type      = (string) ($data['transaction_type'] ?: 'EXPENSE');
-        $amount    = (float) ($data['amount'] ?? 0);
-        $desc      = (string) ($data['description'] ?? '');
-        $date      = (string) ($data['transaction_date'] ?: date('Y-m-d H:i:s'));
-        $fundId    = (int) ($data['fund_id'] ?? 0);
-        $finAccId  = (int) ($data['financial_account_id'] ?? 0);
-        $accountId = (int) ($data['account_id'] ?? 0);
-
-        if ($amount <= 0 || $desc === '' || $fundId <= 0 || $finAccId <= 0 || $accountId <= 0) {
-            return ['success' => false, 'message' => 'Data tidak lengkap atau tidak valid.'];
-        }
-
-        $uuid = $this->generateUuid();
-        $trxNo = 'TRX-' . date('Ym') . '-' . str_pad((string) mt_rand(1, 9999), 5, '0', STR_PAD_LEFT);
-
-        $db->transStart();
-
-        $db->table('financial_transactions')->insert([
-            'uuid'                 => $uuid,
-            'masjid_id'            => '1',
-            'fund_id'              => $fundId,
-            'account_id'           => $accountId,
-            'financial_account_id' => $finAccId,
-            'transaction_no'       => $trxNo,
-            'transaction_type'     => $type,
-            'amount'               => $amount,
-            'payment_method'       => 'CASH',
-            'status'               => 'POSTED',
-            'transaction_date'     => $date,
-            'description'          => $desc,
-            'created_at'           => date('Y-m-d H:i:s'),
-        ]);
-        $trxId = $db->insertID();
-
-        if ($db->tableExists('financial_accounts')) {
-            // Native CI4 pessimistic row locking (SELECT ... FOR UPDATE) inside transaction boundary
-            $db->query('SELECT balance FROM financial_accounts WHERE id = ? FOR UPDATE', [$finAccId]);
-
-            $builder = $db->table('financial_accounts')->where('id', $finAccId);
-            if ($type === 'INCOME') {
-                $builder->set('balance', 'balance + ' . $amount, false);
-            } else {
-                $builder->set('balance', 'balance - ' . $amount, false);
-            }
-            $builder->update();
-        }
-
-        if ($db->tableExists('journal_entries')) {
-            $jUuid = $this->generateUuid();
-            $jNo = 'JRN-' . date('Ym') . '-' . str_pad((string) mt_rand(1, 9999), 5, '0', STR_PAD_LEFT);
-
-            $db->table('journal_entries')->insert([
-                'uuid'           => $jUuid,
-                'transaction_id' => $trxId,
-                'journal_no'     => $jNo,
-                'entry_date'     => $date,
-                'description'    => 'Jurnal Otomatis Transaksi ' . $trxNo . ': ' . $desc,
-                'created_at'     => date('Y-m-d H:i:s'),
-            ]);
-            $journalId = $db->insertID();
-
-            if ($db->tableExists('journal_details')) {
-                $journalDetailRows = $this->buildJournalDetailRows($type, $amount, $finAccId, $accountId);
-                foreach ($journalDetailRows as $row) {
-                    $db->table('journal_details')->insert([
-                        'journal_id'    => $journalId,
-                        'account_id'    => $row['account_id'],
-                        'debit_amount'  => $row['debit_amount'],
-                        'credit_amount' => $row['credit_amount'],
-                    ]);
-                }
-            }
-        }
-
-        $db->transComplete();
-
-        if ($db->transStatus() === false) {
-            return ['success' => false, 'message' => 'Transaksi gagal diproses (rollback).'];
-        }
-
-        return ['success' => true, 'message' => 'OK', 'transaction_no' => $trxNo];
+        $this->postingService = new FinancialPostingService();
     }
 
     public function index(): string
@@ -302,7 +189,7 @@ class AdminFinancialWorkspaceController extends BaseController
                 return redirect()->back()->withInput();
             }
 
-            $result = $this->insertTransaction([
+            $result = $this->postingService->insertTransaction([
                 'transaction_type'     => (string) ($this->request->getPost('transaction_type') ?: 'EXPENSE'),
                 'amount'               => (float) $this->request->getPost('amount'),
                 'description'          => (string) $this->request->getPost('description'),
@@ -327,10 +214,6 @@ class AdminFinancialWorkspaceController extends BaseController
         return redirect()->to(site_url('admin/financial'));
     }
 
-    /**
-     * Finding C (UAT RC0-001): Export button was missing entirely from the
-     * Financial Workspace. Streams all financial transactions as CSV.
-     */
     public function export()
     {
         $db = Database::connect();
@@ -365,13 +248,6 @@ class AdminFinancialWorkspaceController extends BaseController
             ->setBody($content);
     }
 
-    /**
-     * Bug fix (UAT): only the Transactions tab had an Export button --
-     * COA, Budget, Periode, and Jurnal had none at all, matching the
-     * report "semua fungsi keuangan tidak bisa export". Shared CSV
-     * streaming helper reused by the four new export actions below, same
-     * pattern as export() above.
-     */
     private function streamCsv(array $rows, array $headers, string $filenamePrefix)
     {
         $filename = $filenamePrefix . '-' . date('Ymd-His') . '.csv';
@@ -434,14 +310,6 @@ class AdminFinancialWorkspaceController extends BaseController
         return $this->streamCsv($rows, ['journal_no', 'transaction_id', 'entry_date', 'description', 'created_at'], 'journal-entries');
     }
 
-    /**
-     * Finding C (UAT RC0-001): Import button was missing entirely from the
-     * Financial Workspace. Accepts a CSV upload and creates transactions
-     * through the SAME posting path as the manual "Buat Transaksi" form
-     * (insertTransaction()), so RBAC, double-entry, and balance updates stay
-     * consistent with existing behaviour. Invalid rows are skipped and
-     * reported rather than aborting the whole batch.
-     */
     public function import()
     {
         $file = $this->request->getFile('import_file');
@@ -479,7 +347,7 @@ class AdminFinancialWorkspaceController extends BaseController
                 continue;
             }
 
-            $result = $this->insertTransaction([
+            $result = $this->postingService->insertTransaction([
                 'transaction_type'     => $assoc['transaction_type'] ?? 'EXPENSE',
                 'amount'               => (float) ($assoc['amount'] ?? 0),
                 'description'          => (string) ($assoc['description'] ?? ''),
@@ -515,7 +383,7 @@ class AdminFinancialWorkspaceController extends BaseController
             $code = (string) $this->request->getPost('account_code');
             $name = (string) $this->request->getPost('name');
             $type = (string) ($this->request->getPost('account_type') ?: 'ASSET');
-            $uuid = sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x', mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0x0fff) | 0x4000, mt_rand(0, 0x3fff) | 0x8000, mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff));
+            $uuid = $this->postingService->generateUuid();
 
             if (!empty($code) && !empty($name) && $db->tableExists('coa_accounts')) {
                 $db->table('coa_accounts')->insert([
@@ -659,7 +527,7 @@ class AdminFinancialWorkspaceController extends BaseController
                 }
 
                 $jNo = 'JRN-' . date('Ym') . '-' . str_pad((string) mt_rand(1, 9999), 5, '0', STR_PAD_LEFT);
-                $uuid = sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x', mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0x0fff) | 0x4000, mt_rand(0, 0x3fff) | 0x8000, mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff));
+                $uuid = $this->postingService->generateUuid();
 
                 $db->table('journal_entries')->insert([
                     'uuid'           => $uuid,
@@ -720,20 +588,5 @@ class AdminFinancialWorkspaceController extends BaseController
             'transactionId' => $id,
             'transaction'   => $transaction,
         ]);
-    }
-
-    private function generateUuid(): string
-    {
-        return sprintf(
-            '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0x0fff) | 0x4000,
-            mt_rand(0, 0x3fff) | 0x8000,
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0xffff)
-        );
     }
 }

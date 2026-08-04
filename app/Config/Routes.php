@@ -92,29 +92,7 @@ $routes->group('admin', ['filter' => ['auth', 'rbac']], static function (RouteCo
     $routes->get('users', '\App\Controllers\AdminMasterDataController::index', ['filter' => 'rbac:admin.manage']);
     $routes->get('rbac', '\App\Controllers\AdminMasterDataController::index', ['filter' => 'rbac:admin.manage']);
 
-    // Financial Workspace Routes (mutasi dana masjid -> permission sensitif)
-    $routes->get('financial', '\App\Controllers\AdminFinancialWorkspaceController::index');
-    $routes->get('financial/create', '\App\Controllers\AdminFinancialWorkspaceController::create');
-    $routes->post('financial/store', '\App\Controllers\AdminFinancialWorkspaceController::store', ['filter' => 'rbac:financial.manage']);
-    $routes->post('financial/delete/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::delete/$1', ['filter' => 'rbac:financial.manage']);
-    $routes->get('financial/detail/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::detail/$1');
-    $routes->get('financial/export', '\App\Controllers\AdminFinancialWorkspaceController::export', ['filter' => 'rbac:financial.manage']);
-    $routes->get('financial/coa/export', '\App\Controllers\AdminFinancialWorkspaceController::exportCoa', ['filter' => 'rbac:financial.manage']);
-    $routes->get('financial/budget/export', '\App\Controllers\AdminFinancialWorkspaceController::exportBudget', ['filter' => 'rbac:financial.manage']);
-    $routes->get('financial/periods/export', '\App\Controllers\AdminFinancialWorkspaceController::exportPeriods', ['filter' => 'rbac:financial.manage']);
-    $routes->get('financial/journal/export', '\App\Controllers\AdminFinancialWorkspaceController::exportJournal', ['filter' => 'rbac:financial.manage']);
-    $routes->post('financial/import', '\App\Controllers\AdminFinancialWorkspaceController::import', ['filter' => 'rbac:financial.manage']);
-
-    $routes->post('financial/coa/store', '\App\Controllers\AdminFinancialWorkspaceController::storeCoa', ['filter' => 'rbac:financial.manage']);
-    $routes->post('financial/coa/delete/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::deleteCoa/$1', ['filter' => 'rbac:financial.manage']);
-
-    $routes->post('financial/budget/store', '\App\Controllers\AdminFinancialWorkspaceController::storeBudget', ['filter' => 'rbac:financial.manage']);
-    $routes->post('financial/budget/delete/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::deleteBudget/$1', ['filter' => 'rbac:financial.manage']);
-
-    $routes->post('financial/periods/store', '\App\Controllers\AdminFinancialWorkspaceController::storePeriod', ['filter' => 'rbac:financial.manage']);
-    $routes->post('financial/periods/delete/(:segment)', '\App\Controllers\AdminFinancialWorkspaceController::deletePeriod/$1', ['filter' => 'rbac:financial.manage']);
-
-    $routes->post('financial/journal/store', '\App\Controllers\AdminFinancialWorkspaceController::storeJournal', ['filter' => 'rbac:financial.manage']);
+    // Financial Workspace Routes are loaded dynamically via app/Domains/Financial/Routes/financial.php
 
     // Reporting Workspace Routes (read-only, cukup 'auth')
     $routes->get('reporting', '\App\Controllers\AdminReportingWorkspaceController::index');
