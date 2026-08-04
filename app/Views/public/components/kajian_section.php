@@ -11,10 +11,17 @@
         <?php if (!empty($kajianList)): ?>
             <div class="card-grid-ui2 card-grid-events">
                 <?php foreach ($kajianList as $k): ?>
+                    <?php $speakerPhotoUrl = !empty($k['speaker_photo_filepath']) ? (str_starts_with($k['speaker_photo_filepath'], 'http') ? $k['speaker_photo_filepath'] : base_url($k['speaker_photo_filepath'])) : ''; ?>
                     <div class="card-ui2 card-event">
                         <div class="card-body">
                             <div class="event-head">
-                                <div class="event-icon">☪️</div>
+                                <?php if ($speakerPhotoUrl): ?>
+                                    <div class="event-icon event-icon-photo">
+                                        <img src="<?= esc($speakerPhotoUrl) ?>" alt="<?= esc($k['speaker_name'] ?? '') ?>" loading="lazy">
+                                    </div>
+                                <?php else: ?>
+                                    <div class="event-icon">☪️</div>
+                                <?php endif; ?>
                                 <div>
                                     <h4><?= esc($k['speaker_name'] ?? 'Ustadz Penceramah') ?></h4>
                                     <span>Penceramah Utama</span>

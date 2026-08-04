@@ -11,10 +11,17 @@
         <?php if (!empty($postsList)): ?>
             <div class="card-grid-ui2 card-grid-news card-grid-news-4col">
                 <?php foreach ($postsList as $post): ?>
+                    <?php $thumbUrl = !empty($post['featured_filepath']) ? (str_starts_with($post['featured_filepath'], 'http') ? $post['featured_filepath'] : base_url($post['featured_filepath'])) : ''; ?>
                     <article class="card-ui2 card-news">
-                        <div class="news-thumb">
-                            <span>📰</span>
-                        </div>
+                        <?php if ($thumbUrl): ?>
+                            <div class="news-thumb news-thumb-photo">
+                                <img src="<?= esc($thumbUrl) ?>" alt="<?= esc($post['title'] ?? '') ?>" loading="lazy">
+                            </div>
+                        <?php else: ?>
+                            <div class="news-thumb">
+                                <span>📰</span>
+                            </div>
+                        <?php endif; ?>
                         <div class="card-body">
                             <div class="news-meta-row">
                                 <span class="news-category">Berita Masjid</span>

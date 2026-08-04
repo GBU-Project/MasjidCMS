@@ -38,6 +38,15 @@
                 <input type="text" name="title" required class="form-control" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;" placeholder="Masukkan judul berita...">
             </div>
             <div style="margin-bottom: 16px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 6px;">Foto Sampul / Thumbnail</label>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <img data-preview-for="posts_featured_media_id" src="" style="width:64px; height:64px; object-fit:cover; border-radius:8px; border:1px solid var(--border-light); display:none;">
+                    <input type="hidden" name="featured_media_id" id="posts_featured_media_id" data-picker-value="id">
+                    <button type="button" class="btn btn-secondary" onclick="selectFromMediaLibrary('posts_featured_media_id')" style="padding: 8px 14px; font-size: 13px;">🖼️ Pilih dari Media Library</button>
+                </div>
+                <p style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">Opsional. Tanpa foto, kartu berita akan tampil dengan ikon default.</p>
+            </div>
+            <div style="margin-bottom: 16px;">
                 <label style="display: block; font-weight: 600; margin-bottom: 6px;">Slug (URL Friendly)</label>
                 <input type="text" name="slug" class="form-control" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;" placeholder="Opsional (otomatis terisi dari judul)">
             </div>
@@ -57,6 +66,15 @@
             <div style="margin-bottom: 16px;">
                 <label style="display: block; font-weight: 600; margin-bottom: 6px;">Nama Penceramah / Ustadz *</label>
                 <input type="text" name="speaker_name" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: 6px;" placeholder="Contoh: KH. Ahmad Dahlan, Lc">
+            </div>
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 6px;">Foto Penceramah</label>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <img data-preview-for="kajian_speaker_photo_media_id" src="" style="width:56px; height:56px; object-fit:cover; border-radius:50%; border:1px solid var(--border-light); display:none;">
+                    <input type="hidden" name="speaker_photo_media_id" id="kajian_speaker_photo_media_id" data-picker-value="id">
+                    <button type="button" class="btn btn-secondary" onclick="selectFromMediaLibrary('kajian_speaker_photo_media_id')" style="padding: 8px 14px; font-size: 13px;">🖼️ Pilih dari Media Library</button>
+                </div>
+                <p style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">Opsional. Tanpa foto, akan tampil ikon default.</p>
             </div>
             <div style="margin-bottom: 16px;">
                 <label style="display: block; font-weight: 600; margin-bottom: 6px;">Tema / Topik Kajian *</label>

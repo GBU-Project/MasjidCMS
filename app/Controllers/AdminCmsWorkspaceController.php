@@ -221,13 +221,14 @@ class AdminCmsWorkspaceController extends BaseController
                 }
 
                 $db->table('posts')->insert([
-                    'author_id'    => $authorId,
-                    'title'        => $title,
-                    'slug'         => $slug,
-                    'content'      => $content,
-                    'is_published' => $isPublished,
-                    'published_at' => $isPublished ? date('Y-m-d H:i:s') : null,
-                    'created_at'   => date('Y-m-d H:i:s'),
+                    'author_id'         => $authorId,
+                    'title'             => $title,
+                    'featured_media_id' => $this->request->getPost('featured_media_id') ?: null,
+                    'slug'              => $slug,
+                    'content'           => $content,
+                    'is_published'      => $isPublished,
+                    'published_at'      => $isPublished ? date('Y-m-d H:i:s') : null,
+                    'created_at'        => date('Y-m-d H:i:s'),
                 ]);
 
                 session()->setFlashdata('success', 'Berita "' . esc($title) . '" berhasil ditambahkan.');
@@ -254,15 +255,16 @@ class AdminCmsWorkspaceController extends BaseController
                 $uuid = sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x', mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0x0fff) | 0x4000, mt_rand(0, 0x3fff) | 0x8000, mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff));
 
                 $db->table('kajian')->insert([
-                    'uuid'          => $uuid,
-                    'masjid_id'     => '1',
-                    'speaker_name'  => $speakerName,
-                    'topic'         => $topic,
-                    'schedule_date' => $date,
-                    'schedule_time' => $time,
-                    'location'      => $location,
-                    'status'        => 'UPCOMING',
-                    'created_at'    => date('Y-m-d H:i:s'),
+                    'uuid'                    => $uuid,
+                    'masjid_id'               => '1',
+                    'speaker_name'            => $speakerName,
+                    'speaker_photo_media_id'  => $this->request->getPost('speaker_photo_media_id') ?: null,
+                    'topic'                   => $topic,
+                    'schedule_date'           => $date,
+                    'schedule_time'           => $time,
+                    'location'                => $location,
+                    'status'                  => 'UPCOMING',
+                    'created_at'              => date('Y-m-d H:i:s'),
                 ]);
 
                 session()->setFlashdata('success', 'Jadwal Kajian "' . esc($topic) . '" berhasil ditambahkan.');
@@ -420,6 +422,20 @@ class AdminCmsWorkspaceController extends BaseController
                             ->join('media', 'media.id = gallery.media_id', 'left');
                 }
                 $item = $builder->where('gallery.id', $id)->get()->getRowArray();
+            } elseif ($type === 'posts') {
+                $builder = $db->table('posts');
+                if ($db->tableExists('media')) {
+                    $builder->select('posts.*, media.filepath')
+                            ->join('media', 'media.id = posts.featured_media_id', 'left');
+                }
+                $item = $builder->where('posts.id', $id)->get()->getRowArray();
+            } elseif ($type === 'kajian') {
+                $builder = $db->table('kajian');
+                if ($db->tableExists('media')) {
+                    $builder->select('kajian.*, media.filepath')
+                            ->join('media', 'media.id = kajian.speaker_photo_media_id', 'left');
+                }
+                $item = $builder->where('kajian.id', $id)->get()->getRowArray();
             } else {
                 $item = $db->table($tableName)->where('id', $id)->get()->getRowArray();
             }
@@ -456,10 +472,11 @@ class AdminCmsWorkspaceController extends BaseController
                 $slug = !empty($inputSlug) ? url_title($inputSlug, '-', true) : url_title($title, '-', true);
 
                 $db->table('posts')->where('id', $id)->update([
-                    'title'        => $title,
-                    'slug'         => $slug,
-                    'content'      => (string) $this->request->getPost('content'),
-                    'is_published' => (int) $this->request->getPost('is_published'),
+                    'title'             => $title,
+                    'featured_media_id' => $this->request->getPost('featured_media_id') ?: null,
+                    'slug'              => $slug,
+                    'content'           => (string) $this->request->getPost('content'),
+                    'is_published'      => (int) $this->request->getPost('is_published'),
                 ]);
                 session()->setFlashdata('success', 'Berita berhasil diperbarui.');
 
@@ -471,11 +488,12 @@ class AdminCmsWorkspaceController extends BaseController
                 }
 
                 $db->table('kajian')->where('id', $id)->update([
-                    'speaker_name'  => (string) $this->request->getPost('speaker_name'),
-                    'topic'         => (string) $this->request->getPost('topic'),
-                    'schedule_date' => (string) $this->request->getPost('schedule_date'),
-                    'schedule_time' => (string) $this->request->getPost('schedule_time'),
-                    'location'      => (string) $this->request->getPost('location'),
+                    'speaker_name'           => (string) $this->request->getPost('speaker_name'),
+                    'speaker_photo_media_id' => $this->request->getPost('speaker_photo_media_id') ?: null,
+                    'topic'                  => (string) $this->request->getPost('topic'),
+                    'schedule_date'          => (string) $this->request->getPost('schedule_date'),
+                    'schedule_time'          => (string) $this->request->getPost('schedule_time'),
+                    'location'               => (string) $this->request->getPost('location'),
                 ]);
                 session()->setFlashdata('success', 'Jadwal Kajian berhasil diperbarui.');
 

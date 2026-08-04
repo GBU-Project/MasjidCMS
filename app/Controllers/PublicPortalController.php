@@ -170,12 +170,22 @@ class PublicPortalController extends BaseController
         }
 
         if ($db->tableExists('posts')) {
-            $latestPosts = $db->table('posts')->where('is_published', 1)->orderBy('created_at', 'DESC')->limit($limitKajian)->get()->getResultArray();
+            $postsBuilder = $db->table('posts')->where('is_published', 1);
+            if ($db->tableExists('media')) {
+                $postsBuilder->select('posts.*, media.filepath AS featured_filepath')
+                             ->join('media', 'media.id = posts.featured_media_id', 'left');
+            }
+            $latestPosts = $postsBuilder->orderBy('created_at', 'DESC')->limit($limitKajian)->get()->getResultArray();
         }
 
         $kajianList = [];
         if ($db->tableExists('kajian')) {
-            $kajianList = $db->table('kajian')->orderBy('schedule_date', 'DESC')->limit(6)->get()->getResultArray();
+            $kajianBuilder = $db->table('kajian');
+            if ($db->tableExists('media')) {
+                $kajianBuilder->select('kajian.*, media.filepath AS speaker_photo_filepath')
+                              ->join('media', 'media.id = kajian.speaker_photo_media_id', 'left');
+            }
+            $kajianList = $kajianBuilder->orderBy('schedule_date', 'DESC')->limit(6)->get()->getResultArray();
         }
 
         $limitAgenda = (int) ($settings['limit_agenda'] ?? 5);
@@ -368,10 +378,20 @@ class PublicPortalController extends BaseController
         $kajianList = [];
 
         if ($db->tableExists('posts')) {
-            $posts = $db->table('posts')->where('is_published', 1)->orderBy('created_at', 'DESC')->get()->getResultArray();
+            $postsBuilder = $db->table('posts')->where('is_published', 1);
+            if ($db->tableExists('media')) {
+                $postsBuilder->select('posts.*, media.filepath AS featured_filepath')
+                             ->join('media', 'media.id = posts.featured_media_id', 'left');
+            }
+            $posts = $postsBuilder->orderBy('created_at', 'DESC')->get()->getResultArray();
         }
         if ($db->tableExists('kajian')) {
-            $kajianList = $db->table('kajian')->where('status', 'UPCOMING')->orderBy('schedule_date', 'ASC')->get()->getResultArray();
+            $kajianBuilder = $db->table('kajian')->where('status', 'UPCOMING');
+            if ($db->tableExists('media')) {
+                $kajianBuilder->select('kajian.*, media.filepath AS speaker_photo_filepath')
+                              ->join('media', 'media.id = kajian.speaker_photo_media_id', 'left');
+            }
+            $kajianList = $kajianBuilder->orderBy('schedule_date', 'ASC')->get()->getResultArray();
         }
 
         return view('public/news', [

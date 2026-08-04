@@ -327,12 +327,14 @@ CREATE TABLE IF NOT EXISTS `posts` (
   `category_id` BIGINT NULL,
   `author_id` BIGINT NOT NULL,
   `title` VARCHAR(255) NOT NULL,
+  `featured_media_id` BIGINT NULL,
   `slug` VARCHAR(255) NOT NULL UNIQUE,
   `content` TEXT NOT NULL,
   `is_published` TINYINT(1) NOT NULL DEFAULT 1,
   `published_at` DATETIME NULL,
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (`category_id`) REFERENCES `categories`(`id`) ON DELETE SET NULL
+  FOREIGN KEY (`category_id`) REFERENCES `categories`(`id`) ON DELETE SET NULL,
+  FOREIGN KEY (`featured_media_id`) REFERENCES `media`(`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `menus` (
@@ -363,12 +365,14 @@ CREATE TABLE IF NOT EXISTS `kajian` (
   `uuid` CHAR(36) NOT NULL UNIQUE,
   `masjid_id` VARCHAR(64) NOT NULL,
   `speaker_name` VARCHAR(128) NOT NULL,
+  `speaker_photo_media_id` BIGINT NULL,
   `topic` VARCHAR(255) NOT NULL,
   `schedule_date` DATE NOT NULL,
   `schedule_time` TIME NOT NULL,
   `location` VARCHAR(128) NOT NULL,
   `status` ENUM('UPCOMING', 'COMPLETED', 'CANCELLED') NOT NULL DEFAULT 'UPCOMING',
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (`speaker_photo_media_id`) REFERENCES `media`(`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ------------------------------------------------------------------------------
