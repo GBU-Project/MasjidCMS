@@ -162,29 +162,26 @@
         // installs (e.g. /masjidgbu/admin/master) where REQUEST_URI has a prefix.
         $__requestPath = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?? '';
         $__requestQuery = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_QUERY) ?? '';
-        $__navBasePath = function (string $path): string {
-            $pos = strpos($path, 'admin/');
-            return $pos !== false ? rtrim(substr($path, $pos), '/') : trim($path, '/');
-        };
-        $__currentBase = $__navBasePath($__requestPath);
-        parse_str($__requestQuery, $__currentQueryArr);
+        
+        $__pos = strpos($__requestPath, 'admin/');
+        $GLOBALS['__currentBase'] = $__pos !== false ? rtrim(substr($__requestPath, $__pos), '/') : trim($__requestPath, '/');
+        parse_str($__requestQuery, $GLOBALS['__currentQueryArr']);
 
-        // Named function (not a closure) so it can be called as navClass(...) from
-        // the markup below without threading variables through every call site.
+        // Named function using $GLOBALS array so it works reliably inside CodeIgniter view scope.
         if (!function_exists('navClass')) {
             function navClass(string $route): string
             {
-                global $__navBasePath, $__currentBase, $__currentQueryArr;
-
                 [$routePath, $routeQuery] = array_pad(explode('?', $route, 2), 2, null);
-                $routeBase = $__navBasePath($routePath);
-                if ($routeBase !== $__currentBase) {
+                $pos = strpos($routePath, 'admin/');
+                $routeBase = $pos !== false ? rtrim(substr($routePath, $pos), '/') : trim($routePath, '/');
+                
+                if ($routeBase !== ($GLOBALS['__currentBase'] ?? '')) {
                     return 'nav-item-link';
                 }
                 if ($routeQuery !== null) {
                     parse_str($routeQuery, $routeQueryArr);
                     foreach ($routeQueryArr as $key => $value) {
-                        if (($__currentQueryArr[$key] ?? null) !== $value) {
+                        if ((($GLOBALS['__currentQueryArr'] ?? [])[$key] ?? null) !== $value) {
                             return 'nav-item-link';
                         }
                     }
