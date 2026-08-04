@@ -15,9 +15,11 @@ class AdminDashboardController extends BaseController
         $totalJamaah = 0;
         $totalFamilies = 0;
         $pendingApprovals = 0;
-        $todayDonation = 0;
         $totalBalance = 0;
+        $todayDonation = 0;
+        $yesterdayDonation = 0;
         $recentTransactions = [];
+        $recentActivity = [];
 
         try {
             if ($db->tableExists('masjids')) {
@@ -66,9 +68,35 @@ class AdminDashboardController extends BaseController
                 $donRow = $donQuery->getRow();
                 $todayDonation = (float) ($donRow->amount ?? 0);
 
+                // Light trend context so the figure isn't a bare number with no
+                // meaning (per audit finding: "stats without context are hard to
+                // read"). Kept to a simple yesterday comparison — no new tables.
+                $yesterdayStart = date('Y-m-d 00:00:00', strtotime('-1 day'));
+                $yesterdayEnd   = date('Y-m-d 23:59:59', strtotime('-1 day'));
+                $yesterdayRow = $db->table('financial_transactions')
+                    ->selectSum('amount')
+                    ->where('transaction_type', 'INCOME')
+                    ->where('transaction_date >=', $yesterdayStart)
+                    ->where('transaction_date <=', $yesterdayEnd)
+                    ->get()
+                    ->getRow();
+                $yesterdayDonation = (float) ($yesterdayRow->amount ?? 0);
+
                 $trxNoCol = $db->fieldExists('transaction_no', 'financial_transactions') ? 'transaction_no' : 'transaction_number';
                 $recentTransactions = $db->table('financial_transactions')
                     ->select("{$trxNoCol} as transaction_no, transaction_type, amount, status, transaction_date, description")
+                    ->orderBy('created_at', 'DESC')
+                    ->limit(5)
+                    ->get()
+                    ->getResultArray();
+            }
+
+            // TASK-AUDIT: dashboard previously showed a hardcoded fake timeline
+            // ("Bendahara Ahmad memposting jurnal...") that never reflected what
+            // actually happened. audit_logs already exists and is used by the
+            // System > Audit Log tab, so we reuse it here instead of inventing data.
+            if ($db->tableExists('audit_logs')) {
+                $recentActivity = $db->table('audit_logs')
                     ->orderBy('created_at', 'DESC')
                     ->limit(5)
                     ->get()
@@ -84,8 +112,10 @@ class AdminDashboardController extends BaseController
             'totalFamilies'      => $totalFamilies,
             'pendingApprovals'   => $pendingApprovals,
             'todayDonation'      => $todayDonation,
+            'yesterdayDonation'  => $yesterdayDonation,
             'totalBalance'       => $totalBalance,
             'recentTransactions' => $recentTransactions,
+            'recentActivity'     => $recentActivity,
         ]);
     }
 }

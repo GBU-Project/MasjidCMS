@@ -65,7 +65,21 @@
             <div class="stat-icon">📥</div>
         </div>
         <div class="stat-figure stat-mono">Rp <?= number_format((float)($todayDonation ?? 0), 0, ',', '.') ?></div>
-        <span class="stat-delta">Transaksi Hari Ini</span>
+        <?php
+            // TASK-AUDIT: bare figures with no comparison are hard to judge
+            // ("is this good or does it need attention?"). Simple yesterday
+            // comparison — no new tables, just reusing today's/yesterday's sums.
+            $yesterday = (float) ($yesterdayDonation ?? 0);
+            $today = (float) ($todayDonation ?? 0);
+        ?>
+        <?php if ($yesterday > 0): ?>
+            <?php $deltaPct = round((($today - $yesterday) / $yesterday) * 100); ?>
+            <span class="stat-delta" style="color: <?= $deltaPct >= 0 ? 'var(--primary-600)' : 'var(--status-danger-text)' ?>;">
+                <?= $deltaPct >= 0 ? '↑' : '↓' ?> <?= abs($deltaPct) ?>% dari kemarin
+            </span>
+        <?php else: ?>
+            <span class="stat-delta">Belum ada data kemarin untuk dibandingkan</span>
+        <?php endif; ?>
     </div>
 
     <div class="stat-card">
@@ -136,57 +150,58 @@
         <!-- Audit Log Timeline Widget -->
         <div class="panel-card">
             <div class="panel-header">
-                <span>Aktivitas Terbaru (Audit Log)</span>
+                <span>Aktivitas Terbaru</span>
+                <a href="<?= site_url('admin/settings?tab=audit') ?>" style="font-size: 12px; color: var(--primary-600);">Lihat semua →</a>
             </div>
-            <ul class="timeline-list">
-                <li class="timeline-item">
-                    <div class="timeline-dot"></div>
-                    <div class="timeline-content">
-                        <strong>Bendahara (Ahmad)</strong> memposting jurnal <code>JRN-202607-00080</code>
-                        <div class="timeline-time">5 menit yang lalu</div>
-                    </div>
-                </li>
-                <li class="timeline-item">
-                    <div class="timeline-dot"></div>
-                    <div class="timeline-content">
-                        <strong>Ketua DKM (H. Usman)</strong> menyetujui transaksi <code>TRX-202607-00085</code>
-                        <div class="timeline-time">20 menit yang lalu</div>
-                    </div>
-                </li>
-                <li class="timeline-item">
-                    <div class="timeline-dot"></div>
-                    <div class="timeline-content">
-                        <strong>Staff (Budi)</strong> mendaftarkan Jamaah baru <code>Bpk. Ridwan</code>
-                        <div class="timeline-time">1 jam yang lalu</div>
-                    </div>
-                </li>
-            </ul>
+            <?php
+                // TASK-AUDIT: this used to be 3 hardcoded fake entries ("Bendahara
+                // Ahmad memposting jurnal..."). Now pulled from the real audit_logs
+                // table (same source as System > Audit Log), with an honest empty
+                // state instead of invented activity.
+                $activityLabels = [
+                    'create' => 'menambahkan data baru di',
+                    'update' => 'memperbarui data di',
+                    'delete' => 'menghapus data di',
+                    'post'   => 'memposting jurnal di',
+                    'login'  => 'masuk ke sistem',
+                ];
+            ?>
+            <?php if (empty($recentActivity)): ?>
+                <p style="padding: 16px; font-size: 13px; color: var(--text-muted);">Belum ada aktivitas tercatat.</p>
+            <?php else: ?>
+                <ul class="timeline-list">
+                    <?php foreach ($recentActivity as $act): ?>
+                        <?php
+                            $actionKey = strtolower($act['action'] ?? '');
+                            $actionText = $activityLabels[$actionKey] ?? (esc($act['action'] ?? 'melakukan aksi') . ' di');
+                        ?>
+                        <li class="timeline-item">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-content">
+                                <strong>User-<?= esc($act['user_id'] ?? 'SYSTEM') ?></strong>
+                                <?= $actionText ?>
+                                <code><?= esc($act['module'] ?? '-') ?></code>
+                                <div class="timeline-time"><?= esc($act['created_at'] ?? '-') ?></div>
+                            </div>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php endif; ?>
         </div>
 
-        <!-- System Operational Status Panel -->
+        <!-- System Status: kept intentionally short on this page. Technical
+             details (PHP version, DB engine, storage) moved to System workspace
+             so the main dashboard — seen by every role — isn't cluttered with
+             information only relevant to a developer/sysadmin. -->
         <div class="panel-card">
             <div class="panel-header">
-                <span>Status Sistem Operational</span>
-                <span class="badge badge-green">Healthy</span>
+                <span>Status Sistem</span>
+                <span class="badge badge-green">Normal</span>
             </div>
-            <ul class="status-list">
-                <li class="status-item">
-                    <span>PHP Engine</span>
-                    <strong>v8.2.12</strong>
-                </li>
-                <li class="status-item">
-                    <span>Database Connection</span>
-                    <strong style="color: var(--primary-600);">Connected (MySQL 8.0)</strong>
-                </li>
-                <li class="status-item">
-                    <span>Storage Health</span>
-                    <strong>12.5 GB / 100 GB (Writable OK)</strong>
-                </li>
-                <li class="status-item">
-                    <span>CSRF & Rate Limit</span>
-                    <strong style="color: var(--primary-600);">Active (Protected)</strong>
-                </li>
-            </ul>
+            <div style="padding: 16px; font-size: 13px; color: var(--text-muted);">
+                Semua layanan berjalan normal.
+                <a href="<?= site_url('admin/settings?tab=advanced') ?>" style="color: var(--primary-600);">Lihat detail teknis →</a>
+            </div>
         </div>
     </div>
 </div>

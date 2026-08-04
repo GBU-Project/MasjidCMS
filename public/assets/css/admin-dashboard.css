@@ -156,6 +156,37 @@ a {
   padding: 16px 12px;
   z-index: 30;
   overflow-y: auto;
+  transition: transform 0.2s ease;
+}
+
+/* Hamburger button — hidden on desktop, shown on mobile via media query below */
+.sidebar-toggle-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+  font-size: 18px;
+  cursor: pointer;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+/* Backdrop shown behind the drawer on mobile when sidebar is open */
+.sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  top: 64px;
+  background: rgba(17, 24, 39, 0.45);
+  z-index: 29;
+}
+
+body.sidebar-open .sidebar-backdrop {
+  display: block;
 }
 
 .nav-menu-list {
@@ -175,6 +206,56 @@ a {
   font-weight: 500;
   color: var(--text-muted);
   transition: all 0.15s ease;
+}
+
+.nav-icon {
+  display: inline-flex;
+  width: 18px;
+  justify-content: center;
+  font-size: 15px;
+}
+
+/* Sidebar section headers: was a flat wall of ~26 links, no way to collapse
+   sections you don't use daily. <details>/<summary> gives free keyboard +
+   screen-reader semantics without extra JS. */
+.nav-group-label-static {
+  padding: 8px 16px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+}
+
+.nav-group { margin-top: 4px; }
+
+.nav-group-summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 8px 16px 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+}
+.nav-group-summary::-webkit-details-marker { display: none; }
+.nav-group-summary::after {
+  content: '▾';
+  font-size: 10px;
+  transition: transform 0.15s ease;
+}
+.nav-group-details:not([open]) .nav-group-summary::after {
+  transform: rotate(-90deg);
+}
+
+.nav-group-items {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .nav-item-link:hover, .nav-item-link.active {
@@ -448,7 +529,19 @@ a {
 }
 
 @media (max-width: 640px) {
-  .app-sidebar { display: none; }
+  .sidebar-toggle-btn { display: flex; }
+
+  /* Off-canvas drawer instead of hiding navigation entirely */
+  .app-sidebar {
+    width: 260px;
+    transform: translateX(-100%);
+    box-shadow: var(--shadow-lg);
+  }
+  body.sidebar-open .app-sidebar {
+    transform: translateX(0);
+  }
+
+  .nav-text { display: inline; } /* keep full labels inside the drawer */
   .app-main-content { margin-left: 0; padding: 16px; }
   .search-bar-header { display: none; }
 }

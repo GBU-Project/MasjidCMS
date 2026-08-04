@@ -28,6 +28,12 @@
     <!-- Top Header Nav Bar -->
     <header class="app-header">
         <div class="brand-container">
+            <!-- Mobile menu toggle: sidebar used to be display:none below 640px with
+                 no way back in. This button opens it as an off-canvas drawer instead. -->
+            <button type="button" class="sidebar-toggle-btn" id="sidebarToggleBtn"
+                    aria-label="Buka menu navigasi" aria-controls="appSidebar" aria-expanded="false">
+                ☰
+            </button>
             <div class="brand-logo">🕌</div>
             <span class="brand-name">MasjidCMS</span>
         </div>
@@ -50,7 +56,7 @@
                 : 'GU';
         ?>
         <div class="user-nav-profile">
-            <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">🔔 Notifikasi</button>
+            <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" aria-label="Lihat notifikasi">🔔 Notifikasi</button>
             <div class="user-profile-dropdown" style="position: relative;">
                 <button type="button" class="user-profile-trigger" onclick="toggleUserProfileMenu()" style="display: flex; align-items: center; gap: 8px; background: none; border: none; cursor: pointer; padding: 4px;" aria-haspopup="true" aria-expanded="false" id="userProfileTrigger">
                     <div class="avatar-circle" title="<?= esc($profileName) ?>"><?= esc($profileInitials) ?></div>
@@ -91,6 +97,42 @@
         </script>
     </header>
 
+    <!-- Mobile sidebar drawer controls (open/close via hamburger, backdrop, Escape,
+         and auto-close after picking a menu item so the drawer doesn't linger). -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var toggleBtn = document.getElementById('sidebarToggleBtn');
+        var backdrop = document.getElementById('sidebarBackdrop');
+        var sidebar = document.getElementById('appSidebar');
+
+        function openSidebar() {
+            document.body.classList.add('sidebar-open');
+            if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true');
+        }
+        function closeSidebar() {
+            document.body.classList.remove('sidebar-open');
+            if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
+        }
+
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', function () {
+                document.body.classList.contains('sidebar-open') ? closeSidebar() : openSidebar();
+            });
+        }
+        if (backdrop) {
+            backdrop.addEventListener('click', closeSidebar);
+        }
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closeSidebar();
+        });
+        if (sidebar) {
+            sidebar.querySelectorAll('a.nav-item-link').forEach(function (link) {
+                link.addEventListener('click', closeSidebar);
+            });
+        }
+    });
+    </script>
+
     <script>
         function toggleUserProfileMenu() {
             var menu = document.getElementById('userProfileMenu');
@@ -109,187 +151,256 @@
         });
     </script>
 
+    <!-- Backdrop shown behind the drawer when the sidebar is opened on mobile -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+    <?php
+        // Active-menu highlighting: previously NO sidebar link ever received the
+        // `.active` class (the CSS rule existed but nothing applied it), so users
+        // had no visual confirmation of where they were in a ~26-item menu.
+        // We compare against 'admin/...' onward so this also works on subfolder
+        // installs (e.g. /masjidgbu/admin/master) where REQUEST_URI has a prefix.
+        $__requestPath = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?? '';
+        $__requestQuery = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_QUERY) ?? '';
+        $__navBasePath = function (string $path): string {
+            $pos = strpos($path, 'admin/');
+            return $pos !== false ? rtrim(substr($path, $pos), '/') : trim($path, '/');
+        };
+        $__currentBase = $__navBasePath($__requestPath);
+        parse_str($__requestQuery, $__currentQueryArr);
+
+        // Named function (not a closure) so it can be called as navClass(...) from
+        // the markup below without threading variables through every call site.
+        if (!function_exists('navClass')) {
+            function navClass(string $route): string
+            {
+                global $__navBasePath, $__currentBase, $__currentQueryArr;
+
+                [$routePath, $routeQuery] = array_pad(explode('?', $route, 2), 2, null);
+                $routeBase = $__navBasePath($routePath);
+                if ($routeBase !== $__currentBase) {
+                    return 'nav-item-link';
+                }
+                if ($routeQuery !== null) {
+                    parse_str($routeQuery, $routeQueryArr);
+                    foreach ($routeQueryArr as $key => $value) {
+                        if (($__currentQueryArr[$key] ?? null) !== $value) {
+                            return 'nav-item-link';
+                        }
+                    }
+                }
+                return 'nav-item-link active';
+            }
+        }
+    ?>
+
     <!-- Collapsible Sidebar Nav Bar -->
-    <aside class="app-sidebar">
+    <aside class="app-sidebar" id="appSidebar">
         <ul class="nav-menu-list">
-            <li style="padding: 8px 16px; font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase;">DASHBOARD</li>
+            <li class="nav-group-label-static">DASHBOARD</li>
             <li>
-                <a href="<?= site_url('admin/dashboard') ?>" class="nav-item-link">
-                    <span>📊</span>
+                <a href="<?= site_url('admin/dashboard') ?>" class="<?= navClass('admin/dashboard') ?>">
+                    <span class="nav-icon"><i class="bi bi-speedometer2"></i></span>
                     <span class="nav-text">Dashboard Utama</span>
                 </a>
             </li>
 
-            <li style="padding: 12px 16px 4px; font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase;">MASTER DATA</li>
-            <li>
-                <a href="<?= site_url('admin/masjid') ?>" class="nav-item-link">
-                    <span>🕌</span>
-                    <span class="nav-text">Profil Masjid</span>
-                </a>
+            <li class="nav-group">
+                <details class="nav-group-details" open>
+                    <summary class="nav-group-summary">MASTER DATA</summary>
+                    <ul class="nav-group-items">
+                        <li>
+                                    <a href="<?= site_url('admin/masjid') ?>" class="<?= navClass('admin/masjid') ?>">
+                                        <span class="nav-icon"><i class="bi bi-building"></i></span>
+                                        <span class="nav-text">Profil Masjid</span>
+                                    </a>
+                                </li>
+                        <li>
+                                    <a href="<?= site_url('admin/master?tab=bidang') ?>" class="<?= navClass('admin/master?tab=bidang') ?>">
+                                        <span class="nav-icon"><i class="bi bi-diagram-3"></i></span>
+                                        <span class="nav-text">Bidang</span>
+                                    </a>
+                                </li>
+                        <li>
+                                    <a href="<?= site_url('admin/master?tab=pengurus') ?>" class="<?= navClass('admin/master?tab=pengurus') ?>">
+                                        <span class="nav-icon"><i class="bi bi-person-badge"></i></span>
+                                        <span class="nav-text">Pengurus</span>
+                                    </a>
+                                </li>
+                        <li>
+                                    <a href="<?= site_url('admin/jamaah') ?>" class="<?= navClass('admin/jamaah') ?>">
+                                        <span class="nav-icon"><i class="bi bi-people"></i></span>
+                                        <span class="nav-text">Jamaah</span>
+                                    </a>
+                                </li>
+                        <li>
+                                    <a href="<?= site_url('admin/family') ?>" class="<?= navClass('admin/family') ?>">
+                                        <span class="nav-icon"><i class="bi bi-house-heart"></i></span>
+                                        <span class="nav-text">Keluarga</span>
+                                    </a>
+                                </li>
+                        <li>
+                                    <a href="<?= site_url('admin/users') ?>" class="<?= navClass('admin/users') ?>">
+                                        <span class="nav-icon"><i class="bi bi-person-circle"></i></span>
+                                        <span class="nav-text">User</span>
+                                    </a>
+                                </li>
+                        <li>
+                                    <a href="<?= site_url('admin/master?tab=role') ?>" class="<?= navClass('admin/master?tab=role') ?>">
+                                        <span class="nav-icon"><i class="bi bi-key"></i></span>
+                                        <span class="nav-text">Role</span>
+                                    </a>
+                                </li>
+                        <li>
+                                    <a href="<?= site_url('admin/master?tab=permission') ?>" class="<?= navClass('admin/master?tab=permission') ?>">
+                                        <span class="nav-icon"><i class="bi bi-shield-lock"></i></span>
+                                        <span class="nav-text">Permission</span>
+                                    </a>
+                                </li>
+                    </ul>
+                </details>
             </li>
-            <li>
-                <a href="<?= site_url('admin/master?tab=bidang') ?>" class="nav-item-link">
-                    <span>🏛️</span>
-                    <span class="nav-text">Bidang</span>
-                </a>
+            <li class="nav-group">
+                <details class="nav-group-details" open>
+                    <summary class="nav-group-summary">CMS</summary>
+                    <ul class="nav-group-items">
+                        <li>
+                                    <a href="<?= site_url('admin/cms?tab=posts') ?>" class="<?= navClass('admin/cms?tab=posts') ?>">
+                                        <span class="nav-icon"><i class="bi bi-newspaper"></i></span>
+                                        <span class="nav-text">Berita</span>
+                                    </a>
+                                </li>
+                        <li>
+                                    <a href="<?= site_url('admin/cms?tab=kajian') ?>" class="<?= navClass('admin/cms?tab=kajian') ?>">
+                                        <span class="nav-icon"><i class="bi bi-book"></i></span>
+                                        <span class="nav-text">Kajian</span>
+                                    </a>
+                                </li>
+                        <li>
+                                    <a href="<?= site_url('admin/cms?tab=program') ?>" class="<?= navClass('admin/cms?tab=program') ?>">
+                                        <span class="nav-icon"><i class="bi bi-flag"></i></span>
+                                        <span class="nav-text">Program</span>
+                                    </a>
+                                </li>
+                        <li>
+                                    <a href="<?= site_url('admin/cms?tab=layanan') ?>" class="<?= navClass('admin/cms?tab=layanan') ?>">
+                                        <span class="nav-icon"><i class="bi bi-briefcase"></i></span>
+                                        <span class="nav-text">Layanan</span>
+                                    </a>
+                                </li>
+                        <li>
+                                    <a href="<?= site_url('admin/cms?tab=pages') ?>" class="<?= navClass('admin/cms?tab=pages') ?>">
+                                        <span class="nav-icon"><i class="bi bi-file-earmark-text"></i></span>
+                                        <span class="nav-text">Pages</span>
+                                    </a>
+                                </li>
+                        <li>
+                                    <a href="<?= site_url('admin/cms?tab=gallery') ?>" class="<?= navClass('admin/cms?tab=gallery') ?>">
+                                        <span class="nav-icon"><i class="bi bi-images"></i></span>
+                                        <span class="nav-text">Gallery</span>
+                                    </a>
+                                </li>
+                    </ul>
+                </details>
             </li>
-            <li>
-                <a href="<?= site_url('admin/master?tab=pengurus') ?>" class="nav-item-link">
-                    <span>👔</span>
-                    <span class="nav-text">Pengurus</span>
-                </a>
+            <li class="nav-group">
+                <details class="nav-group-details" open>
+                    <summary class="nav-group-summary">KEUANGAN</summary>
+                    <ul class="nav-group-items">
+                        <li>
+                                    <a href="<?= site_url('admin/financial') ?>" class="<?= navClass('admin/financial') ?>">
+                                        <span class="nav-icon"><i class="bi bi-cash-stack"></i></span>
+                                        <span class="nav-text">Keuangan & Kas</span>
+                                    </a>
+                                </li>
+                        <li>
+                                    <a href="<?= site_url('admin/financial/create') ?>" class="<?= navClass('admin/financial/create') ?>">
+                                        <span class="nav-icon"><i class="bi bi-plus-circle"></i></span>
+                                        <span class="nav-text">Input Transaksi</span>
+                                    </a>
+                                </li>
+                    </ul>
+                </details>
             </li>
-            <li>
-                <a href="<?= site_url('admin/jamaah') ?>" class="nav-item-link">
-                    <span>👥</span>
-                    <span class="nav-text">Jamaah</span>
-                </a>
+            <li class="nav-group">
+                <details class="nav-group-details" open>
+                    <summary class="nav-group-summary">LAPORAN</summary>
+                    <ul class="nav-group-items">
+                        <li>
+                                    <a href="<?= site_url('admin/reporting') ?>" class="<?= navClass('admin/reporting') ?>">
+                                        <span class="nav-icon"><i class="bi bi-graph-up"></i></span>
+                                        <span class="nav-text">Laporan Keuangan</span>
+                                    </a>
+                                </li>
+                    </ul>
+                </details>
             </li>
-            <li>
-                <a href="<?= site_url('admin/family') ?>" class="nav-item-link">
-                    <span>👨‍👩‍👧</span>
-                    <span class="nav-text">Keluarga</span>
-                </a>
-            </li>
-            <li>
-                <a href="<?= site_url('admin/users') ?>" class="nav-item-link">
-                    <span>👤</span>
-                    <span class="nav-text">User</span>
-                </a>
-            </li>
-            <li>
-                <a href="<?= site_url('admin/master?tab=role') ?>" class="nav-item-link">
-                    <span>🔑</span>
-                    <span class="nav-text">Role</span>
-                </a>
-            </li>
-            <li>
-                <a href="<?= site_url('admin/master?tab=permission') ?>" class="nav-item-link">
-                    <span>🛡️</span>
-                    <span class="nav-text">Permission</span>
-                </a>
-            </li>
-
-            <li style="padding: 12px 16px 4px; font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase;">CMS</li>
-            <li>
-                <a href="<?= site_url('admin/cms?tab=posts') ?>" class="nav-item-link">
-                    <span>📰</span>
-                    <span class="nav-text">Berita</span>
-                </a>
-            </li>
-            <li>
-                <a href="<?= site_url('admin/cms?tab=kajian') ?>" class="nav-item-link">
-                    <span>🕌</span>
-                    <span class="nav-text">Kajian</span>
-                </a>
-            </li>
-            <li>
-                <a href="<?= site_url('admin/cms?tab=program') ?>" class="nav-item-link">
-                    <span>🚩</span>
-                    <span class="nav-text">Program</span>
-                </a>
-            </li>
-            <li>
-                <a href="<?= site_url('admin/cms?tab=layanan') ?>" class="nav-item-link">
-                    <span>🤝</span>
-                    <span class="nav-text">Layanan</span>
-                </a>
-            </li>
-            <li>
-                <a href="<?= site_url('admin/cms?tab=pages') ?>" class="nav-item-link">
-                    <span>📄</span>
-                    <span class="nav-text">Pages</span>
-                </a>
-            </li>
-            <li>
-                <a href="<?= site_url('admin/cms?tab=gallery') ?>" class="nav-item-link">
-                    <span>🖼️</span>
-                    <span class="nav-text">Gallery</span>
-                </a>
-            </li>
-
-            <li style="padding: 12px 16px 4px; font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase;">KEUANGAN</li>
-            <li>
-                <a href="<?= site_url('admin/financial') ?>" class="nav-item-link">
-                    <span>💰</span>
-                    <span class="nav-text">Keuangan & Kas</span>
-                </a>
-            </li>
-            <li>
-                <a href="<?= site_url('admin/financial/create') ?>" class="nav-item-link">
-                    <span>➕</span>
-                    <span class="nav-text">Input Transaksi</span>
-                </a>
-            </li>
-
-            <li style="padding: 12px 16px 4px; font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase;">LAPORAN</li>
-            <li>
-                <a href="<?= site_url('admin/reporting') ?>" class="nav-item-link">
-                    <span>📈</span>
-                    <span class="nav-text">Laporan Keuangan</span>
-                </a>
-            </li>
-
-            <li style="padding: 12px 16px 4px; font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase;">WEBSITE MANAGEMENT</li>
-            <li>
-                <a href="<?= site_url('admin/settings') ?>" class="nav-item-link">
-                    <span>🌐</span>
-                    <span class="nav-text">Website Settings</span>
-                </a>
-            </li>
-            <li>
-                <a href="<?= site_url('admin/homepage-manager') ?>" class="nav-item-link">
-                    <span>🎨</span>
-                    <span class="nav-text">Homepage Manager</span>
-                </a>
-            </li>
-            <li>
-                <a href="<?= site_url('admin/hero-slides') ?>" class="nav-item-link">
-                    <span>🖼️</span>
-                    <span class="nav-text">Hero Slider</span>
-                </a>
-            </li>
-            <li>
-                <a href="<?= site_url('admin/menu') ?>" class="nav-item-link">
-                    <span>🧭</span>
-                    <span class="nav-text">Navigation</span>
-                </a>
-            </li>
-            <li>
-                <a href="<?= site_url('admin/theme') ?>" class="nav-item-link">
-                    <span>🎨</span>
-                    <span class="nav-text">Theme</span>
-                </a>
-            </li>
-            <li>
-                <a href="<?= site_url('admin/media') ?>" class="nav-item-link">
-                    <span>📁</span>
-                    <span class="nav-text">Media Library</span>
-                </a>
-            </li>
-            <li>
-                <a href="<?= site_url('admin/settings?tab=seo') ?>" class="nav-item-link">
-                    <span>🔍</span>
-                    <span class="nav-text">SEO Settings</span>
-                </a>
-            </li>
-            <li>
-                <a href="<?= site_url('admin/settings?tab=advanced') ?>" class="nav-item-link">
-                    <span>⚙️</span>
-                    <span class="nav-text">Advanced Configuration</span>
-                </a>
-            </li>
-            <li>
-                <a href="<?= site_url('admin/notification') ?>" class="nav-item-link">
-                    <span>🔔</span>
-                    <span class="nav-text">Notifikasi</span>
-                </a>
-            </li>
-            <li>
-                <a href="<?= site_url('admin/prayer-time') ?>" class="nav-item-link">
-                    <span>⏰</span>
-                    <span class="nav-text">Jadwal Sholat</span>
-                </a>
+            <li class="nav-group">
+                <details class="nav-group-details" open>
+                    <summary class="nav-group-summary">WEBSITE MANAGEMENT</summary>
+                    <ul class="nav-group-items">
+                        <li>
+                                    <a href="<?= site_url('admin/settings') ?>" class="<?= navClass('admin/settings') ?>">
+                                        <span class="nav-icon"><i class="bi bi-globe"></i></span>
+                                        <span class="nav-text">Website Settings</span>
+                                    </a>
+                                </li>
+                        <li>
+                                    <a href="<?= site_url('admin/homepage-manager') ?>" class="<?= navClass('admin/homepage-manager') ?>">
+                                        <span class="nav-icon"><i class="bi bi-layout-text-window"></i></span>
+                                        <span class="nav-text">Homepage Manager</span>
+                                    </a>
+                                </li>
+                        <li>
+                                    <a href="<?= site_url('admin/hero-slides') ?>" class="<?= navClass('admin/hero-slides') ?>">
+                                        <span class="nav-icon"><i class="bi bi-image"></i></span>
+                                        <span class="nav-text">Hero Slider</span>
+                                    </a>
+                                </li>
+                        <li>
+                                    <a href="<?= site_url('admin/menu') ?>" class="<?= navClass('admin/menu') ?>">
+                                        <span class="nav-icon"><i class="bi bi-compass"></i></span>
+                                        <span class="nav-text">Navigation</span>
+                                    </a>
+                                </li>
+                        <li>
+                                    <a href="<?= site_url('admin/theme') ?>" class="<?= navClass('admin/theme') ?>">
+                                        <span class="nav-icon"><i class="bi bi-palette"></i></span>
+                                        <span class="nav-text">Theme</span>
+                                    </a>
+                                </li>
+                        <li>
+                                    <a href="<?= site_url('admin/media') ?>" class="<?= navClass('admin/media') ?>">
+                                        <span class="nav-icon"><i class="bi bi-folder2-open"></i></span>
+                                        <span class="nav-text">Media Library</span>
+                                    </a>
+                                </li>
+                        <li>
+                                    <a href="<?= site_url('admin/settings?tab=seo') ?>" class="<?= navClass('admin/settings?tab=seo') ?>">
+                                        <span class="nav-icon"><i class="bi bi-search"></i></span>
+                                        <span class="nav-text">SEO Settings</span>
+                                    </a>
+                                </li>
+                        <li>
+                                    <a href="<?= site_url('admin/settings?tab=advanced') ?>" class="<?= navClass('admin/settings?tab=advanced') ?>">
+                                        <span class="nav-icon"><i class="bi bi-gear"></i></span>
+                                        <span class="nav-text">Advanced Configuration</span>
+                                    </a>
+                                </li>
+                        <li>
+                                    <a href="<?= site_url('admin/notification') ?>" class="<?= navClass('admin/notification') ?>">
+                                        <span class="nav-icon"><i class="bi bi-bell"></i></span>
+                                        <span class="nav-text">Notifikasi</span>
+                                    </a>
+                                </li>
+                        <li>
+                                    <a href="<?= site_url('admin/prayer-time') ?>" class="<?= navClass('admin/prayer-time') ?>">
+                                        <span class="nav-icon"><i class="bi bi-clock"></i></span>
+                                        <span class="nav-text">Jadwal Sholat</span>
+                                    </a>
+                                </li>
+                    </ul>
+                </details>
             </li>
         </ul>
     </aside>
