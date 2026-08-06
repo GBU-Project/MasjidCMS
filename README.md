@@ -31,6 +31,16 @@
 
 MasjidCMS implements **Fund Accounting** by separating restricted funds (Zakat, Qurban, Wakaf) from unrestricted funds (General Cash, Development Fund), while enforcing Sharia accounting business rules **BR-FIN-01 through BR-FIN-04**.
 
+## 🌐 Frontend
+
+![MasjidCMS Frontend](docs/images/frontend-home.jpeg)
+
+---
+
+## 🛠️ Admin Dashboard
+
+![MasjidCMS Admin Dashboard](docs/images/admin-dashboard.jpeg)
+
 ## System Requirements
 
 - PHP 8.2 or higher
