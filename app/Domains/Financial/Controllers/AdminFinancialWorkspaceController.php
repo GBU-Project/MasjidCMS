@@ -2,17 +2,115 @@
 
 namespace App\Domains\Financial\Controllers;
 
+use App\Application\Financial\DTO\ApproveTransactionRequest;
+use App\Application\Financial\DTO\CreateTransactionRequest;
+use App\Application\Financial\DTO\PostTransactionRequest;
+use App\Application\Financial\DTO\VoidTransactionRequest;
+use App\Application\Financial\Services\ApproveTransactionApplicationService;
+use App\Application\Financial\Services\CreateTransactionApplicationService;
+use App\Application\Financial\Services\PostTransactionApplicationService;
+use App\Application\Financial\Services\SubmitTransactionApplicationService;
+use App\Application\Financial\Services\VoidTransactionApplicationService;
 use App\Core\Controllers\BaseController;
+use App\Core\Security\SecurityContext;
+use App\Domains\Financial\Entities\ValueObjects\TransactionNumber;
+use App\Domains\Financial\Exceptions\BusinessRuleException;
+use App\Domains\Financial\Exceptions\EntityNotFoundException;
+use App\Domains\Financial\Exceptions\InvalidValueObjectException;
 use App\Domains\Financial\Services\FinancialPostingService;
+use App\Domains\Financial\Services\Posting\FinancialPostingEngine;
+use App\Domains\Financial\Services\Posting\JournalBuilder;
+use App\Domains\Financial\Services\Posting\LedgerPostingService;
+use App\Domains\Financial\Services\Posting\PostingPolicy;
+use App\Domains\Financial\Services\Posting\PostingValidator;
+use App\Infrastructure\Persistence\Financial\Repositories\FinancialAccountRepository;
+use App\Infrastructure\Persistence\Financial\Repositories\FinancialTransactionRepository;
+use App\Infrastructure\Persistence\Financial\Repositories\FundRepository;
+use App\Infrastructure\Persistence\Financial\Repositories\JournalEntryRepository;
+use App\Infrastructure\Persistence\Financial\UnitOfWork\FinancialUnitOfWork;
 use Config\Database;
+use Throwable;
 
 class AdminFinancialWorkspaceController extends BaseController
 {
+    /**
+     * @deprecated RC Blocker fix (see docs/Audit/RC_BLOCKER_RESOLUTION_REPORT.md):
+     * FinancialPostingService::insertTransaction() bypassed the Financial
+     * State Machine by writing transactions directly as POSTED via raw SQL.
+     * That method call has been removed from this controller. This service
+     * is kept only for generateUuid(), still used by non-transaction
+     * master-data actions below (COA, budget, periods, journal templates).
+     * Do NOT reintroduce calls to insertTransaction() here.
+     */
     private FinancialPostingService $postingService;
 
     public function __construct()
     {
         $this->postingService = new FinancialPostingService();
+    }
+
+    /**
+     * Current logged-in user id, taken from the server-side session
+     * (SecurityContext), never trusted from client input. Follows the
+     * same pattern already used in FinancialApiController::approve()
+     * (TASK-019A hotfix) to prevent identity spoofing.
+     */
+    private function currentUserId(): string
+    {
+        return (string) (SecurityContext::user()->id ?? 'user-unknown');
+    }
+
+    private function newCreateService(): CreateTransactionApplicationService
+    {
+        return new CreateTransactionApplicationService(
+            new FinancialTransactionRepository(),
+            new FinancialUnitOfWork()
+        );
+    }
+
+    private function newApproveService(): ApproveTransactionApplicationService
+    {
+        return new ApproveTransactionApplicationService(
+            new FinancialTransactionRepository(),
+            new FinancialUnitOfWork()
+        );
+    }
+
+    private function newPostingEngine(FinancialUnitOfWork $uow): FinancialPostingEngine
+    {
+        return new FinancialPostingEngine(
+            new PostingPolicy(),
+            new PostingValidator(),
+            new JournalBuilder(),
+            new LedgerPostingService(),
+            new FundRepository(),
+            new FinancialAccountRepository(),
+            new FinancialTransactionRepository(),
+            new JournalEntryRepository(),
+            $uow
+        );
+    }
+
+    private function newPostService(): PostTransactionApplicationService
+    {
+        $uow = new FinancialUnitOfWork();
+
+        return new PostTransactionApplicationService(
+            new FinancialTransactionRepository(),
+            $this->newPostingEngine($uow),
+            $uow
+        );
+    }
+
+    private function newVoidService(): VoidTransactionApplicationService
+    {
+        $uow = new FinancialUnitOfWork();
+
+        return new VoidTransactionApplicationService(
+            new FinancialTransactionRepository(),
+            $this->newPostingEngine($uow),
+            $uow
+        );
     }
 
     public function index(): string
@@ -189,29 +287,51 @@ class AdminFinancialWorkspaceController extends BaseController
                 return redirect()->back()->withInput();
             }
 
-            $result = $this->postingService->insertTransaction([
-                'transaction_type'     => (string) ($this->request->getPost('transaction_type') ?: 'EXPENSE'),
-                'amount'               => (float) $this->request->getPost('amount'),
-                'description'          => (string) $this->request->getPost('description'),
-                'transaction_date'     => (string) ($this->request->getPost('transaction_date') ?: date('Y-m-d H:i:s')),
-                'fund_id'              => (int) $this->request->getPost('fund_id'),
-                'financial_account_id' => (int) $this->request->getPost('financial_account_id'),
-                'account_id'           => (int) $this->request->getPost('account_id'),
-            ]);
+            // RC Blocker fix: transaksi baru sekarang WAJIB dibuat sebagai
+            // DRAFT lewat Application Service + Entity yang sama dipakai
+            // api/financial/transactions, bukan lagi INSERT mentah dengan
+            // status POSTED. Lihat docs/Audit/RC_BLOCKER_RESOLUTION_REPORT.md.
+            $req = new CreateTransactionRequest(
+                '1', // masjid_id — instalasi single-tenant, konsisten dgn konvensi controller ini
+                (int) $this->request->getPost('fund_id'),
+                (int) $this->request->getPost('account_id'),
+                (int) $this->request->getPost('financial_account_id'),
+                $this->generateTransactionNo(),
+                (string) ($this->request->getPost('transaction_type') ?: 'EXPENSE'),
+                (float) $this->request->getPost('amount'),
+                (string) ($this->request->getPost('transaction_date') ?: date('Y-m-d H:i:s')),
+                null,
+                null,
+                null,
+                null,
+                null,
+                'CASH',
+                (string) $this->request->getPost('description'),
+                $this->currentUserId()
+            );
 
-            if (!$result['success']) {
-                session()->setFlashdata('error', 'Gagal menyimpan transaksi: ' . $result['message']);
-                return redirect()->back()->withInput();
-            }
+            $responseDto = $this->newCreateService()->execute($req);
 
-            session()->setFlashdata('success', 'Transaksi ' . esc($result['transaction_no']) . ' & Jurnal Double-Entry berhasil disimpan.');
-        } catch (\Throwable $e) {
+            session()->setFlashdata(
+                'success',
+                'Transaksi ' . esc($responseDto->transactionNo) . ' disimpan sebagai DRAFT. ' .
+                'Ajukan verifikasi dari halaman Detail sebelum bisa di-posting ke jurnal.'
+            );
+        } catch (InvalidValueObjectException|BusinessRuleException $e) {
+            session()->setFlashdata('error', 'Gagal menyimpan transaksi: ' . $e->getMessage());
+            return redirect()->back()->withInput();
+        } catch (Throwable $e) {
             log_message('error', 'AdminFinancialWorkspaceController Store Exception: ' . $e->getMessage());
             session()->setFlashdata('error', 'Terjadi kesalahan sistem saat menyimpan transaksi: ' . $e->getMessage());
             return redirect()->back()->withInput();
         }
 
         return redirect()->to(site_url('admin/financial'));
+    }
+
+    private function generateTransactionNo(): string
+    {
+        return 'TRX-' . date('Ym') . '-' . str_pad((string) mt_rand(1, 9999), 5, '0', STR_PAD_LEFT);
     }
 
     public function export()
@@ -347,26 +467,40 @@ class AdminFinancialWorkspaceController extends BaseController
                 continue;
             }
 
-            $result = $this->postingService->insertTransaction([
-                'transaction_type'     => $assoc['transaction_type'] ?? 'EXPENSE',
-                'amount'               => (float) ($assoc['amount'] ?? 0),
-                'description'          => (string) ($assoc['description'] ?? ''),
-                'transaction_date'     => (string) ($assoc['transaction_date'] ?? date('Y-m-d H:i:s')),
-                'fund_id'              => (int) ($assoc['fund_id'] ?? 0),
-                'financial_account_id' => (int) ($assoc['financial_account_id'] ?? 0),
-                'account_id'           => (int) ($assoc['account_id'] ?? 0),
-            ]);
-
-            if ($result['success']) {
+            try {
+                // RC Blocker fix: import kini memakai Application Service yang
+                // sama dengan input manual (store()), sehingga baris hasil
+                // import juga masuk sebagai DRAFT dan tetap wajib melalui
+                // verifikasi + posting — bukan lagi INSERT langsung berstatus
+                // POSTED. Ini memenuhi syarat "semua entry point konsisten".
+                $req = new CreateTransactionRequest(
+                    '1',
+                    (int) ($assoc['fund_id'] ?? 0),
+                    (int) ($assoc['account_id'] ?? 0),
+                    (int) ($assoc['financial_account_id'] ?? 0),
+                    $this->generateTransactionNo(),
+                    (string) ($assoc['transaction_type'] ?? 'EXPENSE'),
+                    (float) ($assoc['amount'] ?? 0),
+                    (string) ($assoc['transaction_date'] ?? date('Y-m-d H:i:s')),
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    'CASH',
+                    (string) ($assoc['description'] ?? ''),
+                    $this->currentUserId()
+                );
+                $this->newCreateService()->execute($req);
                 $imported++;
-            } else {
+            } catch (Throwable $e) {
                 $failed++;
-                $errors[] = "Baris {$rowNum}: {$result['message']}";
+                $errors[] = "Baris {$rowNum}: " . $e->getMessage();
             }
         }
         fclose($handle);
 
-        $message = "Import selesai: {$imported} transaksi berhasil, {$failed} gagal.";
+        $message = "Import selesai: {$imported} transaksi tersimpan sebagai DRAFT, {$failed} gagal. Transaksi hasil import tetap wajib diverifikasi & di-posting satu per satu.";
         if ($failed > 0) {
             session()->setFlashdata('error', $message . ' Detail: ' . implode(' | ', array_slice($errors, 0, 5)));
         } else {
@@ -547,46 +681,113 @@ class AdminFinancialWorkspaceController extends BaseController
         return redirect()->to(site_url('admin/financial?tab=journal'));
     }
 
+    /**
+     * RC Blocker fix: metode ini sebelumnya melakukan HARD DELETE baris
+     * financial_transactions langsung dari database (ditemukan saat
+     * penelusuran alur produksi untuk RC Blocker ini) — bertentangan
+     * langsung dengan prinsip "VOID harus menghasilkan jurnal pembalik,
+     * bukan menghapus data" di docs/FINANCIAL_GOVERNANCE_SPEC.md §5.
+     * Sekarang memanggil VoidTransactionApplicationService, yang hanya
+     * mengizinkan Void dari status POSTED dan membuat jurnal pembalik
+     * lewat FinancialPostingEngine::voidPosting() — transaksi asal tetap
+     * ada di riwayat dengan status VOID.
+     */
     public function delete(string $id)
     {
-        $db = Database::connect();
         try {
-            if ($db->tableExists('financial_transactions')) {
-                $db->table('financial_transactions')->where('id', $id)->delete();
-                session()->setFlashdata('success', 'Transaksi berhasil di-void/dihapus.');
+            $trxRepo = new FinancialTransactionRepository();
+            $transaction = is_numeric($id) ? $trxRepo->findById((int) $id) : $trxRepo->findByTransactionNo(new TransactionNumber($id));
+
+            if (!$transaction) {
+                session()->setFlashdata('error', 'Transaksi tidak ditemukan.');
+                return redirect()->to(site_url('admin/financial?tab=transactions'));
             }
-        } catch (\Throwable $e) {
-            log_message('error', 'AdminFinancialWorkspaceController Delete Exception: ' . $e->getMessage());
-            session()->setFlashdata('error', 'Gagal menghapus transaksi: ' . $e->getMessage());
+
+            $req = new VoidTransactionRequest($transaction->getUuid(), 'REV-' . $this->generateTransactionNo());
+            $this->newVoidService()->execute($req);
+
+            session()->setFlashdata('success', 'Transaksi berhasil di-VOID. Jurnal pembalik (reversal) telah dibuat.');
+        } catch (EntityNotFoundException $e) {
+            session()->setFlashdata('error', $e->getMessage());
+        } catch (BusinessRuleException $e) {
+            session()->setFlashdata('error', 'Gagal void transaksi: ' . $e->getMessage());
+        } catch (Throwable $e) {
+            log_message('error', 'AdminFinancialWorkspaceController Void Exception: ' . $e->getMessage());
+            session()->setFlashdata('error', 'Terjadi kesalahan sistem saat void transaksi: ' . $e->getMessage());
         }
 
         return redirect()->to(site_url('admin/financial?tab=transactions'));
     }
 
-    public function detail(string $id): string
+    /**
+     * Admin UI action: DRAFT → PENDING_APPROVAL. Required before a
+     * transaction can be approved and posted — closes the previous gap
+     * where the Admin UI had no way to move a transaction through the
+     * governed lifecycle at all.
+     */
+    public function submit(string $id)
     {
-        $db = Database::connect();
-        $transaction = null;
+        return $this->transitionAction($id, function (string $uuid) {
+            $service = new SubmitTransactionApplicationService(
+                new FinancialTransactionRepository(),
+                new FinancialUnitOfWork()
+            );
+            $service->execute($uuid);
+        }, 'Transaksi diajukan untuk verifikasi (PENDING_APPROVAL).');
+    }
+
+    /**
+     * Admin UI action: PENDING_APPROVAL → APPROVED. Enforces maker-checker
+     * at the domain layer (FinancialTransaction::approve()) — a user
+     * cannot approve a transaction they created themselves.
+     */
+    public function approveTransaction(string $id)
+    {
+        return $this->transitionAction($id, function (string $uuid) {
+            $req = new ApproveTransactionRequest($uuid, $this->currentUserId());
+            $this->newApproveService()->execute($req);
+        }, 'Transaksi disetujui (APPROVED). Siap untuk posting ke jurnal.');
+    }
+
+    /**
+     * Admin UI action: APPROVED → POSTED. As of the domain-layer fix in
+     * FinancialTransaction::post(), this is the ONLY status the engine
+     * will accept for posting — DRAFT is no longer allowed.
+     */
+    public function postTransaction(string $id)
+    {
+        return $this->transitionAction($id, function (string $uuid) {
+            $req = new PostTransactionRequest($uuid, 'JRN-' . $this->generateTransactionNo(), 101);
+            $this->newPostService()->execute($req);
+        }, 'Transaksi berhasil di-posting ke jurnal double-entry. Status terkunci (immutable).');
+    }
+
+    /**
+     * Shared helper: resolves a route id (numeric id or transaction_no)
+     * to a UUID, runs the given state-transition callback, and handles
+     * flashdata + redirect consistently for submit/approve/post.
+     */
+    private function transitionAction(string $id, callable $action, string $successMessage)
+    {
         try {
-            if ($db->tableExists('financial_transactions')) {
-                $builder = $db->table('financial_transactions');
-                if ($db->fieldExists('transaction_no', 'financial_transactions')) {
-                    $builder->groupStart()
-                        ->where('transaction_no', $id)
-                        ->orWhere('id', $id)
-                        ->groupEnd();
-                } else {
-                    $builder->where('id', $id);
-                }
-                $transaction = $builder->get()->getRowArray();
+            $trxRepo = new FinancialTransactionRepository();
+            $transaction = is_numeric($id) ? $trxRepo->findById((int) $id) : $trxRepo->findByTransactionNo(new TransactionNumber($id));
+            if (!$transaction) {
+                session()->setFlashdata('error', 'Transaksi tidak ditemukan.');
+                return redirect()->to(site_url('admin/financial?tab=transactions'));
             }
-        } catch (\Throwable $e) {
-            log_message('error', 'AdminFinancialWorkspaceController Detail Exception: ' . $e->getMessage());
+
+            $action($transaction->getUuid());
+            session()->setFlashdata('success', $successMessage);
+        } catch (EntityNotFoundException $e) {
+            session()->setFlashdata('error', $e->getMessage());
+        } catch (BusinessRuleException $e) {
+            session()->setFlashdata('error', 'Aksi ditolak: ' . $e->getMessage());
+        } catch (Throwable $e) {
+            log_message('error', 'AdminFinancialWorkspaceController transitionAction Exception: ' . $e->getMessage());
+            session()->setFlashdata('error', 'Terjadi kesalahan sistem: ' . $e->getMessage());
         }
 
-        return view('admin/financial/detail', [
-            'transactionId' => $id,
-            'transaction'   => $transaction,
-        ]);
+        return redirect()->to(site_url('admin/financial?tab=transactions'));
     }
 }

@@ -58,6 +58,8 @@ class FinancialPostingEngineRc1Test extends TestCase
             new Money(200000.00),
             '2026-07-27 10:00:00'
         );
+        $trx->submitForApproval();
+        $trx->approve('user-checker');
 
         $fundRepo = $this->createMock(FundRepositoryInterface::class);
         $fundRepo->method('findById')->willReturn($this->fund);
@@ -184,6 +186,8 @@ class FinancialPostingEngineRc1Test extends TestCase
         );
 
         // Pre-post transaction
+        $trx->submitForApproval();
+        $trx->approve('user-checker');
         $trx->post('2026-07-27 10:00:00');
         $this->financialAccount->credit(new Money(100000.00)); // Balance = 600,000
 

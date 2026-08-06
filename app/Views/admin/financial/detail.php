@@ -32,6 +32,30 @@
     </div>
 </div>
 
+<div style="display: flex; gap: 8px; margin-bottom: 16px;">
+<?php if ($status === 'DRAFT'): ?>
+    <form action="<?= site_url('admin/financial/submit/' . $transactionId) ?>" method="POST" onsubmit="return confirm('Ajukan transaksi ini untuk verifikasi?')">
+        <?= csrf_field() ?>
+        <button type="submit" class="btn btn-primary">Ajukan Verifikasi</button>
+    </form>
+<?php elseif ($status === 'PENDING_APPROVAL'): ?>
+    <form action="<?= site_url('admin/financial/approve/' . $transactionId) ?>" method="POST" onsubmit="return confirm('Setujui transaksi ini? Anda tidak bisa menyetujui transaksi yang Anda buat sendiri.')">
+        <?= csrf_field() ?>
+        <button type="submit" class="btn btn-primary">Setujui (Verifikasi)</button>
+    </form>
+<?php elseif ($status === 'APPROVED'): ?>
+    <form action="<?= site_url('admin/financial/post/' . $transactionId) ?>" method="POST" onsubmit="return confirm('Posting transaksi ini ke jurnal? Setelah posting, transaksi terkunci permanen.')">
+        <?= csrf_field() ?>
+        <button type="submit" class="btn btn-primary">Posting ke Jurnal</button>
+    </form>
+<?php elseif ($status === 'POSTED'): ?>
+    <form action="<?= site_url('admin/financial/delete/' . $transactionId) ?>" method="POST" onsubmit="return confirm('Void transaksi ini? Sistem akan membuat jurnal pembalik (reversal), data asal tidak dihapus.')">
+        <?= csrf_field() ?>
+        <button type="submit" class="btn btn-secondary" style="color: var(--status-danger-text);">Void (Buat Jurnal Pembalik)</button>
+    </form>
+<?php endif; ?>
+</div>
+
 <!-- Detail View Tabs Navigation -->
 <div style="border-bottom: 1px solid var(--border-light); margin-bottom: 20px; display: flex; gap: 8px;">
     <a href="#" class="nav-item-link active">📄 Informasi Umum</a>

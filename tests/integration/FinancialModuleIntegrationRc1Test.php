@@ -130,6 +130,9 @@ class FinancialModuleIntegrationRc1Test extends TestCase
             new TransactionNumber('TRX-202607-00006'), 'INCOME', new Money(500000.00), '2026-07-27 10:00:00'
         );
 
+        $trx->submitForApproval();
+        $trx->approve('user-checker');
+
         $fundRepo = $this->createMock(FundRepositoryInterface::class);
         $fundRepo->method('findById')->willReturn($this->fundGeneral);
 
@@ -164,6 +167,8 @@ class FinancialModuleIntegrationRc1Test extends TestCase
             'trx-int-uuid-7', 'm-1', 1, 401, 100,
             new TransactionNumber('TRX-202607-00007'), 'INCOME', new Money(300000.00), '2026-07-27 10:00:00'
         );
+        $trx->submitForApproval();
+        $trx->approve('user-checker');
         $trx->post('2026-07-27 10:00:00');
 
         $journalBuilder = new JournalBuilder();

@@ -133,6 +133,16 @@ class FinancialTransaction
         if ($this->status !== 'PENDING_APPROVAL') {
             throw new BusinessRuleException("Hanya transaksi PENDING_APPROVAL yang dapat disetujui.");
         }
+        // Maker-checker: pembuat transaksi (createdBy) tidak boleh menjadi
+        // penyetujunya sendiri. Ini berlaku berdasarkan user_id aktual,
+        // bukan nama peran, agar rangkap-jabatan tidak diam-diam melewati
+        // kontrol ini. Lihat docs/FINANCIAL_GOVERNANCE_SPEC.md §4.
+        if ($this->createdBy !== null && $this->createdBy === $approverUserId) {
+            throw new BusinessRuleException(
+                "Transaksi tidak dapat disetujui oleh pembuatnya sendiri (maker-checker). " .
+                "Mohon minta pengguna lain untuk melakukan verifikasi."
+            );
+        }
         $this->status = 'APPROVED';
         $this->approvedBy = $approverUserId;
 
@@ -156,8 +166,15 @@ class FinancialTransaction
 
     public function post(string $postedAtTimestamp): void
     {
-        if (!in_array($this->status, ['DRAFT', 'APPROVED'], true)) {
-            throw new BusinessRuleException("Transaksi berstatus [{$this->status}] tidak dapat di-post.");
+        // RC Blocker fix: 'DRAFT' sengaja dihapus dari daftar status yang
+        // boleh di-post. Sebelumnya guard ini mengizinkan transaksi
+        // melompat langsung dari DRAFT ke POSTED, melewati tahap
+        // PENDING_APPROVAL/APPROVED sama sekali. Sekarang POSTED hanya
+        // bisa dicapai lewat alur persetujuan. Lihat
+        // docs/FINANCIAL_GOVERNANCE_SPEC.md §5 dan
+        // docs/Audit/RC_BLOCKER_RESOLUTION_REPORT.md.
+        if ($this->status !== 'APPROVED') {
+            throw new BusinessRuleException("Transaksi berstatus [{$this->status}] tidak dapat di-post. Transaksi harus melalui status APPROVED terlebih dahulu.");
         }
         $this->status = 'POSTED';
         $this->postedAt = $postedAtTimestamp;

@@ -13,6 +13,13 @@ $routes->group('admin', ['filter' => ['auth', 'rbac']], static function (RouteCo
     $routes->get('financial/create', [AdminFinancialWorkspaceController::class, 'create']);
     $routes->post('financial/store', [AdminFinancialWorkspaceController::class, 'store'], ['filter' => 'rbac:financial.manage']);
     $routes->post('financial/delete/(:segment)', [AdminFinancialWorkspaceController::class, 'delete'], ['filter' => 'rbac:financial.manage']);
+    // RC Blocker fix: alur DRAFT -> PENDING_APPROVAL -> APPROVED -> POSTED
+    // sekarang dapat dijalankan dari Admin UI, lewat Application Service
+    // yang sama dipakai api/financial/*. Maker-checker (approver != pembuat)
+    // ditegakkan di domain layer (FinancialTransaction::approve()).
+    $routes->post('financial/submit/(:segment)', [AdminFinancialWorkspaceController::class, 'submit'], ['filter' => 'rbac:financial.manage']);
+    $routes->post('financial/approve/(:segment)', [AdminFinancialWorkspaceController::class, 'approveTransaction'], ['filter' => 'rbac:financial.manage']);
+    $routes->post('financial/post/(:segment)', [AdminFinancialWorkspaceController::class, 'postTransaction'], ['filter' => 'rbac:financial.manage']);
     $routes->get('financial/detail/(:segment)', [AdminFinancialWorkspaceController::class, 'detail']);
     $routes->get('financial/export', [AdminFinancialWorkspaceController::class, 'export'], ['filter' => 'rbac:financial.manage']);
     $routes->get('financial/coa/export', [AdminFinancialWorkspaceController::class, 'exportCoa'], ['filter' => 'rbac:financial.manage']);

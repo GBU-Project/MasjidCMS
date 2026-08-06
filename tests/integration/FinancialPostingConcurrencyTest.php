@@ -62,6 +62,8 @@ class FinancialPostingConcurrencyTest extends TestCase
             'trx-uuid-conc-1', 'm-1', 1, 401, 100,
             new TransactionNumber('TRX-202607-00081'), 'INCOME', new Money(250000.00), '2026-07-27 10:00:00'
         );
+        $trx1->submitForApproval();
+        $trx1->approve('user-checker');
         $engine->postTransaction($trx1, new JournalNumber('JRN-202607-00081'), 101);
 
         // Simulation 2: Second posting +350,000 on locked balance inside transaction boundary
@@ -69,6 +71,8 @@ class FinancialPostingConcurrencyTest extends TestCase
             'trx-uuid-conc-2', 'm-1', 1, 401, 100,
             new TransactionNumber('TRX-202607-00082'), 'INCOME', new Money(350000.00), '2026-07-27 10:00:00'
         );
+        $trx2->submitForApproval();
+        $trx2->approve('user-checker');
         $engine->postTransaction($trx2, new JournalNumber('JRN-202607-00082'), 101);
 
         // Total expected balance: 1,000,000 + 250,000 + 350,000 = 1,600,000 (No Lost Update)

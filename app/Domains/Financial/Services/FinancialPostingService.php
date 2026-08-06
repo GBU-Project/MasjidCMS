@@ -34,6 +34,19 @@ class FinancialPostingService
     }
 
     /**
+     * @deprecated RC Blocker fix (docs/Audit/RC_BLOCKER_RESOLUTION_REPORT.md):
+     * this method wrote transactions directly to the database with
+     * status POSTED, bypassing the Financial State Machine and the
+     * Draft -> Pending Approval -> Approved -> Posted governance workflow
+     * entirely. As of this fix, no caller in the codebase uses this method
+     * anymore — AdminFinancialWorkspaceController::store()/import() now go
+     * through CreateTransactionApplicationService instead, which creates
+     * transactions as DRAFT via the Entity/Factory. Left in place
+     * (unused) rather than deleted, to avoid removing code without being
+     * able to verify no external/undiscovered caller depends on it in an
+     * environment this audit could not fully inspect (e.g. custom forks).
+     * Do not add new callers to this method.
+     *
      * Inserts a single financial transaction + its auto double-entry journal.
      *
      * @return array{success: bool, message: string, transaction_no?: string}
