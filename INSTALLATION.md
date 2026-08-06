@@ -1,13 +1,13 @@
-# Installation & Setup Guide — MasjidCMS v1.0.0-rc1
+# Installation & Setup Guide — MasjidCMS v1.0.0-rc3
 
-This guide covers setup and deployment instructions for **MasjidCMS v1.0.0-rc1**.
+This guide covers setup, installation, and deployment instructions for **MasjidCMS v1.0.0-rc3**.
 
 ---
 
 ## 1. System Requirements
 
 - **PHP**: 8.2 or higher
-- **PHP Extensions**: `intl`, `mbstring`, `json`, `pdo_mysql`, `curl`
+- **PHP Extensions**: `intl`, `mbstring`, `json`, `pdo_mysql`, `curl`, `openssl`
 - **Database**: MySQL 8.0+ or MariaDB 10.5+
 - **Composer**: 2.5+
 
@@ -17,9 +17,9 @@ This guide covers setup and deployment instructions for **MasjidCMS v1.0.0-rc1**
 
 ### Step 1: Clone Repository
 ```bash
-git clone https://github.com/MasjidCMS/MasjidCMS.git
+git clone https://github.com/GBU-Project/MasjidCMS.git
 cd MasjidCMS
-git checkout tags/v1.0.0-rc1
+git checkout tags/v1.0.0-rc3
 ```
 
 ### Step 2: Install Dependencies
@@ -51,9 +51,9 @@ php spark migrate
 ```
 
 ### Step 5: Seed Master Data & COA Accounts
-Seed initial Master Data, RBAC permissions, Master COA, and Fund accounts:
+Seed initial Master Data, RBAC permissions, Jamaah, Master COA, and Fund accounts:
 ```bash
-php spark db:seed FinancialSeeder
+php spark db:seed DatabaseSeeder
 ```
 
 ---
@@ -67,5 +67,5 @@ vendor/bin/phpunit --no-coverage
 
 Expected Output:
 ```text
-OK (88 tests, 287 assertions)
+OK (168 tests, 623 assertions)
 ```
